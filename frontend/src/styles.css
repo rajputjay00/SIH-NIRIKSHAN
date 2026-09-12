@@ -19,6 +19,8 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 .container {
@@ -27,7 +29,7 @@ body {
   border-radius: 12px;
   border: 1px solid var(--border);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  max-width: 400px;
+  max-width: 500px;
   width: 100%;
 }
 
@@ -48,6 +50,15 @@ body {
 .status-badge.offline {
   background-color: rgba(239, 68, 68, 0.2);
   color: var(--offline);
+}
+
+.error-badge {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--offline);
+  font-size: 0.875rem;
 }
 
 .form-group {
@@ -90,4 +101,59 @@ button:disabled {
   background: var(--bg-color);
   border-radius: 6px;
   border: 1px solid var(--border);
+}
+
+.ocr-section {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.ocr-text {
+  background: #020617;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #e2e8f0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lines-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.line-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: var(--card-bg);
+  margin-bottom: 0.35rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+}
+
+.line-text {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.line-confidence {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+.no-text {
+  color: var(--text-muted);
+  font-style: italic;
 }

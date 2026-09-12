@@ -9,6 +9,10 @@ venv/
 env/
 .env
 
+# OCR models
+models/
+*.onnx
+
 # Node / Frontend
 node_modules/
 dist/

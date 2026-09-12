@@ -6,6 +6,7 @@ export default function App() {
   const [file, setFile] = useState(null);
   const [scanResult, setScanResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     checkHealth()
@@ -17,11 +18,12 @@ export default function App() {
     e.preventDefault();
     if (!file) return;
     setLoading(true);
+    setErrorMsg(null);
     try {
       const data = await scanImage(file);
       setScanResult(data);
     } catch (err) {
-      alert('Error scanning label');
+      setErrorMsg('Error scanning label. Ensure format is JPEG/PNG/WebP and under 10 MB.');
     } finally {
       setLoading(false);
     }
@@ -50,12 +52,40 @@ export default function App() {
         </button>
       </form>
 
+      {errorMsg && <div className="error-badge">{errorMsg}</div>}
+
       {scanResult && (
         <div className="result-card">
           <h3>Scan Results</h3>
           <p><strong>Filename:</strong> {scanResult.filename}</p>
-          <p><strong>Width:</strong> {scanResult.width} px</p>
-          <p><strong>Height:</strong> {scanResult.height} px</p>
+          <p><strong>Dimensions:</strong> {scanResult.width} × {scanResult.height} px</p>
+
+          {scanResult.ocr && (
+            <div className="ocr-section">
+              <h4>Extracted Text (OCR)</h4>
+              {scanResult.ocr.full_text ? (
+                <pre className="ocr-text">{scanResult.ocr.full_text}</pre>
+              ) : (
+                <p className="no-text">No text detected in image.</p>
+              )}
+
+              {scanResult.ocr.lines && scanResult.ocr.lines.length > 0 && (
+                <div className="lines-list">
+                  <h4>Detected Lines &amp; Confidence</h4>
+                  <ul>
+                    {scanResult.ocr.lines.map((line, idx) => (
+                      <li key={idx} className="line-item">
+                        <span className="line-text">{line.text}</span>
+                        <span className="line-confidence">
+                          {(line.confidence * 100).toFixed(1)}%
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
