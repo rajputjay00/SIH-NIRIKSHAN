@@ -1,7 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || '';
+const BASE = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/$/, "");
 
 export async function checkHealth() {
-  const response = await fetch(`${API_URL}/health`);
+  const response = await fetch(`${BASE}/health`);
   if (!response.ok) {
     throw new Error('Health check failed');
   }
@@ -12,7 +12,7 @@ export async function scanImage(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_URL}/scan`, {
+  const response = await fetch(`${BASE}/scan`, {
     method: 'POST',
     body: formData,
   });
@@ -23,3 +23,4 @@ export async function scanImage(file) {
 
   return response.json();
 }
+
