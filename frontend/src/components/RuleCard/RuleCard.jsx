@@ -127,24 +127,36 @@ export function RuleCard({
               <div className={styles.trailContainer}>
                 <div className={styles.trailHeader}>{t('trail_timeline')}</div>
                 <div className={styles.trailTimeline}>
-                  {finding.trail.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className={`${styles.trailStep} ${
-                        item.status === 'FAIL' ? styles.stepFail : item.status === 'NEEDS_REVIEW' ? styles.stepReview : styles.stepPass
-                      }`}
-                    >
-                      <div className={styles.stepDot} />
-                      <div className={styles.stepContent}>
-                        <div className={styles.stepTitle}>
-                          <span>{item.title}</span>
-                          <span className={styles.stepBadge}>{item.status}</span>
+                  {finding.trail.map((item, idx) => {
+                    const isFailStep = item.status === 'FAIL' || (item.detail && (item.detail.includes('-> False') || item.detail.includes('FAIL')));
+                    const isReviewStep = item.status === 'NEEDS_REVIEW' || (item.detail && item.detail.includes('NEEDS_REVIEW'));
+
+                    let stepClass = styles.stepPass;
+                    let statusBadge = item.status || 'PASS';
+                    if (isFailStep) {
+                      stepClass = styles.stepFail;
+                      statusBadge = item.status || 'FAIL';
+                    } else if (isReviewStep) {
+                      stepClass = styles.stepReview;
+                      statusBadge = item.status || 'NEEDS_REVIEW';
+                    }
+
+                    const titleText = item.title || (item.step ? item.step.replace('_', ' ').toUpperCase() : `Step ${idx + 1}`);
+
+                    return (
+                      <div key={idx} className={`${styles.trailStep} ${stepClass}`}>
+                        <div className={styles.stepDot} />
+                        <div className={styles.stepContent}>
+                          <div className={styles.stepTitle}>
+                            <span>{titleText}</span>
+                            <span className={styles.stepBadge}>{statusBadge}</span>
+                          </div>
+                          {item.input && <div className={styles.stepInput}>Input: "{item.input}"</div>}
+                          {item.detail && <div className={styles.stepDetail}>{item.detail}</div>}
                         </div>
-                        {item.input && <div className={styles.stepInput}>Input: "{item.input}"</div>}
-                        {item.detail && <div className={styles.stepDetail}>{item.detail}</div>}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

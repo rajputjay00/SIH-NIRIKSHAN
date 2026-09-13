@@ -131,8 +131,8 @@ export function AppPage() {
       const formData = new FormData();
       for (let i = 0; i < panels.length; i++) {
         const scaledFile = await downscaleImage(panels[i].file, 2400);
-        formData.append('images', scaledFile);
-        formData.append(`surface_${i}`, panels[i].surfaceTag || 'front');
+        formData.append(`file_${i + 1}`, scaledFile);
+        formData.append(`surface_${i + 1}`, panels[i].surfaceTag || 'front');
       }
       formData.append('package_type', packageType);
       formData.append('category', category);
@@ -307,17 +307,23 @@ export function AppPage() {
               {conflicts.map((conf, idx) => (
                 <div key={idx} className={styles.conflictCard}>
                   <div className={styles.conflictTitle}>
-                    <span>Field: {conf.field.toUpperCase()}</span>
+                    <span>Field: {conf.field.replace('_', ' ').toUpperCase()}</span>
                     <span className={styles.surfaceLabel}>{conf.severity} severity</span>
                   </div>
-                  <div>{conf.message}</div>
+                  <div>{conf.message || `${conf.field.replace('_', ' ').toUpperCase()} differs across captured surfaces`}</div>
                   <div className={styles.conflictSurfacesGrid}>
-                    {conf.surfaces.map((cs) => (
-                      <div key={cs.id} className={styles.conflictSurfaceBox}>
-                        <span className={styles.surfaceLabel}>{cs.surface} surface</span>
-                        <span className={styles.surfaceVal}>Value: {String(cs.value)}</span>
-                      </div>
-                    ))}
+                    {conf.surfaces.map((cs) => {
+                      let valStr = cs.value;
+                      if (typeof cs.value === 'object' && cs.value !== null) {
+                        valStr = cs.value.raw_val ? `${cs.value.raw_val} ${cs.value.unit || ''}` : (cs.value.value || cs.value.name || JSON.stringify(cs.value));
+                      }
+                      return (
+                        <div key={cs.id} className={styles.conflictSurfaceBox}>
+                          <span className={styles.surfaceLabel}>{cs.surface} surface (Surface {cs.id})</span>
+                          <span className={styles.surfaceVal}>Value: {String(valStr)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -384,7 +390,17 @@ export function AppPage() {
               <div className={styles.evidenceLayout}>
                 <EvidenceCanvas
                   imageSrc={activeSurfacePreview}
-                  scanResult={activeSurfaceObj ? { ...scanResult, findings: scanResult.findings.filter(f => !f.evidence_refs || f.evidence_refs.some(r => r.surface_id === activeSurfaceId)) } : scanResult}
+                  scanResult={activeSurfaceObj ? {
+                    ...scanResult,
+                    ocr: activeSurfaceObj.ocr || { image_size: activeSurfaceObj.image_size },
+                    findings: scanResult.findings.map(f => {
+                      if (f.evidence_refs && f.evidence_refs.length > 0) {
+                        const refForSurface = f.evidence_refs.find(r => r.surface_id === activeSurfaceId);
+                        return refForSurface ? { ...f, evidence_bbox: refForSurface.bbox } : { ...f, evidence_bbox: null };
+                      }
+                      return f;
+                    })
+                  } : scanResult}
                   selectedRuleId={selectedRuleId}
                   onSelectRule={setSelectedRuleId}
                 />
@@ -436,34 +452,37 @@ export function AppPage() {
           )}
 
           {/* Declarations Tab */}
-          {activeTab === 'declarations' && (
-            <div className={styles.declGrid}>
-              {scanResult.declarations?.multi_unit_note && (
-                <div className={styles.multiUnitCallout}>
-                  <AlertTriangle size={18} />
-                  <span>Multi-unit declaration applies: Each individual unit inside package must declare MRP and net quantity.</span>
-                </div>
-              )}
+          {activeTab === 'declarations' && (() => {
+            const decls = scanResult.merged || scanResult.declarations;
+            return (
+              <div className={styles.declGrid}>
+                {decls?.multi_unit_note && (
+                  <div className={styles.multiUnitCallout}>
+                    <AlertTriangle size={18} />
+                    <span>Multi-unit declaration applies: Each individual unit inside package must declare MRP and net quantity.</span>
+                  </div>
+                )}
 
-              <DeclarationCard label="Net Quantity" field={scanResult.declarations?.net_quantity} />
-              <DeclarationCard label="MRP" field={scanResult.declarations?.mrp} />
-              <DeclarationCard label="Unit Sale Price" field={scanResult.declarations?.unit_sale_price} />
-              <DeclarationCard label="Generic Name" field={scanResult.declarations?.generic_name} />
-              <DeclarationCard label="Mfg Date" field={scanResult.declarations?.mfg_date} />
-              <DeclarationCard label="Best Before" field={scanResult.declarations?.best_before} />
-              <DeclarationCard label="Country of Origin" field={scanResult.declarations?.country_of_origin} />
+                <DeclarationCard label="Net Quantity" field={decls?.net_quantity} />
+                <DeclarationCard label="MRP" field={decls?.mrp} />
+                <DeclarationCard label="Unit Sale Price" field={decls?.unit_sale_price} />
+                <DeclarationCard label="Generic Name" field={decls?.generic_name} />
+                <DeclarationCard label="Mfg Date" field={decls?.mfg_date} />
+                <DeclarationCard label="Best Before" field={decls?.best_before} />
+                <DeclarationCard label="Country of Origin" field={decls?.country_of_origin} />
 
-              {scanResult.declarations?.importer && (
-                <EntityCard entity={scanResult.declarations.importer} />
-              )}
-              {scanResult.declarations?.manufacturer && (
-                <EntityCard entity={scanResult.declarations.manufacturer} />
-              )}
-              {(scanResult.declarations?.entities || []).map((ent, idx) => (
-                <EntityCard key={idx} entity={ent} />
-              ))}
-            </div>
-          )}
+                {decls?.importer && (
+                  <EntityCard entity={decls.importer} />
+                )}
+                {decls?.manufacturer && (
+                  <EntityCard entity={decls.manufacturer} />
+                )}
+                {(decls?.entities || []).map((ent, idx) => (
+                  <EntityCard key={idx} entity={ent} />
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Report Tab */}
           {activeTab === 'report' && (
