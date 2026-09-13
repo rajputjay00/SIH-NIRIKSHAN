@@ -3,6 +3,12 @@ import { mapBbox } from '../../utils/bbox';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import styles from './EvidenceCanvas.module.css';
 
+function getCssVar(name, fallback) {
+  if (typeof window === 'undefined') return fallback;
+  const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return val || fallback;
+}
+
 export function EvidenceCanvas({
   imageSrc,
   scanResult,
@@ -30,13 +36,17 @@ export function EvidenceCanvas({
       const ocrImageSize = scanResult.ocr?.image_size || { width: img.width, height: img.height };
       const drawnSize = { width: canvas.width, height: canvas.height };
 
+      const passColor = getCssVar('--pass', '#1E9E5A');
+      const failColor = getCssVar('--fail', '#D64545');
+      const reviewColor = getCssVar('--review', '#E0A100');
+
       let findings = scanResult.findings || [];
 
       // Sort findings FAIL first, then NEEDS_REVIEW, then PASS
       const orderMap = { FAIL: 1, NEEDS_REVIEW: 2, PASS: 3 };
       findings = [...findings].sort((a, b) => (orderMap[a.verdict] || 4) - (orderMap[b.verdict] || 4));
 
-      const drawBox = (finding, index, total) => {
+      const drawBox = (finding) => {
         if (!finding.evidence_bbox || finding.verdict === 'N/A') return;
         const mappedBox = mapBbox(finding.evidence_bbox, ocrImageSize, drawnSize);
         if (!mappedBox) return;
@@ -48,17 +58,16 @@ export function EvidenceCanvas({
         const isSelected = selectedRuleId === finding.rule_id;
         const hasSelection = Boolean(selectedRuleId);
 
-        let strokeColor = '#10b981';
-        let fillColor = 'rgba(16, 185, 129, 0.15)';
+        let strokeColor = passColor;
+        let fillColor = 'rgba(30, 158, 90, 0.15)';
         if (finding.verdict === 'FAIL') {
-          strokeColor = '#ef4444';
-          fillColor = 'rgba(239, 68, 68, 0.2)';
+          strokeColor = failColor;
+          fillColor = 'rgba(214, 69, 69, 0.2)';
         } else if (finding.verdict === 'NEEDS_REVIEW') {
-          strokeColor = '#f59e0b';
-          fillColor = 'rgba(245, 158, 11, 0.2)';
+          strokeColor = reviewColor;
+          fillColor = 'rgba(224, 161, 0, 0.2)';
         }
 
-        // Dim non-selected boxes if a box is selected
         ctx.globalAlpha = hasSelection && !isSelected ? 0.4 : 1.0;
 
         ctx.fillStyle = fillColor;
@@ -91,11 +100,10 @@ export function EvidenceCanvas({
       };
 
       if (reducedMotion) {
-        findings.forEach((f, idx) => drawBox(f, idx, findings.length));
+        findings.forEach((f) => drawBox(f));
       } else {
-        // Sequential draw 40ms apart
         findings.forEach((f, idx) => {
-          setTimeout(() => drawBox(f, idx, findings.length), idx * 40);
+          setTimeout(() => drawBox(f), idx * 40);
         });
       }
     };
