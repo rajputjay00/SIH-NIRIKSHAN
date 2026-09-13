@@ -43,6 +43,27 @@ MONTH_NAMES = {
 }
 
 
+CRIMP_PATTERNS = [
+    r'\bsee\s+crimp\b',
+    r'\bon\s+crimp\b',
+    r'\bat\s+crimp\b',
+    r'\bstamped\s+on\s+crimp\b',
+    r'\bcrimp\s+seal\b',
+    r'\bsee\s+seal\b',
+    r'\bon\s+seal\b',
+    r'\btop\s+crimp\b',
+    r'\bbottom\s+crimp\b',
+    r'\bcrimp\b',
+]
+
+
+def is_crimp_text(text: str) -> bool:
+    if not text:
+        return False
+    text_lower = text.lower()
+    return any(re.search(pat, text_lower) for pat in CRIMP_PATTERNS)
+
+
 def union_bboxes(bboxes: List[List[List[float]]]) -> List[List[float]]:
     if not bboxes:
         return [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
@@ -59,7 +80,6 @@ def match_field_key(text: str) -> Optional[Tuple[str, str]]:
     if not sq_text:
         return None
 
-    # Collect all (field_name, key) pairs and sort by length of squash(key) descending
     all_keys = []
     for field_name, keys in FIELD_LEXICON.items():
         for key in keys:
@@ -67,12 +87,10 @@ def match_field_key(text: str) -> Optional[Tuple[str, str]]:
     
     all_keys.sort(key=lambda x: len(x[2]), reverse=True)
 
-    # Exact squash prefix/substring match first
     for field_name, key, sq_key in all_keys:
         if sq_text.startswith(sq_key) or sq_key in sq_text:
             return field_name, key
 
-    # Fuzzy match fallback (partial_ratio >= 88)
     best_match = None
     best_score = 0
     for field_name, key, sq_key in all_keys:
@@ -94,44 +112,21 @@ def resolve_value_lines(
     k_yc = sum(pt[1] for pt in k_bbox) / 4.0
     k_xmin = min(pt[0] for pt in k_bbox)
     k_xmax = max(pt[0] for pt in k_bbox)
-
     # Strategy (a): Same line after key or separator (:, -, etc.)
     matched = match_field_key(k_text)
     matched_key_text = matched[1] if matched else ""
-    sq_key = squash(matched_key_text)
 
-    # Find position in original text
     sep_idx = k_text.find(":")
     if sep_idx != -1 and sep_idx < len(k_text) - 1:
         after_sep = k_text[sep_idx + 1 :].strip()
         if after_sep:
             return after_sep, [key_line], "same_line"
 
-    # Try removing matching key portion
     if matched_key_text:
-        # Case insensitive replacement
         pattern = re.escape(matched_key_text)
         after_key = re.sub(pattern, "", k_text, flags=re.IGNORECASE).strip(" :-_.")
         if after_key and len(after_key) > 0:
             return after_key, [key_line], "same_line"
-
-    # Strategy (b): Line directly below (horizontal overlap >= 40%, vertical gap < 1.5x height, max 2 lines away)
-    for next_idx in range(key_idx + 1, min(len(lines), key_idx + 3)):
-        cand = lines[next_idx]
-        c_bbox = cand.bbox
-        c_ymin = min(pt[1] for pt in c_bbox)
-        k_ymax = max(pt[1] for pt in k_bbox)
-        gap_y = c_ymin - k_ymax
-
-        c_xmin = min(pt[0] for pt in c_bbox)
-        c_xmax = max(pt[0] for pt in c_bbox)
-
-        overlap = max(0.0, min(k_xmax, c_xmax) - max(k_xmin, c_xmin))
-        w_k = max(1.0, k_xmax - k_xmin)
-        horiz_overlap_ratio = overlap / w_k
-
-        if gap_y < 1.5 * k_height and horiz_overlap_ratio >= 0.40:
-            return cand.text.strip(), [cand], "below"
 
     # Strategy (c): Line to the right on the same baseline
     for cand in lines:
@@ -141,8 +136,34 @@ def resolve_value_lines(
         c_yc = sum(pt[1] for pt in c_bbox) / 4.0
         c_xmin = min(pt[0] for pt in c_bbox)
 
-        if abs(c_yc - k_yc) <= 0.5 * k_height and c_xmin >= k_xmin:
+        if abs(c_yc - k_yc) <= 0.6 * k_height and c_xmin >= k_xmin:
             return cand.text.strip(), [cand], "right"
+
+    # Strategy (b): Line directly below
+    for next_idx in range(key_idx + 1, min(len(lines), key_idx + 4)):
+        cand = lines[next_idx]
+        c_bbox = cand.bbox
+        c_ymin = min(pt[1] for pt in c_bbox)
+        c_yc = sum(pt[1] for pt in c_bbox) / 4.0
+        k_ymax = max(pt[1] for pt in k_bbox)
+        gap_y = c_ymin - k_ymax
+
+        if c_yc <= k_yc:
+            continue
+
+        c_xmin = min(pt[0] for pt in c_bbox)
+        c_xmax = max(pt[0] for pt in c_bbox)
+
+        w_k = max(1.0, k_xmax - k_xmin)
+        w_c = max(1.0, c_xmax - c_xmin)
+        w_narrower = min(w_k, w_c)
+
+        overlap = max(0.0, min(k_xmax, c_xmax) - max(k_xmin, c_xmin))
+        horiz_overlap_ratio = overlap / w_narrower
+        left_in_range = (k_xmin - 10.0 <= c_xmin <= k_xmax + 10.0)
+
+        if gap_y < 2.5 * k_height and (horiz_overlap_ratio >= 0.20 or left_in_range):
+            return cand.text.strip(), [cand], "below"
 
     return k_text.strip(), [key_line], "same_line"
 
@@ -157,7 +178,6 @@ def absorb_block_lines(
 
     for idx in range(key_idx + 1, len(lines)):
         cand = lines[idx]
-        # Stop if cand matches a key for another field
         match = match_field_key(cand.text)
         if match:
             break
@@ -179,37 +199,73 @@ def absorb_block_lines(
 def parse_net_quantity(raw_text: str) -> Dict[str, Any]:
     text = fix_numeric_confusions(raw_text)
     
-    # Check qualifier words
     qualifiers_found = []
     text_lower = text.lower()
     for qw in QUALIFIER_WORDS:
         if qw in text_lower:
             qualifiers_found.append(qw)
 
-    # 1. Check "N x 50 g" or "N x 50g" or "N Units x 50g"
+    # 1. Complex combination e.g. "3N x 150g + 1N x 150g" or "(3N x150g+1Nx150g Free)"
+    combo_matches = re.findall(
+        r'(\d+)\s*[nN]?\s*(?:x|X|\*)\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+|[\u0900-\u097F]+)',
+        text
+    )
+    if len(combo_matches) > 1:
+        total_val = 0.0
+        total_count = 0
+        first_std_unit = None
+        first_raw_unit = None
+        first_nonstd = False
+        unit_val = None
+        for count_str, val_str, unit_str in combo_matches:
+            c = int(count_str)
+            v = float(val_str)
+            std_u, raw_u, nonstd = parse_unit_token(unit_str)
+            if first_std_unit is None:
+                first_std_unit = std_u
+                first_raw_unit = raw_u
+                first_nonstd = nonstd
+                unit_val = v
+            total_val += c * v
+            total_count += c
+        return {
+            "value": total_val,
+            "unit": first_std_unit,
+            "raw_unit": first_raw_unit,
+            "unit_nonstandard": first_nonstd,
+            "count": total_count,
+            "qualifier_words": qualifiers_found,
+            "unit_value": unit_val,
+            "multipack": True,
+        }
+
+    # 2. "Pack of 4 x 50g" or "3 x 150 g" or "3N x 150g"
     nx_match = re.search(
-        r'(\d+)\s*(?:x|X|units?|pcs?|pieces?)\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+|[\u0900-\u097F]+)',
+        r'(?:pack\s+of\s+)?(\d+)\s*(?:[nN]|units?|pcs?|pieces?)?\s*(?:x|X|\*)\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+|[\u0900-\u097F]+)',
         text,
         re.IGNORECASE
     )
     if nx_match:
         try:
             count_val = int(nx_match.group(1))
-            val_num = float(nx_match.group(2))
+            single_val = float(nx_match.group(2))
             unit_str = nx_match.group(3)
             std_u, raw_u, nonstd = parse_unit_token(unit_str)
+            total_val = round(count_val * single_val, 4)
             return {
-                "value": val_num,
+                "value": total_val,
                 "unit": std_u,
                 "raw_unit": raw_u,
                 "unit_nonstandard": nonstd,
                 "count": count_val,
                 "qualifier_words": qualifiers_found,
+                "unit_value": single_val,
+                "multipack": count_val > 1,
             }
         except ValueError:
             pass
 
-    # 2. Check "Pack of N" e.g. "Pack of 10 (20 g each)" or "Pack of 6"
+    # 3. Check "Pack of N" e.g. "Pack of 10"
     count_val = None
     packof_match = re.search(r'pack\s+of\s+(\d+)', text, re.IGNORECASE)
     if packof_match:
@@ -218,16 +274,15 @@ def parse_net_quantity(raw_text: str) -> Dict[str, Any]:
         except ValueError:
             pass
 
-    # 3. Match numeric value and unit token e.g. "500 g", "1.5 kg", "200 gms", "100 ml"
+    # 4. Standard float + unit e.g. "500 g", "1.5 kg", "200 ml"
     val_num = None
     std_unit = None
     raw_unit = None
     unit_nonstd = False
+    unit_val = None
+    is_multipack = False
 
-    # Regex for float + unit e.g. "20 g"
-    m = re.search(
-        r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+|[\u0900-\u097F]+)', text
-    )
+    m = re.search(r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+|[\u0900-\u097F]+)', text)
     if m:
         try:
             val_num = float(m.group(1))
@@ -236,6 +291,10 @@ def parse_net_quantity(raw_text: str) -> Dict[str, Any]:
             std_unit = std_u
             raw_unit = raw_u
             unit_nonstd = nonstd
+            if count_val and count_val > 1:
+                is_multipack = True
+                unit_val = val_num
+                val_num = round(count_val * val_num, 4)
         except ValueError:
             pass
 
@@ -246,6 +305,8 @@ def parse_net_quantity(raw_text: str) -> Dict[str, Any]:
         "unit_nonstandard": unit_nonstd,
         "count": count_val,
         "qualifier_words": qualifiers_found,
+        "unit_value": unit_val,
+        "multipack": is_multipack,
     }
 
 
@@ -263,15 +324,12 @@ def parse_mrp(raw_text: str) -> Dict[str, Any]:
     text = fix_numeric_confusions(raw_text)
     currency, _ = normalize_currency(text)
 
-    # Check inclusive of all taxes phrase (tolerates OCR confusion on first letter)
     tax_pattern = r'[il1|]ncl(usive|\.)?\s*(of\s*)?all\s*tax(es)?'
     has_tax_phrase = bool(re.search(tax_pattern, text, re.IGNORECASE))
 
-    # Extract MRP float value
     val_num = None
     paise_num = None
 
-    # Match currency + amount e.g. "Rs 45.00", "₹ 150", "45.50"
     m = re.search(r'(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d{1,2})?)', text, re.IGNORECASE)
     if m:
         try:
@@ -345,7 +403,6 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
     month_val = None
     year_val = None
 
-    # Check relative date forms e.g. "6 months from packaging", "30 days", "1 year"
     m_mon = re.search(r'\b(\d+)\s*months?\b', text, re.IGNORECASE)
     if m_mon:
         return {"day": None, "month": None, "year": None, "duration_months": int(m_mon.group(1))}
@@ -358,7 +415,6 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
     if m_day:
         return {"day": None, "month": None, "year": None, "duration_months": round(int(m_day.group(1)) / 30)}
 
-    # 1. DD/MM/YYYY or DD.MM.YYYY or DD-MM-YYYY
     m1 = re.search(r'\b(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})\b', text)
     if m1:
         day_val = int(m1.group(1))
@@ -367,7 +423,6 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
         year_val = y + 2000 if y < 100 else y
         return {"day": day_val, "month": month_val, "year": year_val, "duration_months": None}
 
-    # 2. MM/YYYY or MM-YYYY or MM.YYYY
     m2 = re.search(r'\b(\d{1,2})[\/\.\-](\d{2,4})\b', text)
     if m2:
         month_val = int(m2.group(1))
@@ -375,7 +430,6 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
         year_val = y + 2000 if y < 100 else y
         return {"day": None, "month": month_val, "year": year_val, "duration_months": None}
 
-    # 3. Mon YYYY e.g. Sep 2026 or September 2026
     m3 = re.search(r'\b([a-zA-Z]{3,9})\s*[\/\.\-,\s]\s*(\d{2,4})\b', text)
     if m3:
         mon_str = m3.group(1).lower()
@@ -397,11 +451,9 @@ def parse_entity_block(
     bbox = union_bboxes([l.bbox for l in source_lines])
     line_ids = [l.id if l.id is not None else i for i, l in enumerate(source_lines)]
 
-    # Extract PIN (6 digits)
     pin_match = re.search(r'\b[1-9][0-9]{5}\b', raw_text)
     pin_val = pin_match.group(0) if pin_match else None
 
-    # Extract State
     state_val = None
     raw_upper = raw_text.upper()
     for st in INDIAN_STATES:
@@ -451,11 +503,9 @@ def parse_consumer_care_block(
     bbox = union_bboxes([l.bbox for l in source_lines])
     line_ids = [l.id if l.id is not None else i for i, l in enumerate(source_lines)]
 
-    # Extract Email
     email_match = re.search(r'\b[A-Za-z0-9._%+-]+\s*@\s*[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', raw_text)
     email_val = email_match.group(0).replace(" ", "") if email_match else None
 
-    # Extract Phone (10 digits or 1800/1860)
     phone_match = re.search(
         r'\b(?:1800|1860)[- ]?\d{3,4}[- ]?\d{3,4}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b',
         raw_text,
@@ -509,7 +559,6 @@ def parse_consumer_care_block(
 def extract_generic_name(
     lines: List[OCRLine], claimed_line_ids: set
 ) -> Optional[FieldModel]:
-    # Heuristic: longest line near top (first 5 lines) that is not an ALL-CAPS single brand token and not a key line
     candidates = []
     for idx, line in enumerate(lines[:5]):
         if line.id in claimed_line_ids:
@@ -517,7 +566,7 @@ def extract_generic_name(
         text = line.text.strip()
         words = text.split()
         if len(words) == 1 and text.isupper():
-            continue  # Likely brand name
+            continue
         if len(text) >= 3:
             candidates.append((len(text), line))
 
@@ -529,7 +578,7 @@ def extract_generic_name(
             value=best_line.text.strip(),
             raw=best_line.text.strip(),
             bbox=best_line.bbox,
-            confidence=round(float(best_line.confidence * 0.6), 4),  # Mark confidence lower as heuristic
+            confidence=round(float(best_line.confidence * 0.6), 4),
             source_line_ids=[line_id],
             source="top_header_heuristic",
         )
@@ -539,7 +588,6 @@ def extract_generic_name(
 def extract(
     lines_raw: List[Dict[str, Any]], image_w: int = 1600, image_h: int = 1200
 ) -> Declarations:
-    # Convert dict lines to OCRLine objects if needed
     lines: List[OCRLine] = []
     for idx, item in enumerate(lines_raw):
         if isinstance(item, OCRLine):
@@ -556,13 +604,13 @@ def extract(
             )
             lines.append(line_obj)
 
-    # Detect scripts
     scripts = list(set(detect_line_script(l.text) for l in lines))
 
     claimed_line_ids = set()
 
     extracted_dict: Dict[str, Any] = {}
 
+    # Keyed search first
     for idx, line in enumerate(lines):
         match = match_field_key(line.text)
         if not match:
@@ -570,9 +618,8 @@ def extract(
 
         field_name, matched_key = match
         if field_name in extracted_dict:
-            continue  # Already extracted first occurrence
+            continue
 
-        # Entity / ConsumerCare blocks
         if field_name in ["manufacturer", "packer", "importer", "marketer"]:
             absorbed, block_text = absorb_block_lines(lines, idx)
             for l in absorbed:
@@ -589,7 +636,6 @@ def extract(
             extracted_dict["consumer_care"] = parse_consumer_care_block(absorbed, matched_key)
             continue
 
-        # Single value fields
         raw_val_str, source_lines, strategy = resolve_value_lines(lines, idx, field_name)
         for l in source_lines:
             if l.id is not None:
@@ -598,6 +644,7 @@ def extract(
         conf = min(l.confidence for l in source_lines) if source_lines else 0.0
         bbox = union_bboxes([l.bbox for l in source_lines])
         line_ids = [l.id if l.id is not None else i for i, l in enumerate(source_lines)]
+        crimp_flag = "crimp" if any(is_crimp_text(l.text) for l in source_lines) or is_crimp_text(line.text) else None
 
         if field_name == "net_quantity":
             parsed = parse_net_quantity(raw_val_str)
@@ -608,6 +655,9 @@ def extract(
                 unit_nonstandard=parsed["unit_nonstandard"],
                 count=parsed["count"],
                 qualifier_words=parsed["qualifier_words"],
+                unit_value=parsed.get("unit_value"),
+                multipack=parsed.get("multipack", False),
+                declared_elsewhere=crimp_flag,
                 raw=raw_val_str,
                 bbox=bbox,
                 confidence=round(float(conf), 4),
@@ -621,6 +671,7 @@ def extract(
                 currency=parsed["currency"],
                 incl_taxes_phrase=parsed["incl_taxes_phrase"],
                 paise=parsed["paise"],
+                declared_elsewhere=crimp_flag,
                 raw=raw_val_str,
                 bbox=bbox,
                 confidence=round(float(conf), 4),
@@ -647,6 +698,7 @@ def extract(
                 month=parsed["month"],
                 year=parsed["year"],
                 duration_months=parsed["duration_months"],
+                declared_elsewhere=crimp_flag,
                 raw=raw_val_str,
                 bbox=bbox,
                 confidence=round(float(conf), 4),
@@ -674,6 +726,235 @@ def extract(
                 source=strategy,
             )
 
+    # Check global crimp notices if fields were not extracted or lack crimp flag
+    for line in lines:
+        if is_crimp_text(line.text):
+            txt_lower = line.text.lower()
+            if "mfg" in txt_lower or "pkd" in txt_lower or "date" in txt_lower:
+                if "mfg_date" not in extracted_dict:
+                    extracted_dict["mfg_date"] = DateField(
+                        declared_elsewhere="crimp",
+                        raw=line.text,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="crimp_notice",
+                    )
+            if "mrp" in txt_lower or "rs" in txt_lower or "price" in txt_lower:
+                if "mrp" not in extracted_dict:
+                    extracted_dict["mrp"] = MRP(
+                        declared_elsewhere="crimp",
+                        raw=line.text,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="crimp_notice",
+                    )
+            if "net" in txt_lower or "qty" in txt_lower or "weight" in txt_lower:
+                if "net_quantity" not in extracted_dict:
+                    extracted_dict["net_quantity"] = NetQuantity(
+                        declared_elsewhere="crimp",
+                        raw=line.text,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="crimp_notice",
+                    )
+            if "exp" in txt_lower or "best before" in txt_lower or "use by" in txt_lower:
+                if "best_before" not in extracted_dict:
+                    extracted_dict["best_before"] = DateField(
+                        declared_elsewhere="crimp",
+                        raw=line.text,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="crimp_notice",
+                    )
+
+    # GLOBAL FALLBACKS — run ONLY when keyed search returned nothing for that field
+    # 1. Phone & Email fallback
+    cc_obj = extracted_dict.get("consumer_care")
+    if cc_obj is None or not cc_obj.phone:
+        for line in lines:
+            m_phone = re.search(
+                r'\b(?:1800|1860)[- ]?\d{3,4}[- ]?\d{3,4}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b',
+                line.text,
+            )
+            if m_phone:
+                phone_str = m_phone.group(0)
+                if cc_obj is None:
+                    extracted_dict["consumer_care"] = ConsumerCare(
+                        value=line.text.strip(),
+                        raw=line.text.strip(),
+                        phone=phone_str,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="global_regex",
+                    )
+                    cc_obj = extracted_dict["consumer_care"]
+                else:
+                    cc_obj.phone = phone_str
+                break
+
+    if cc_obj is None or not cc_obj.email:
+        for line in lines:
+            m_email = re.search(r'\b[A-Za-z0-9._%+-]+\s*@\s*[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', line.text)
+            if m_email:
+                email_str = m_email.group(0).replace(" ", "")
+                if cc_obj is None:
+                    extracted_dict["consumer_care"] = ConsumerCare(
+                        value=line.text.strip(),
+                        raw=line.text.strip(),
+                        email=email_str,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="global_regex",
+                    )
+                    cc_obj = extracted_dict["consumer_care"]
+                else:
+                    cc_obj.email = email_str
+                break
+
+    # 2. PIN fallback to entity block or manufacturer
+    pin_found = None
+    pin_line = None
+    for line in lines:
+        m_pin = re.search(r'\b[1-9][0-9]{5}\b', line.text)
+        if m_pin:
+            pin_found = m_pin.group(0)
+            pin_line = line
+            break
+
+    if pin_found:
+        entities = ["manufacturer", "packer", "importer", "marketer"]
+        has_pin = any(
+            extracted_dict.get(e) and getattr(extracted_dict[e], "pin", None)
+            for e in entities
+        )
+        if not has_pin:
+            target_ent = None
+            for e in entities:
+                if e in extracted_dict and extracted_dict[e]:
+                    target_ent = extracted_dict[e]
+                    break
+            if target_ent:
+                target_ent.pin = pin_found
+            else:
+                extracted_dict["manufacturer"] = EntityBlock(
+                    value=pin_line.text.strip(),
+                    raw=pin_line.text.strip(),
+                    pin=pin_found,
+                    bbox=pin_line.bbox,
+                    confidence=round(float(pin_line.confidence * 0.8), 4),
+                    source_line_ids=[pin_line.id],
+                    source="global_regex",
+                    role="manufacturer",
+                )
+
+    # 3. Standalone Quantity fallback
+    if "net_quantity" not in extracted_dict:
+        for line in lines:
+            m_qty = re.search(r'\b(\d+(?:\.\d+)?)\s*(g|kg|ml|l|L|gms|grams|liter|litres|ml.)\b', line.text)
+            if m_qty and "mrp" not in line.text.lower() and "rs" not in line.text.lower() and "per" not in line.text.lower():
+                parsed = parse_net_quantity(line.text)
+                if parsed["value"] is not None:
+                    extracted_dict["net_quantity"] = NetQuantity(
+                        value=parsed["value"],
+                        unit=parsed["unit"],
+                        raw_unit=parsed["raw_unit"],
+                        unit_nonstandard=parsed["unit_nonstandard"],
+                        count=parsed["count"],
+                        qualifier_words=parsed["qualifier_words"],
+                        unit_value=parsed.get("unit_value"),
+                        multipack=parsed.get("multipack", False),
+                        raw=line.text.strip(),
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="global_regex",
+                    )
+                    break
+
+    # 4. Unkeyed Date fallback
+    if "mfg_date" not in extracted_dict:
+        for line in lines:
+            txt_lower = line.text.lower()
+            if "exp" in txt_lower or "best before" in txt_lower or "use by" in txt_lower:
+                continue
+            parsed = parse_date(line.text)
+            if parsed["month"] is not None or parsed["year"] is not None or parsed["duration_months"] is not None:
+                extracted_dict["mfg_date"] = DateField(
+                    day=parsed["day"],
+                    month=parsed["month"],
+                    year=parsed["year"],
+                    duration_months=parsed["duration_months"],
+                    raw=line.text.strip(),
+                    bbox=line.bbox,
+                    confidence=round(float(line.confidence * 0.8), 4),
+                    source_line_ids=[line.id],
+                    source="unkeyed",
+                )
+                break
+
+    # 5. MRP & USP combined / standalone pattern fallback
+    if "mrp" not in extracted_dict:
+        for line in lines:
+            m_comb = re.search(r'(\d+(?:\.\d{1,2})?)\s*[:(]\s*\(?(\d+(?:\.\d+)?)\s*/\s*(ml|g|kg|l|L)\)?', line.text)
+            if m_comb:
+                try:
+                    mrp_val = float(m_comb.group(1))
+                    usp_val = float(m_comb.group(2))
+                    usp_u, _, _ = parse_unit_token(m_comb.group(3))
+                    extracted_dict["mrp"] = MRP(
+                        value=mrp_val,
+                        currency="INR",
+                        incl_taxes_phrase=True,
+                        raw=line.text.strip(),
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="global_regex",
+                    )
+                    if "unit_sale_price" not in extracted_dict:
+                        extracted_dict["unit_sale_price"] = UnitSalePrice(
+                            value=usp_val,
+                            per_qty=1.0,
+                            per_unit=usp_u,
+                            value_per_base_unit=usp_val,
+                            raw=line.text.strip(),
+                            bbox=line.bbox,
+                            confidence=round(float(line.confidence * 0.8), 4),
+                            source_line_ids=[line.id],
+                            source="global_regex",
+                        )
+                    break
+                except ValueError:
+                    pass
+
+    if "mrp" not in extracted_dict:
+        for line in lines:
+            m_mrp = re.search(r'(?:₹|rs\.?|inr)\s*(\d+(?:\.\d{1,2})?)', line.text, re.IGNORECASE)
+            if m_mrp:
+                try:
+                    mrp_val = float(m_mrp.group(1))
+                    parsed = parse_mrp(line.text)
+                    extracted_dict["mrp"] = MRP(
+                        value=mrp_val,
+                        currency=parsed["currency"],
+                        incl_taxes_phrase=parsed["incl_taxes_phrase"],
+                        paise=parsed["paise"],
+                        raw=line.text.strip(),
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="global_regex",
+                    )
+                    break
+                except ValueError:
+                    pass
+
     # Generic name heuristic if missing
     if "generic_name" not in extracted_dict:
         gen_field = extract_generic_name(lines, claimed_line_ids)
@@ -695,3 +976,4 @@ def extract(
         consumer_care=extracted_dict.get("consumer_care"),
         scripts_detected=scripts,
     )
+

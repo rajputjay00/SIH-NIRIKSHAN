@@ -19,7 +19,13 @@ ENV GIT_SHA=${GIT_SHA}
 WORKDIR /app
 
 COPY backend/requirements.txt backend/requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt && \
+    pip uninstall -y opencv-python opencv-contrib-python || true && \
+    pip install --no-cache-dir opencv-python-headless==4.11.0.86
+
+# Fetch models in its own layer before backend code copy
+COPY scripts/fetch_models.py ./scripts/fetch_models.py
+RUN python scripts/fetch_models.py
 
 # Copy backend source code FIRST so static copy overrides stale static files
 COPY backend/ .

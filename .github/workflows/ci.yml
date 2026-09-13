@@ -63,11 +63,62 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
+      - name: Build Local Image for Smoke Test
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          load: true
+          tags: nirikshan-test:local
+          build-args: |
+            GIT_SHA=${{ steps.vars.outputs.sha_short }}
+          cache-from: type=gha
+
+      - name: Container Smoke Test
+        run: |
+          docker run -d --name nirikshan-smoke -p 7860:7860 nirikshan-test:local
+          python -c "
+          import time, urllib.request, json
+          start = time.time()
+          ok = False
+          while time.time() - start < 90:
+              try:
+                  with urllib.request.urlopen('http://localhost:7860/api/health') as resp:
+                      data = json.loads(resp.read().decode())
+                      print('Health poll:', data)
+                      if data.get('model_loaded') is True:
+                          ok = True
+                          break
+              except Exception as e:
+                  print('Waiting for server...', e)
+              time.sleep(3)
+          if not ok:
+              raise SystemExit('Container failed to load model within 90s')
+          "
+          python -c "
+          import urllib.request, json, uuid
+          img_path = 'backend/tests/fixtures/images/synthetic/four_violations.png'
+          boundary = '----WebKitFormBoundary' + uuid.uuid4().hex
+          body = bytearray()
+          body.extend(f'--{boundary}\r\n'.encode())
+          body.extend(b'Content-Disposition: form-data; name=\"file\"; filename=\"four_violations.png\"\r\n')
+          body.extend(b'Content-Type: image/png\r\n\r\n')
+          body.extend(open(img_path, 'rb').read())
+          body.extend(f'\r\n--{boundary}--\r\n'.encode())
+          req = urllib.request.Request('http://localhost:7860/api/scan', data=bytes(body), headers={'Content-Type': f'multipart/form-data; boundary={boundary}'})
+          with urllib.request.urlopen(req) as resp:
+              assert resp.status == 200, f'Expected HTTP 200, got {resp.status}'
+              data = json.loads(resp.read().decode())
+              assert data.get('summary', {}).get('status') == 'Non-compliant', f'Expected Non-compliant, got {data}'
+              print('Smoke test scan PASSED!')
+          "
+          docker rm -f nirikshan-smoke
+
+      - name: Push Container Image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
           platforms: linux/amd64
           build-args: |
             GIT_SHA=${{ steps.vars.outputs.sha_short }}

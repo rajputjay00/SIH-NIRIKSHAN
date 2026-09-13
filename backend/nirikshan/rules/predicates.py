@@ -48,6 +48,23 @@ def eval_predicate(
         msg = f"Value '{extracted_val}' present" if ok else f"Field {field_path} is missing or empty"
         return ok, msg, extracted_val, bbox
 
+    elif pred_name == "declared_elsewhere":
+        base_obj_path = field_path.rsplit(".", 1)[0] if (field_path and "." in field_path) else field_path
+        base_obj = get_field_value(declarations, base_obj_path) if base_obj_path else None
+        de = getattr(base_obj, "declared_elsewhere", None) if base_obj else None
+        ok = de is not None and str(de).strip() != ""
+        msg = f"Field {field_path or base_obj_path} declared elsewhere on {de}" if ok else f"Field {field_path or base_obj_path} not declared elsewhere"
+        return ok, msg, de, bbox
+
+    elif pred_name == "field_source_is":
+        target_source = params.get("source", "")
+        base_obj_path = field_path.rsplit(".", 1)[0] if (field_path and "." in field_path) else field_path
+        base_obj = get_field_value(declarations, base_obj_path) if base_obj_path else None
+        src = getattr(base_obj, "source", None) if base_obj else None
+        ok = src == target_source
+        msg = f"Field {field_path or base_obj_path} source is '{src}'" if ok else f"Field {field_path or base_obj_path} source is not '{target_source}'"
+        return ok, msg, src, bbox
+
     elif pred_name == "absent":
         ok = extracted_val is None or str(extracted_val).strip() == ""
         msg = f"Field {field_path} is absent" if ok else f"Field {field_path} is present"

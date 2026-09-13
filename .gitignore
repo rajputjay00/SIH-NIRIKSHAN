@@ -10,8 +10,9 @@ env/
 .env
 
 # OCR models
-models/
-*.onnx
+backend/models/*.onnx
+backend/models/*.txt
+!backend/models/MODELS.md
 
 # Node / Frontend & Built Assets
 node_modules/
@@ -21,3 +22,5 @@ backend/static/
 .env.development.local
 .env.test.local
 .env.production.local
+
+backend/tests/fixtures/images/real/

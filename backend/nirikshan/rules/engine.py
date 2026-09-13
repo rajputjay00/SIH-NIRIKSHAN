@@ -161,6 +161,27 @@ def evaluate(
 
         if check_ok:
             verdict = "PASS"
+            msg_en_final = f"Compliant: {rule['title_en']}"
+            msg_hi_final = f"अनुपालन: {rule['title_hi']}"
+
+            if "on_uncertain" in rule:
+                unc_list = rule["on_uncertain"] if isinstance(rule["on_uncertain"], list) else [rule["on_uncertain"]]
+                for unc in unc_list:
+                    if "when_pass" in unc:
+                        u_ok, _, _, _ = eval_check_block(unc["when_pass"], declarations)
+                        if u_ok:
+                            verdict = unc.get("verdict", "NEEDS_REVIEW")
+                            msg_en_final = unc.get("message_en", msg_en_final)
+                            msg_hi_final = unc.get("message_hi", msg_hi_final)
+                            break
+                    elif "check" in unc:
+                        u_ok, _, _, _ = eval_check_block(unc["check"], declarations)
+                        if u_ok:
+                            verdict = unc.get("verdict", "NEEDS_REVIEW")
+                            msg_en_final = unc.get("message_en", msg_en_final)
+                            msg_hi_final = unc.get("message_hi", msg_hi_final)
+                            break
+
             finding = FindingModel(
                 rule_id=rid,
                 rule_ref=rref,
@@ -169,27 +190,38 @@ def evaluate(
                 extracted=extracted_val,
                 expected="Compliant declaration",
                 evidence_bbox=bbox,
-                message_en=f"Compliant: {rule['title_en']}",
-                message_hi=f"अनुपालन: {rule['title_hi']}",
+                message_en=msg_en_final,
+                message_hi=msg_hi_final,
                 fix_hint_en=None,
             )
             findings.append(finding)
             counts[verdict] += 1
         else:
-            # Check on_uncertain condition
             verdict = rule["on_fail"]
+            msg_en_final = msg_en
+            msg_hi_final = msg_hi
+
             if "on_uncertain" in rule:
-                unc = rule["on_uncertain"]
-                cond = unc.get("when", "")
-                if cond == "declarations.mrp.confidence < 0.75":
-                    if declarations.mrp and (declarations.mrp.confidence or 0.0) < 0.75:
-                        verdict = unc.get("verdict", "NEEDS_REVIEW")
-                elif cond == "declarations.manufacturer.confidence < 0.75":
-                    if declarations.manufacturer and (declarations.manufacturer.confidence or 0.0) < 0.75:
-                        verdict = unc.get("verdict", "NEEDS_REVIEW")
-                elif cond == "declarations.mfg_date.raw is not None and declarations.mfg_date.month is None":
-                    if declarations.mfg_date and declarations.mfg_date.raw and declarations.mfg_date.month is None:
-                        verdict = unc.get("verdict", "NEEDS_REVIEW")
+                unc_list = rule["on_uncertain"] if isinstance(rule["on_uncertain"], list) else [rule["on_uncertain"]]
+                for unc in unc_list:
+                    if "check" in unc:
+                        u_ok, _, _, _ = eval_check_block(unc["check"], declarations)
+                        if u_ok:
+                            verdict = unc.get("verdict", "NEEDS_REVIEW")
+                            msg_en_final = unc.get("message_en", msg_en_final)
+                            msg_hi_final = unc.get("message_hi", msg_hi_final)
+                            break
+                    elif "when" in unc:
+                        cond = unc.get("when", "")
+                        if cond == "declarations.mrp.confidence < 0.75":
+                            if declarations.mrp and (declarations.mrp.confidence or 0.0) < 0.75:
+                                verdict = unc.get("verdict", "NEEDS_REVIEW")
+                        elif cond == "declarations.manufacturer.confidence < 0.75":
+                            if declarations.manufacturer and (declarations.manufacturer.confidence or 0.0) < 0.75:
+                                verdict = unc.get("verdict", "NEEDS_REVIEW")
+                        elif cond == "declarations.mfg_date.raw is not None and declarations.mfg_date.month is None":
+                            if declarations.mfg_date and declarations.mfg_date.raw and declarations.mfg_date.month is None:
+                                verdict = unc.get("verdict", "NEEDS_REVIEW")
 
             expected_str = "; ".join(details)
             finding = FindingModel(
@@ -200,8 +232,8 @@ def evaluate(
                 extracted=extracted_val,
                 expected=expected_str,
                 evidence_bbox=bbox,
-                message_en=msg_en,
-                message_hi=msg_hi,
+                message_en=msg_en_final,
+                message_hi=msg_hi_final,
                 fix_hint_en=fix_hint,
             )
             findings.append(finding)

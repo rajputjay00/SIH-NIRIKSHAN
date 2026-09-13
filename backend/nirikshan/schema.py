@@ -16,6 +16,7 @@ class FieldModel(BaseModel):
     confidence: Optional[float] = None
     source_line_ids: List[int] = Field(default_factory=list)
     source: Optional[str] = None
+    declared_elsewhere: Optional[str] = None
 
 
 class NetQuantity(FieldModel):
@@ -24,6 +25,8 @@ class NetQuantity(FieldModel):
     raw_unit: Optional[str] = None
     unit_nonstandard: bool = False
     count: Optional[int] = None
+    unit_value: Optional[float] = None
+    multipack: bool = False
     qualifier_words: List[str] = Field(default_factory=list)
 
 

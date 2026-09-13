@@ -3,7 +3,9 @@ import os
 import time
 from typing import Any, Dict
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
+
+from nirikshan.normalize import normalize_line_text
 
 logger = logging.getLogger("nirikshan.ocr")
 if not logger.handlers:
@@ -29,20 +31,31 @@ def get_engine():
 
         from rapidocr_onnxruntime import RapidOCR
 
-        _engine = RapidOCR(intra_op_num_threads=threads)
+        model_dir = os.path.join(os.path.dirname(__file__), "models")
+        rec_model_path = os.path.join(model_dir, "en_PP-OCRv3_rec_infer.onnx")
+        rec_keys_path = os.path.join(model_dir, "en_dict.txt")
+
+        kwargs: Dict[str, Any] = {"intra_op_num_threads": threads}
+        if os.path.exists(rec_model_path) and os.path.exists(rec_keys_path):
+            kwargs["rec_model_path"] = rec_model_path
+            kwargs["rec_keys_path"] = rec_keys_path
+
+        _engine = RapidOCR(**kwargs)
     return _engine
 
 
 def extract_text(image: Image.Image) -> Dict[str, Any]:
-    # Stage 1: Preprocessing (RGB conversion & downscaling <= 1600 px)
+    # Stage 1: Preprocessing (EXIF transpose, RGB conversion & downscaling <= NIRIKSHAN_MAX_SIDE px)
     preprocess_start = time.perf_counter()
+    image = ImageOps.exif_transpose(image)
     if image.mode != "RGB":
         image = image.convert("RGB")
 
+    max_side = int(os.getenv("NIRIKSHAN_MAX_SIDE", "2400"))
     width, height = image.size
     max_dim = max(width, height)
-    if max_dim > 1600:
-        scale = 1600.0 / max_dim
+    if max_dim > max_side:
+        scale = float(max_side) / max_dim
         new_w = max(1, int(width * scale))
         new_h = max(1, int(height * scale))
         image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
@@ -59,10 +72,10 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     elapsed_ms = preprocess_ms + ocr_ms
 
     logger.info(
-        f"OCR Timings - Preprocess: {preprocess_ms:.2f} ms, OCR Inference: {ocr_ms:.2f} ms, Total: {elapsed_ms:.2f} ms"
+        f"OCR Timings - Preprocess: {preprocess_ms:.2f} ms, OCR Inference: {ocr_ms:.2f} ms, Total: {elapsed_ms:.2f} ms (max_side={max_side})"
     )
 
-    # Stage 3: Formatting Output Lines
+    # Stage 3: Formatting Output Lines & Normalizing Text
     lines = []
     text_list = []
 
@@ -70,14 +83,17 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
         for item in result:
             bbox_raw, text, confidence = item[0], item[1], item[2]
             bbox = [[float(pt[0]), float(pt[1])] for pt in bbox_raw]
+            norm_text = normalize_line_text(str(text))
+            if not norm_text:
+                continue
 
             line_obj = {
-                "text": str(text),
+                "text": norm_text,
                 "confidence": round(float(confidence), 4),
                 "bbox": bbox,
             }
             lines.append(line_obj)
-            text_list.append(str(text))
+            text_list.append(norm_text)
 
     full_text = "\n".join(text_list)
 

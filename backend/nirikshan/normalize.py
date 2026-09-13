@@ -2,6 +2,16 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 DEVANAGARI_MAP = str.maketrans('०१२३४५६७८९', '0123456789')
+FULLWIDTH_PUNCT_MAP = str.maketrans('（）：，。', '():,.')
+
+
+def normalize_line_text(text: str) -> str:
+    """Map full-width punctuation （）：，。 to ASCII and drop CJK characters (U+3000–U+303F, U+4E00–U+9FFF)."""
+    if not text:
+        return ""
+    text = text.translate(FULLWIDTH_PUNCT_MAP)
+    text = re.sub(r'[\u3000-\u303F\u4E00-\u9FFF]+', '', text)
+    return text.strip()
 
 STANDARD_UNITS = {
     "g", "kg", "ml", "L", "l", "cm", "m", "N", "U",

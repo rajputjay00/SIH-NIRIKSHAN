@@ -84,6 +84,13 @@
       - present: { field: "net_quantity.unit" }
       - magnitude_unit_consistent: {}
   on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - declared_elsewhere: { field: "net_quantity" }
+      verdict: NEEDS_REVIEW
+      message_en: "Declared on crimp/other panel — photograph the crimp and add it as a second image."
+      message_hi: "क्रिम/अन्य पैनल पर घोषित — क्रिम की फोटो लें और उसे दूसरी छवि के रूप में जोड़ें।"
   evidence: "declarations.net_quantity.bbox"
   message_en: "Net quantity must be declared with value and standard SI unit, adhering to unit magnitude rules."
   message_hi: "शुद्ध मात्रा मान और मानक SI इकाई के साथ घोषित की जानी चाहिए।"
@@ -154,8 +161,18 @@
       - present: { field: "mfg_date.year" }
   on_fail: FAIL
   on_uncertain:
-    when: "declarations.mfg_date.raw is not None and declarations.mfg_date.month is None"
-    verdict: NEEDS_REVIEW
+    - check:
+        all:
+          - declared_elsewhere: { field: "mfg_date" }
+      verdict: NEEDS_REVIEW
+      message_en: "Declared on crimp/other panel — photograph the crimp and add it as a second image."
+      message_hi: "क्रिम/अन्य पैनल पर घोषित — क्रिम की फोटो लें और उसे दूसरी छवि के रूप में जोड़ें।"
+    - when_pass:
+        all:
+          - field_source_is: { field: "mfg_date", source: "unkeyed" }
+      verdict: NEEDS_REVIEW
+      message_en: "Date detected without explicit Mfd/Pkd label — verify if this is manufacturing date."
+      message_hi: "बिना किसी स्पष्ट निर्माण लेबल के तिथि का पता चला — जांचें कि क्या यह निर्माण की तारीख है।"
   evidence: "declarations.mfg_date.bbox"
   message_en: "Month and year of manufacture, packing, or import must be declared."
   message_hi: "निर्माण, पैकिंग या आयात का महीना और वर्ष घोषित किया जाना चाहिए।"
@@ -175,6 +192,13 @@
       - present: { field: "best_before.year" }
       - present: { field: "best_before.duration_months" }
   on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - check:
+        all:
+          - declared_elsewhere: { field: "best_before" }
+      verdict: NEEDS_REVIEW
+      message_en: "Declared on crimp/other panel — photograph the crimp and add it as a second image."
+      message_hi: "क्रिम/अन्य पैनल पर घोषित — क्रिम की फोटो लें और उसे दूसरी छवि के रूप में जोड़ें।"
   evidence: "declarations.best_before.bbox"
   message_en: "Best before or use-by date should be declared for perishable commodities."
   message_hi: "खराब होने वाली वस्तुओं के लिए बेस्ट बिफोर या एक्सपायरी तिथि घोषित की जानी चाहिए।"
@@ -195,8 +219,12 @@
       - regex: { field: "mrp.raw", pattern: "[il1|]ncl(usive|\\.)?\\s*(of\\s*)?all\\s*tax(es)?" }
   on_fail: FAIL
   on_uncertain:
-    when: "declarations.mrp.confidence < 0.75"
-    verdict: NEEDS_REVIEW
+    - check:
+        all:
+          - declared_elsewhere: { field: "mrp" }
+      verdict: NEEDS_REVIEW
+      message_en: "Declared on crimp/other panel — photograph the crimp and add it as a second image."
+      message_hi: "क्रिम/अन्य पैनल पर घोषित — क्रिम की फोटो लें और उसे दूसरी छवि के रूप में जोड़ें।"
   evidence: "declarations.mrp.bbox"
   message_en: "MRP must be declared in Indian Rupees (₹/Rs) and include the phrase 'Incl. of all taxes'."
   message_hi: "MRP भारतीय रुपये (₹/Rs) में घोषित होना चाहिए और 'सभी करों सहित' लिखा होना चाहिए।"

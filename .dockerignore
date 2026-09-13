@@ -9,3 +9,5 @@ __pycache__
 *.pyc
 *.pyo
 .pytest_cache
+
+backend/tests/fixtures/images/real
