@@ -18,6 +18,7 @@ import { Stepper } from '../../components/Stepper/Stepper';
 import { ScanLine } from '../../components/ScanLine/ScanLine';
 import { Tabs } from '../../components/Tabs/Tabs';
 import { Toast } from '../../components/Toast/Toast';
+import { BottomSheet } from '../../components/BottomSheet/BottomSheet';
 import styles from './AppPage.module.css';
 
 export function AppPage() {
@@ -35,6 +36,13 @@ export function AppPage() {
   const [shutterFlash, setShutterFlash] = useState(false);
   const [recentScans, setRecentScans] = useState([]);
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Form Fields for Report
   const [officerName, setOfficerName] = useState(() => localStorage.getItem('nirikshan_officer') || '');
@@ -183,6 +191,7 @@ export function AppPage() {
   const qualityWarnings = scanResult?.quality?.warnings || [];
   const applicableFindings = scanResult?.findings?.filter((f) => f.verdict !== 'N/A') || [];
   const naFindings = scanResult?.findings?.filter((f) => f.verdict === 'N/A') || [];
+  const selectedFinding = scanResult?.findings?.find((f) => f.rule_id === selectedRuleId);
 
   return (
     <div className={styles.appPage}>
@@ -241,6 +250,7 @@ export function AppPage() {
             <motion.div
               key={idx}
               className={styles.thumbWrapper}
+              layoutId={idx === 0 ? "scan-hero-image" : undefined}
               initial={reducedMotion ? { opacity: 1 } : { scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
             >
@@ -303,11 +313,13 @@ export function AppPage() {
       {/* Results View */}
       {scanResult && !loading && (
         <div>
-          {/* Verdict Banner */}
-          <VerdictBanner
-            status={scanResult.summary.status}
-            exemptReason={scanResult.applicability.exempt_reason}
-          />
+          {/* Verdict Banner with Hero layoutId */}
+          <motion.div layoutId="scan-hero-image">
+            <VerdictBanner
+              status={scanResult.summary.status}
+              exemptReason={scanResult.applicability.exempt_reason}
+            />
+          </motion.div>
 
           {/* Counts Header */}
           <div className={styles.resultHeader}>
@@ -371,17 +383,41 @@ export function AppPage() {
 
           {/* Evidence Tab */}
           {activeTab === 'evidence' && (
-            <EvidenceCanvas
-              imageSrc={panels[0]?.preview}
-              scanResult={scanResult}
-              selectedRuleId={selectedRuleId}
-              onSelectRule={setSelectedRuleId}
-            />
+            <div className={styles.evidenceLayout}>
+              <EvidenceCanvas
+                imageSrc={panels[0]?.preview}
+                scanResult={scanResult}
+                selectedRuleId={selectedRuleId}
+                onSelectRule={setSelectedRuleId}
+              />
+
+              {/* Desktop Side Highlight */}
+              {windowWidth >= 640 && selectedFinding && (
+                <div className={styles.desktopSidePanel}>
+                  <h4 style={{ marginBottom: '12px', color: 'var(--navy-900)' }}>Selected Rule Details</h4>
+                  <RuleCard finding={selectedFinding} />
+                </div>
+              )}
+
+              {/* Mobile BottomSheet (<640px) */}
+              {windowWidth < 640 && (
+                <BottomSheet isOpen={Boolean(selectedFinding)} onClose={() => setSelectedRuleId(null)}>
+                  {selectedFinding && <RuleCard finding={selectedFinding} />}
+                </BottomSheet>
+              )}
+            </div>
           )}
 
           {/* Declarations Tab */}
           {activeTab === 'declarations' && (
             <div className={styles.declGrid}>
+              {scanResult.declarations.multi_unit_note && (
+                <div className={styles.multiUnitCallout}>
+                  <AlertTriangle size={18} />
+                  <span>Multi-unit declaration applies: Each individual unit inside package must declare MRP and net quantity.</span>
+                </div>
+              )}
+
               <DeclarationCard label="Net Quantity" field={scanResult.declarations.net_quantity} />
               <DeclarationCard label="MRP" field={scanResult.declarations.mrp} />
               <DeclarationCard label="Unit Sale Price" field={scanResult.declarations.unit_sale_price} />
@@ -396,6 +432,9 @@ export function AppPage() {
               {scanResult.declarations.manufacturer && (
                 <EntityCard entity={scanResult.declarations.manufacturer} />
               )}
+              {(scanResult.declarations.entities || []).map((ent, idx) => (
+                <EntityCard key={idx} entity={ent} />
+              ))}
             </div>
           )}
 
@@ -436,9 +475,12 @@ export function AppPage() {
               </div>
 
               <div className={styles.reportActions}>
-                <Button variant="primary" icon={Download} disabled={pdfDownloading} onClick={handleDownloadPDF}>
-                  {pdfDownloading ? 'Generating PDF...' : t('download_pdf')}
-                </Button>
+                <div className={styles.inkFillBtn}>
+                  <Button variant="primary" icon={Download} disabled={pdfDownloading} onClick={handleDownloadPDF}>
+                    {pdfDownloading ? 'Generating PDF...' : t('download_pdf')}
+                  </Button>
+                  {pdfDownloading && <div className={styles.inkFillProgress} />}
+                </div>
                 <Button variant="secondary" icon={Download} onClick={handleDownloadJSON}>
                   {t('download_json')}
                 </Button>
@@ -455,3 +497,4 @@ export function AppPage() {
     </div>
   );
 }
+

@@ -438,3 +438,9 @@ select, input[type="text"] {
   max-height: 200px;
   overflow-y: auto;
 }
+
+*:focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 2px;
+}
+

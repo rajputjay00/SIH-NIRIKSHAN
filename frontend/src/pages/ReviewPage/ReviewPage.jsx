@@ -63,8 +63,33 @@ export function ReviewPage() {
     };
 
     fetchResults();
-    const interval = setInterval(fetchResults, 3000);
-    return () => clearInterval(interval);
+
+    let eventSource = null;
+    let fallbackInterval = null;
+
+    if (typeof window !== 'undefined' && 'EventSource' in window) {
+      try {
+        eventSource = new EventSource(`/api/session/${sessionCode}/stream`);
+        eventSource.onmessage = () => {
+          fetchResults();
+        };
+        eventSource.onerror = () => {
+          if (eventSource) eventSource.close();
+          if (!fallbackInterval) {
+            fallbackInterval = setInterval(fetchResults, 3000);
+          }
+        };
+      } catch (e) {
+        fallbackInterval = setInterval(fetchResults, 3000);
+      }
+    } else {
+      fallbackInterval = setInterval(fetchResults, 3000);
+    }
+
+    return () => {
+      if (eventSource) eventSource.close();
+      if (fallbackInterval) clearInterval(fallbackInterval);
+    };
   }, [sessionCode, selectedScanId]);
 
   const handleManualPair = (e) => {
