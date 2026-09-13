@@ -66,6 +66,22 @@ def preprocess(image: Image.Image) -> Tuple[Image.Image, Dict[str, int], float]:
     return image, image_size, round(scale, 4)
 
 
+def detect_barcode(img_np: np.ndarray) -> Optional[Dict[str, Any]]:
+    try:
+        import cv2
+        if hasattr(cv2, "barcode") and hasattr(cv2.barcode, "BarcodeDetector"):
+            detector = cv2.barcode.BarcodeDetector()
+            ok, decoded_info, decoded_type, points = detector.detectAndDecode(img_np)
+            if ok and decoded_info:
+                for info, p in zip(decoded_info, points if points is not None else []):
+                    if info and str(info).strip():
+                        bbox = [[float(pt[0]), float(pt[1])] for pt in p] if p is not None else None
+                        return {"value": str(info).strip(), "bbox": bbox}
+    except Exception as e:
+        logger.debug(f"Barcode detection error: {e}")
+    return None
+
+
 def extract_text(image: Image.Image) -> Dict[str, Any]:
     # Stage 1: Preprocessing (EXIF transpose, RGB conversion & downscaling <= NIRIKSHAN_MAX_SIDE px)
     preprocess_start = time.perf_counter()
@@ -73,6 +89,8 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     img_np = np.array(image)
     preprocess_ms = (time.perf_counter() - preprocess_start) * 1000.0
 
+    # Barcode detection on image pixels
+    barcode_data = detect_barcode(img_np)
 
     # Stage 2: RapidOCR Inference
     ocr_start = time.perf_counter()
@@ -85,7 +103,6 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     logger.info(
         f"OCR Timings - Preprocess: {preprocess_ms:.2f} ms, OCR Inference: {ocr_ms:.2f} ms, Total: {elapsed_ms:.2f} ms (image_size={image_size})"
     )
-
 
     # Stage 3: Formatting Output Lines & Normalizing Text
     lines = []
@@ -112,6 +129,7 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     return {
         "full_text": full_text,
         "lines": lines,
+        "barcode": barcode_data,
         "image_size": {"width": image.width, "height": image.height},
         "scale": round(scale, 4),
         "preprocess_ms": round(preprocess_ms, 2),

@@ -737,7 +737,10 @@ def extract_generic_name(
 
 
 def extract(
-    lines_raw: List[Dict[str, Any]], image_w: int = 1600, image_h: int = 1200
+    lines_raw: List[Dict[str, Any]],
+    image_w: int = 1600,
+    image_h: int = 1200,
+    barcode_data: Optional[Dict[str, Any]] = None,
 ) -> Declarations:
     lines: List[OCRLine] = []
     for idx, item in enumerate(lines_raw):
@@ -1193,6 +1196,67 @@ def extract(
             multi_unit_note = True
             break
 
+    # GTIN / Barcode extraction
+    gtin_field: Optional[FieldModel] = None
+    if barcode_data and barcode_data.get("value"):
+        gtin_field = FieldModel(
+            value=str(barcode_data["value"]).strip(),
+            raw=str(barcode_data["value"]).strip(),
+            bbox=barcode_data.get("bbox"),
+            confidence=1.0,
+            source="opencv_barcode",
+        )
+    else:
+        for line in lines:
+            txt_clean = line.text.strip()
+            m_gtin = re.search(r'^\b(\d{8}|\d{12}|\d{13})\b$', txt_clean)
+            if m_gtin:
+                gtin_val = m_gtin.group(1)
+                gtin_field = FieldModel(
+                    value=gtin_val,
+                    raw=txt_clean,
+                    bbox=line.bbox,
+                    confidence=round(float(line.confidence), 4),
+                    source_line_ids=[line.id] if line.id is not None else [],
+                    source="ocr_regex",
+                )
+                break
+
+    # MRP candidates extraction (R16)
+    mrp_candidates: List[FieldModel] = []
+    currency_tokens = ["₹", "rs", "rs.", "inr", "rupees"]
+    mrp_keys = ["mrp", "maximum retail price", "max retail price", "max. retail price"]
+
+    for line in lines:
+        txt_lower = line.text.lower()
+        if is_crimp_text(line.text) or any(pat in squash(line.text) for pat in ["ofalltax", "ofaltax", "seecrimp", "oncrimp"]):
+            continue
+        if re.search(r'\b1800\d{6,7}\b|\b[6-9]\d{9}\b|\bphone\b|\bcall\b|\btoll\s*free\b', txt_lower):
+            continue
+        if re.search(r'\b[1-9][0-9]{5}\b', line.text) and not any(k in txt_lower for k in ["mrp", "rs", "₹"]):
+            continue
+
+        has_curr = any(tok in txt_lower for tok in currency_tokens)
+        has_mrp_key = any(k in txt_lower for k in mrp_keys)
+        if has_curr or has_mrp_key:
+            m_val = re.search(r'(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d{1,2})?)', line.text, re.IGNORECASE)
+            if m_val:
+                try:
+                    val_num = float(m_val.group(1))
+                    if val_num > 0 and val_num < 1000000:
+                        mrp_candidates.append(
+                            FieldModel(
+                                value=val_num,
+                                raw=line.text.strip(),
+                                bbox=line.bbox,
+                                confidence=round(float(line.confidence), 4),
+                                source_line_ids=[line.id] if line.id is not None else [],
+                                source="mrp_candidate_extractor",
+                            )
+                        )
+                except ValueError:
+                    pass
+
     return Declarations(
         manufacturer=extracted_dict.get("manufacturer"),
         packer=extracted_dict.get("packer"),
@@ -1209,5 +1273,7 @@ def extract(
         consumer_care=extracted_dict.get("consumer_care"),
         scripts_detected=scripts,
         multi_unit_note=multi_unit_note,
+        mrp_candidates=mrp_candidates,
+        gtin=gtin_field,
     )
 

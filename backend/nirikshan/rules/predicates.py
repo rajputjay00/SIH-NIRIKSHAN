@@ -211,5 +211,68 @@ def eval_predicate(
         msg = f"Key fields mean confidence {mean_conf:.2f} is below threshold {thresh:.2f}" if ok else f"Key fields mean confidence {mean_conf:.2f} >= {thresh:.2f}"
         return ok, msg, mean_conf, declarations.net_quantity.bbox if declarations.net_quantity else None
 
+    elif pred_name == "responsible_entity":
+        pe = declarations.primary_entity
+        if not pe or not (pe.name or pe.address or pe.value):
+            return False, "No responsible entity declared", None, None
+
+        role = pe.role or "manufacturer"
+        name = pe.name or pe.value or "Responsible Entity"
+        has_marketer = declarations.marketer is not None or (pe and pe.role == "marketer")
+
+        msg_extra = " (marketer/brand-owner block present — deemed responsible)" if has_marketer else ""
+        msg = f"Responsible entity: {name} ({role}){msg_extra}"
+        return True, msg, f"{name} ({role})", pe.bbox
+
+    elif pred_name == "mrp_paise_valid":
+        mrp = declarations.mrp
+        if not mrp or mrp.value is None:
+            return False, "MRP value missing", None, None
+        paise = mrp.paise
+        if paise is None:
+            val = float(mrp.value)
+            paise = round(round(val - int(val), 4) * 100)
+        if paise in [0, 50]:
+            return True, f"MRP paise .{paise:02d} is valid (.00 or .50)", f"₹{mrp.value:.2f}", mrp.bbox
+        return False, f"MRP paise .{paise:02d} is invalid (must be .00 or .50)", f"₹{mrp.value:.2f}", mrp.bbox
+
+    elif pred_name == "no_conflicting_mrp":
+        candidates = declarations.mrp_candidates or []
+        if not candidates:
+            if declarations.mrp and declarations.mrp.value is not None:
+                candidates = [declarations.mrp]
+            else:
+                return True, "No MRP candidates found to check for conflicts", None, None
+
+        vals = list(set(round(float(c.value), 2) for c in candidates if c.value is not None))
+        if len(vals) <= 1:
+            return True, f"Single or consistent MRP candidate value found: {vals}", vals, candidates[0].bbox if candidates else None
+        return False, f"Conflicting MRP values found: {vals}", vals, candidates[0].bbox if candidates else None
+
+    elif pred_name == "manual_checklist_check":
+        return False, "Manual verification required by officer", None, None
+
+    elif pred_name == "has_gtin":
+        gtin = declarations.gtin
+        if gtin and gtin.value:
+            return True, f"GTIN/barcode detected: {gtin.value}", gtin.value, gtin.bbox
+        return False, "No GTIN/barcode detected", None, None
+
+    elif pred_name == "has_dimension_or_sheet_count":
+        nq = declarations.net_quantity
+        nq_raw = (nq.raw if nq and nq.raw else "").lower()
+
+        dim_pattern = re.compile(r'\d+\s*(cm|m|mm)\s*[x×]\s*\d+', re.IGNORECASE)
+        sheet_pattern = re.compile(r'\b\d+\s*(sheets?|pieces?|pcs|n|count)\b|\bsheet count\b', re.IGNORECASE)
+
+        if dim_pattern.search(nq_raw) or sheet_pattern.search(nq_raw):
+            return True, "Dimensions or count declaration found", nq_raw, nq.bbox if nq else None
+
+        for f in [declarations.generic_name, declarations.mrp]:
+            if f and f.raw and (dim_pattern.search(f.raw.lower()) or sheet_pattern.search(f.raw.lower())):
+                return True, "Dimensions or count declaration found", f.raw, f.bbox
+
+        return False, "Dimensions/count declaration required — verify", None, None
+
     return False, f"Unknown predicate '{pred_name}'", None, None
 

@@ -82,6 +82,8 @@ class Declarations(BaseModel):
     consumer_care: Optional[ConsumerCare] = None
     scripts_detected: List[str] = Field(default_factory=list)
     multi_unit_note: bool = False
+    mrp_candidates: List[FieldModel] = Field(default_factory=list)
+    gtin: Optional[FieldModel] = None
     @property
     def primary_entity(self) -> Optional[EntityBlock]:
         if self.manufacturer:
@@ -109,6 +111,7 @@ class ContextModel(BaseModel):
     is_import: Optional[bool] = None
     channel: str = "physical"
     net_quantity_override: Optional[Dict[str, Any]] = None
+    reference_date: Optional[str] = None
 
 
 class ApplicabilityModel(BaseModel):

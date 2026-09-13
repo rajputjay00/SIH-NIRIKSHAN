@@ -191,6 +191,18 @@ def resolve(
             applicable_rule_ids.remove("R11")
             reasons["R11"] = "Rule 6(1)(da): best-before mandatory only for perishable goods or when declared"
 
+    # R28 Combination / Multi-piece components
+    if pkg_type not in ["combination", "multi_piece"]:
+        if "R28" in applicable_rule_ids:
+            applicable_rule_ids.remove("R28")
+            reasons["R28"] = "Rule 6(5): applies only to combination or multi-piece packages"
+
+    # R34 Textile / Sheets / Container dimensions declaration
+    if cat not in ["textile", "sheets", "container"]:
+        if "R34" in applicable_rule_ids:
+            applicable_rule_ids.remove("R34")
+            reasons["R34"] = "Rules 14–17: applies only to textile, sheets, or container categories"
+
     return ApplicabilityModel(
         package_type=pkg_type,
         category=cat,
