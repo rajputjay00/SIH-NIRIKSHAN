@@ -1,0 +1,112 @@
+.reviewContainer {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .reviewContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-card);
+}
+
+.pairingCard {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.codeForm {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.codeInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-300);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.scansList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.scanItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-200);
+  background-color: var(--grey-50);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.scanItem:hover, .selectedItem {
+  border-color: var(--blue-500);
+  background-color: var(--blue-50);
+}
+
+.scanThumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--grey-300);
+}
+
+.scanMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+
+.scanName {
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.dropZone {
+  border: 2px dashed var(--grey-300);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--grey-500);
+  font-size: 0.85rem;
+}

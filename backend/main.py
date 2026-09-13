@@ -1,4 +1,6 @@
 import io
+import json
+import asyncio
 import importlib.metadata
 import os
 import subprocess
@@ -7,8 +9,9 @@ from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+
 from PIL import Image, ImageDraw, ImageFont
 
 import ocr
@@ -109,6 +112,8 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
+from nirikshan.session import session_store
+
 @router.get("/health")
 def health_check():
     return {
@@ -129,6 +134,43 @@ def get_rules_catalogue():
     }
 
 
+@router.post("/session")
+def create_session():
+    return session_store.create_session()
+
+
+@router.get("/session/{code}/results")
+def get_session_results(code: str):
+    results = session_store.get_results(code)
+    if results is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return results
+
+
+@router.get("/session/{code}/stream")
+async def stream_session_results(code: str):
+    sess = session_store.get_session(code)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    queue = session_store.subscribe(code)
+    if not queue:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    async def event_generator():
+        try:
+            while True:
+                try:
+                    record = await asyncio.wait_for(queue.get(), timeout=15.0)
+                    yield f"data: {json.dumps(record)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": ping\n\n"
+        finally:
+            session_store.unsubscribe(code, queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
 @router.post("/scan")
 async def scan_image(
     file: UploadFile = File(...),
@@ -138,6 +180,7 @@ async def scan_image(
     channel: Optional[str] = Form("physical"),
     net_quantity_value: Optional[float] = Form(None),
     net_quantity_unit: Optional[str] = Form(None),
+    session: Optional[str] = Form(None),
 ):
     if file.content_type and file.content_type.lower() not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -193,7 +236,7 @@ async def scan_image(
 
     total_elapsed = ocr_result.get("elapsed_ms", 0.0) + extract_ms + rules_ms
 
-    return {
+    res = {
         "filename": file.filename,
         "width": width,
         "height": height,
@@ -215,6 +258,12 @@ async def scan_image(
             "elapsed_ms": round(total_elapsed, 2),
         },
     }
+
+    if session:
+        session_store.add_scan_result(session, res, contents)
+
+    return res
+
 
 
 
