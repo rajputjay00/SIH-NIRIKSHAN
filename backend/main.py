@@ -1,17 +1,23 @@
 import io
+import importlib.metadata
 import os
 import subprocess
 from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import ocr
 
 MODEL_LOADED = False
-MODEL_VERSION = "rapidocr_1.4.4"
+
+try:
+    MODEL_VERSION = f"rapidocr_{importlib.metadata.version('rapidocr_onnxruntime')}"
+except Exception:
+    MODEL_VERSION = "rapidocr_1.4.4"
+
 
 def get_git_sha() -> str:
     sha = os.getenv("GIT_SHA")
@@ -34,13 +40,22 @@ def get_git_sha() -> str:
 GIT_SHA = get_git_sha()
 
 
+def create_warmup_image() -> Image.Image:
+    img = Image.new("RGB", (800, 600), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    draw.text((50, 50), "NET QUANTITY: 1 kg", fill=(0, 0, 0))
+    draw.text((50, 100), "MRP Rs. 150.00 INCL. OF ALL TAXES", fill=(0, 0, 0))
+    draw.text((50, 150), "MFD BY: NIRIKSHAN LABS PVT LTD", fill=(0, 0, 0))
+    return img
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global MODEL_LOADED
-    # Warm up the OCR model with a tiny 10x10 image on startup
+    # Warm up both detection and recognition models with a standard label image
     try:
-        dummy_img = Image.new("RGB", (10, 10), color=(255, 255, 255))
-        ocr.extract_text(dummy_img)
+        warmup_img = create_warmup_image()
+        ocr.extract_text(warmup_img)
         MODEL_LOADED = True
     except Exception as e:
         MODEL_LOADED = False
@@ -118,22 +133,31 @@ async def scan_image(file: UploadFile = File(...)):
     }
 
 
+# Catch-all for unknown /api/* paths to return JSON 404 (not HTML)
+@router.get("/{api_path:path}")
+async def api_404_fallback(api_path: str):
+    return JSONResponse(status_code=404, content={"detail": "API route not found"})
+
+
+@router.post("/{api_path:path}")
+async def api_post_404_fallback(api_path: str):
+    return JSONResponse(status_code=404, content={"detail": "API route not found"})
+
+
 # Include API Router
 app.include_router(router)
 
-# Serve Static Files / SPA Fallback
+# Serve Static Files & SPA Fallback for non-/api paths
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        if full_path.startswith("api"):
-            raise HTTPException(status_code=404, detail="Not Found")
         file_path = os.path.join(static_dir, full_path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
         index_path = os.path.join(static_dir, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)
-        raise HTTPException(status_code=404, detail="Not Found")
+        raise HTTPException(status_code=404, detail="Static files not built")

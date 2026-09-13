@@ -1,13 +1,3 @@
----
-title: Nirikshan API
-emoji: 🏷️
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # Nirikshan API Backend
 
 Backend for Nirikshan, a Legal Metrology label compliance checker under LMPC Rules 2011.

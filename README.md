@@ -1,38 +1,18 @@
-# label-check
+---
+title: Nirikshan
+sdk: docker
+app_port: 7860
+---
 
-Lightweight image scanning web application with a FastAPI Python backend and React Vite frontend.
+# Nirikshan
 
-## Local Setup & Run Commands
+Nirikshan (निरीक्षण) is a rules-as-code compliance checking engine and image scanning web application for packaged commodities under the Legal Metrology (Packaged Commodities) Rules, 2011.
 
-### Backend
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment (optional):
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Start the backend server on port 8000:
-   ```bash
-   uvicorn main:app --reload --port 8000
-   ```
+## Quick Start (Docker)
 
-### Frontend
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the frontend dev server on port 5173:
-   ```bash
-   npm run dev
-   ```
+```bash
+docker build -t nirikshan .
+docker run -p 7860:7860 nirikshan
+```
+
+Visit `http://localhost:7860/` for the web app and `http://localhost:7860/api/health` for the API status.
