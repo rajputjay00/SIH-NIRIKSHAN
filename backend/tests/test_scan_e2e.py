@@ -1,6 +1,8 @@
 import os
+import json
 import pytest
 from PIL import Image
+
 
 import ocr
 from nirikshan.extract import extract
@@ -165,3 +167,39 @@ def test_image_dimensions_and_scale():
     data2 = response2.json()
     assert data2['ocr']['image_size'] == {'width': 2400, 'height': 1800}
     assert data2['ocr']['scale'] == 0.6
+
+
+def test_four_violations_fixture_freshness():
+    fixture_path = os.path.join(
+        os.path.dirname(__file__), "fixtures", "scan_results", "four_violations.json"
+    )
+    assert os.path.exists(fixture_path), f"Fixture {fixture_path} missing"
+
+    with open(fixture_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # 1. Assert no "Unknown predicate" anywhere in JSON text
+    json_text = json.dumps(data)
+    assert "Unknown predicate" not in json_text
+
+    # 2. Assert FAIL set in fixture findings is exactly R02, R04, R08, R10, R12, R14, R15
+    fixture_fail_set = {
+        item["rule_id"] for item in data.get("findings", []) if item.get("verdict") == "FAIL"
+    }
+    expected_fails = {"R02", "R04", "R08", "R10", "R12", "R14", "R15"}
+    assert fixture_fail_set == expected_fails, f"Fixture FAIL set mismatch: {fixture_fail_set}"
+
+    # 3. Freshness check: extract declarations and evaluate rules on ocr.lines from fixture
+    ocr_lines = data["ocr"]["lines"]
+    img_size = data["ocr"].get("image_size", {})
+    w = img_size.get("width", 1000)
+    h = img_size.get("height", 1000)
+
+    declarations = extract(ocr_lines, w, h)
+    context = ContextModel(package_type="retail", category="general")
+    applicability = resolve(context, declarations)
+    findings, summary = evaluate(declarations, applicability)
+
+    evaluated_fail_set = {f.rule_id for f in findings if f.verdict == "FAIL"}
+    assert evaluated_fail_set == expected_fails, f"Evaluated FAIL set mismatch: {evaluated_fail_set}"
+

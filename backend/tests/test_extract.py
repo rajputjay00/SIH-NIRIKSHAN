@@ -69,3 +69,26 @@ def test_facewash_absorption_cap():
     assert decl.manufacturer is not None
     assert len(decl.manufacturer.source_line_ids) <= 3, f"Expected at most 3 lines absorbed, got {len(decl.manufacturer.source_line_ids)}"
 
+
+def test_mrp_split_key_above_phone():
+    lines = [
+        {"id": 0, "text": "M RP Rs 45", "confidence": 0.95, "bbox": [[10, 10], [200, 10], [200, 30], [10, 30]]},
+        {"id": 1, "text": "CONSUMERCARE PHONE: 1800-999-000 ADDRESS MUMBAI", "confidence": 0.95, "bbox": [[10, 35], [400, 35], [400, 55], [10, 55]]},
+    ]
+    decl = extract(lines, 1600, 1200)
+    assert decl.mrp is not None, "MRP must be extracted"
+    assert decl.mrp.value == 45.0, f"Expected MRP value 45.0, got {decl.mrp.value}"
+    assert decl.mrp.source == "same_line", f"Expected source same_line, got {decl.mrp.source}"
+
+
+def test_mrp_dotted_key_above_tollfree():
+    lines = [
+        {"id": 0, "text": "M.R.P. Rs.45/-", "confidence": 0.95, "bbox": [[10, 10], [200, 10], [200, 30], [10, 30]]},
+        {"id": 1, "text": "TOLL FREE: 1800-103-1644", "confidence": 0.95, "bbox": [[10, 35], [400, 35], [400, 55], [10, 55]]},
+    ]
+    decl = extract(lines, 1600, 1200)
+    assert decl.mrp is not None, "MRP must be extracted"
+    assert decl.mrp.value == 45.0, f"Expected MRP value 45.0, got {decl.mrp.value}"
+    assert decl.mrp.source == "same_line", f"Expected source same_line, got {decl.mrp.source}"
+
+

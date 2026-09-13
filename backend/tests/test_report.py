@@ -41,8 +41,9 @@ def test_report_pdf_generation_en():
     for page in reader.pages:
         full_text += page.extract_text() or ""
 
-    assert "R12" in full_text, "English PDF must contain R12"
-    assert "Rule 6(1)(e)" in full_text, "English PDF must contain Rule 6(1)(e)"
+    collapsed_text = " ".join(full_text.split())
+    assert "R12" in collapsed_text, "English PDF must contain R12"
+    assert "Rule 6(1)(e)" in collapsed_text, "English PDF must contain Rule 6(1)(e)"
 
 
 def test_report_pdf_generation_hi():
@@ -71,4 +72,16 @@ def test_report_pdf_generation_hi():
     for page in reader.pages:
         full_text += page.extract_text() or ""
 
-    assert "सभी करों" in full_text, "Hindi PDF must contain 'सभी करों'"
+    collapsed_text = " ".join(full_text.split())
+    assert "सभी करों" in collapsed_text, "Hindi PDF must contain 'सभी करों'"
+
+    # Check that at least one embedded font contains "Devanagari"
+    fonts = reader.pages[0]["/Resources"]["/Font"]
+    font_names = []
+    for f_key in fonts:
+        font_obj = fonts[f_key].get_object()
+        base_font = font_obj.get("/BaseFont", "")
+        font_names.append(str(base_font))
+
+    assert any("Devanagari" in name for name in font_names), f"Expected Devanagari font embedded, found: {font_names}"
+

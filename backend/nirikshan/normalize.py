@@ -116,10 +116,17 @@ def fix_numeric_confusions(text: str) -> str:
 def normalize_currency(text: str) -> Tuple[Optional[str], str]:
     """Detect currency in text."""
     lower = text.lower()
+    if "$" in text:
+        return "USD", "$"
+    if "€" in text:
+        return "EUR", "€"
+    if "£" in text:
+        return "GBP", "£"
     for token in CURRENCY_TOKENS:
         if token in lower:
             return "INR", token
     return "unknown", ""
+
 
 
 def parse_unit_token(token: str) -> Tuple[Optional[str], str, bool]:

@@ -123,6 +123,47 @@ def has_valid_field_value(val_str: str, f_name: str) -> bool:
     return True
 
 
+def strip_squashed_key(line_text: str, matched_key: str) -> str:
+    """Strips matched_key from line_text using squash alignment to handle split keys like 'M RP', 'M.R.P'."""
+    sq_key = squash(matched_key)
+    if not sq_key:
+        return line_text.strip()
+
+    orig_indices = [i for i, ch in enumerate(line_text) if ch.isalnum()]
+    sq_text = "".join(line_text[i] for i in orig_indices).lower()
+
+    pos = sq_text.find(sq_key)
+    if pos != -1:
+        end_orig_idx = orig_indices[pos + len(sq_key) - 1]
+        remainder = line_text[end_orig_idx + 1 :].strip(" :-_.")
+        if remainder:
+            return remainder
+
+    return line_text.strip()
+
+
+def is_disqualified_value_line(text: str) -> bool:
+    """Returns True if candidate line should not be used as a value line for below/right strategies."""
+    if not text:
+        return True
+
+    if match_field_key(text) is not None:
+        return True
+
+    if re.search(r'\b(?:1800|1860)(?:[- ]?\d){6,7}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b', text):
+        return True
+
+    if re.search(r'\b[A-Za-z0-9._%+-]+\s*@\s*[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', text):
+        return True
+
+    text_lower = text.lower()
+    contact_keywords = ["phone", "tollfree", "toll free", "helpline", "email", "e-mail", "consumer care", "customercare", "address", "call", "fax", "tel:"]
+    if any(kw in text_lower for kw in contact_keywords):
+        return True
+
+    return False
+
+
 def resolve_value_lines(
     lines: List[OCRLine], key_idx: int, field_name: str
 ) -> Tuple[str, List[OCRLine], str]:
@@ -154,6 +195,8 @@ def resolve_value_lines(
     for cand in lines:
         if cand.id == key_line.id:
             continue
+        if is_disqualified_value_line(cand.text):
+            continue
         c_bbox = cand.bbox
         c_yc = sum(pt[1] for pt in c_bbox) / 4.0
         c_xmin = min(pt[0] for pt in c_bbox)
@@ -165,6 +208,8 @@ def resolve_value_lines(
     # Strategy (b): Line directly below
     for next_idx in range(key_idx + 1, min(len(lines), key_idx + 4)):
         cand = lines[next_idx]
+        if is_disqualified_value_line(cand.text):
+            continue
         c_bbox = cand.bbox
         c_ymin = min(pt[1] for pt in c_bbox)
         c_yc = sum(pt[1] for pt in c_bbox) / 4.0
@@ -190,6 +235,7 @@ def resolve_value_lines(
                 return cand.text.strip(), [cand], "below"
 
     return k_text.strip(), [key_line], "same_line"
+
 
 
 def absorb_block_lines(
@@ -380,7 +426,12 @@ def clean_matched_key_from_line(line_text: str, matched_key: str) -> str:
     if cleaned_sub_ns and cleaned_sub_ns.lower() != line_text.lower():
         return cleaned_sub_ns
 
+    sq_cleaned = strip_squashed_key(line_text, matched_key)
+    if sq_cleaned and sq_cleaned.lower() != line_text.lower():
+        return sq_cleaned
+
     return line_text.strip()
+
 
 
 def parse_mrp(raw_text: str) -> Dict[str, Any]:
@@ -393,24 +444,31 @@ def parse_mrp(raw_text: str) -> Dict[str, Any]:
     val_num = None
     paise_num = None
 
-    m = re.search(r'(?:₹|rs\.?|inr)\s*(\d+(?:\.\d{1,2})?)', text, re.IGNORECASE)
-    if not m:
-        is_batch_code = bool(re.search(r'[A-Za-z]{2,}\d+|\d+[A-Za-z]+', text))
-        if not is_batch_code:
-            m = re.search(r'(\d+(?:\.\d{1,2})?)', text)
+    is_phone_pattern = bool(re.search(r'\b(?:1800|1860)(?:[- ]?\d){6,7}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b', text)) or ("phone" in text.lower() or "toll" in text.lower())
 
-    if m:
-        try:
-            val_num = float(m.group(1))
-            if "." in m.group(1):
-                paise_str = m.group(1).split(".")[1]
-                if len(paise_str) == 1:
-                    paise_str += "0"
-                paise_num = int(paise_str[:2])
-            else:
-                paise_num = 0
-        except ValueError:
-            pass
+    if not is_phone_pattern:
+        m = re.search(
+            r'(?:₹|rs\.?|\$|€|£|inr|mrp|mr\.p\.?)\s*[\$\€\£:]*\s*(\d+(?:\.\d{1,2})?)',
+            text,
+            re.IGNORECASE,
+        )
+        if not m:
+            is_batch_code = bool(re.search(r'[A-Za-z]{2,}\d+|\d+[A-Za-z]+', text))
+            if not is_batch_code:
+                m = re.search(r'^\s*(\d+(?:\.\d{1,2})?)', text)
+
+        if m:
+            try:
+                val_num = float(m.group(1))
+                if "." in m.group(1):
+                    paise_str = m.group(1).split(".")[1]
+                    if len(paise_str) == 1:
+                        paise_str += "0"
+                    paise_num = int(paise_str[:2])
+                else:
+                    paise_num = 0
+            except ValueError:
+                pass
 
     return {
         "value": val_num,
@@ -418,6 +476,7 @@ def parse_mrp(raw_text: str) -> Dict[str, Any]:
         "incl_taxes_phrase": has_tax_phrase,
         "paise": paise_num,
     }
+
 
 
 def parse_unit_sale_price(raw_text: str) -> Dict[str, Any]:

@@ -121,9 +121,9 @@
       "height": 700
     },
     "scale": 1.0,
-    "preprocess_ms": 3.14,
-    "ocr_ms": 4373.09,
-    "elapsed_ms": 4376.23
+    "preprocess_ms": 3.77,
+    "ocr_ms": 4384.45,
+    "elapsed_ms": 4388.23
   },
   "quality": {
     "blur_score": 817.17,
@@ -243,33 +243,33 @@
       "qualifier_words": []
     },
     "mrp": {
-      "value": 1800.0,
-      "raw": "CONSUMERCARE PHONE: 1800-999-000 ADDRESS MUMBAI",
+      "value": 45.0,
+      "raw": "Rs 45",
       "bbox": [
         [
           28.0,
-          178.0
+          141.0
         ],
         [
-          311.0,
-          178.0
+          80.0,
+          141.0
         ],
         [
-          311.0,
-          193.0
+          80.0,
+          157.0
         ],
         [
           28.0,
-          193.0
+          157.0
         ]
       ],
-      "confidence": 0.9982,
+      "confidence": 0.9449,
       "source_line_ids": [
-        4
+        3
       ],
-      "source": "below",
+      "source": "same_line",
       "declared_elsewhere": null,
-      "currency": "unknown",
+      "currency": "INR",
       "incl_taxes_phrase": false,
       "paise": 0
     },
@@ -446,10 +446,10 @@
     {
       "rule_id": "R06",
       "rule_ref": "Rule 6(1)(c) read with Rule 12 & 13",
-      "verdict": "FAIL",
+      "verdict": "PASS",
       "severity": "high",
-      "extracted": "g",
-      "expected": "Value '200.0' present; Value 'g' present; Unknown predicate 'magnitude_unit_consistent'",
+      "extracted": "200.0 g",
+      "expected": "Compliant declaration",
       "evidence_bbox": [
         [
           27.0,
@@ -468,30 +468,64 @@
           121.0
         ]
       ],
-      "message_en": "Net quantity must be declared with value and standard SI unit, adhering to unit magnitude rules.",
-      "message_hi": "\u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e \u092e\u093e\u0928 \u0914\u0930 \u092e\u093e\u0928\u0915 SI \u0907\u0915\u093e\u0908 \u0915\u0947 \u0938\u093e\u0925 \u0918\u094b\u0937\u093f\u0924 \u0915\u0940 \u091c\u093e\u0928\u0940 \u091a\u093e\u0939\u093f\u090f\u0964",
-      "fix_hint_en": "Express net quantity as '500 g' (below 1 kg) or '1.5 kg' (at or above 1 kg)."
+      "message_en": "Compliant: Net Quantity in Standard SI Units",
+      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u092e\u093e\u0928\u0915 SI \u0907\u0915\u093e\u0907\u092f\u094b\u0902 \u092e\u0947\u0902 \u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e",
+      "fix_hint_en": null
     },
     {
       "rule_id": "R07",
       "rule_ref": "Rule 13(4)",
-      "verdict": "FAIL",
+      "verdict": "PASS",
       "severity": "medium",
       "extracted": null,
-      "expected": "Unknown predicate 'no_count_words'",
-      "evidence_bbox": null,
-      "message_en": "Count words like 'dozen', 'gross', or 'score' are prohibited in net quantity declaration.",
-      "message_hi": "\u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e \u0918\u094b\u0937\u0923\u093e \u092e\u0947\u0902 '\u0926\u0930\u094d\u091c\u0928' \u092f\u093e '\u0917\u094d\u0930\u0949\u0938' \u091c\u0948\u0938\u0947 \u0936\u092c\u094d\u0926\u094b\u0902 \u0915\u093e \u092a\u094d\u0930\u092f\u094b\u0917 \u092a\u094d\u0930\u0924\u093f\u092c\u0902\u0927\u093f\u0924 \u0939\u0948\u0964",
-      "fix_hint_en": "Declare quantity using numbers (e.g. '12 Units' or '12 N') instead of '1 Dozen'."
+      "expected": "Compliant declaration",
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "message_en": "Compliant: Prohibition of Count Words (Dozen/Gross/Score)",
+      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0917\u093f\u0928\u0924\u0940 \u0915\u0947 \u0936\u092c\u094d\u0926\u094b\u0902 \u0915\u093e \u0928\u093f\u0937\u0947\u0927 (\u0926\u0930\u094d\u091c\u0928/\u0917\u094d\u0930\u0949\u0938)",
+      "fix_hint_en": null
     },
     {
       "rule_id": "R08",
       "rule_ref": "Rule 13(5)",
       "verdict": "FAIL",
       "severity": "medium",
-      "extracted": null,
-      "expected": "Unknown predicate 'unit_standard'",
-      "evidence_bbox": null,
+      "extracted": "gms",
+      "expected": "Unit 'gms' is non-standard",
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
       "message_en": "Non-standard unit abbreviations (e.g., gms, ltr, oz) are prohibited.",
       "message_hi": "\u0905\u092e\u093e\u0928\u0915 \u0907\u0915\u093e\u0908 \u092a\u094d\u0930\u0924\u0940\u0915\u094b\u0902 (\u091c\u0948\u0938\u0947 gms, ltr, oz) \u0915\u093e \u092a\u094d\u0930\u092f\u094b\u0917 \u092a\u094d\u0930\u0924\u093f\u092c\u0902\u0927\u093f\u0924 \u0939\u0948\u0964",
       "fix_hint_en": "Use standard SI symbols: 'g' for grams, 'kg' for kilograms, 'ml' for millilitres, 'L' for litres."
@@ -499,14 +533,31 @@
     {
       "rule_id": "R09",
       "rule_ref": "Rule 12(6)",
-      "verdict": "FAIL",
+      "verdict": "PASS",
       "severity": "medium",
       "extracted": null,
-      "expected": "Unknown predicate 'no_qualifier_words'",
-      "evidence_bbox": null,
-      "message_en": "Qualifier words creating a misleading impression of quantity (e.g. 'approx', 'minimum', 'not less than') are prohibited.",
-      "message_hi": "\u092e\u093e\u0924\u094d\u0930\u093e \u092e\u0947\u0902 \u092d\u094d\u0930\u092e \u092a\u0948\u0926\u093e \u0915\u0930\u0928\u0947 \u0935\u093e\u0932\u0947 \u0936\u092c\u094d\u0926\u094b\u0902 (\u091c\u0948\u0938\u0947 '\u0932\u0917\u092d\u0917', '\u0928\u094d\u092f\u0942\u0928\u0924\u092e') \u0915\u093e \u092a\u094d\u0930\u092f\u094b\u0917 \u092e\u0928\u093e \u0939\u0948\u0964",
-      "fix_hint_en": "Remove qualifier words like 'approx', 'about', or 'minimum' from net quantity declaration."
+      "expected": "Compliant declaration",
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "message_en": "Compliant: Prohibition of Qualifier Words in Net Quantity",
+      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e \u092e\u0947\u0902 \u0935\u093f\u0936\u0947\u0937\u0923 \u0936\u092c\u094d\u0926\u094b\u0902 \u0915\u093e \u0928\u093f\u0937\u0947\u0927",
+      "fix_hint_en": null
     },
     {
       "rule_id": "R10",
@@ -537,24 +588,24 @@
       "rule_ref": "Rule 6(1)(e) read with Rule 2(m)",
       "verdict": "FAIL",
       "severity": "high",
-      "extracted": 1800.0,
-      "expected": "Value '1800.0' present; Unknown predicate 'regex'; Unknown predicate 'regex'",
+      "extracted": "Rs 45",
+      "expected": "Value '45.0' present; Pattern 'INR' matched; Pattern '[il1|]ncl(usive|\\.)?\\s*(of\\s*)?all\\s*tax(es)?' not matched in 'Rs 45'",
       "evidence_bbox": [
         [
           28.0,
-          178.0
+          141.0
         ],
         [
-          311.0,
-          178.0
+          80.0,
+          141.0
         ],
         [
-          311.0,
-          193.0
+          80.0,
+          157.0
         ],
         [
           28.0,
-          193.0
+          157.0
         ]
       ],
       "message_en": "MRP must be declared in Indian Rupees (\u20b9/Rs) and include the phrase 'Incl. of all taxes'.",
@@ -567,7 +618,7 @@
       "verdict": "FAIL",
       "severity": "medium",
       "extracted": null,
-      "expected": "Field unit_sale_price.value is missing or empty; Unknown predicate 'approx_equal'",
+      "expected": "Field unit_sale_price.value is missing or empty; Unit sale price missing",
       "evidence_bbox": null,
       "message_en": "Unit Sale Price must be declared and match MRP divided by net quantity.",
       "message_hi": "\u0907\u0915\u093e\u0908 \u092c\u093f\u0915\u094d\u0930\u0940 \u092e\u0942\u0932\u094d\u092f \u0918\u094b\u0937\u093f\u0924 \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f \u0914\u0930 MRP \u0915\u094b \u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e \u0938\u0947 \u0935\u093f\u092d\u093e\u091c\u093f\u0924 \u0915\u0930\u0928\u0947 \u092a\u0930 \u092e\u0947\u0932 \u0916\u093e\u0928\u093e \u091a\u093e\u0939\u093f\u090f\u0964",
@@ -579,7 +630,7 @@
       "verdict": "FAIL",
       "severity": "medium",
       "extracted": "ADDRESS MUMBAI",
-      "expected": "Unknown predicate 'phone'; Unknown predicate 'email'; Value 'ADDRESS MUMBAI' present; Field consumer_care.address is missing or empty",
+      "expected": "Phone '1800-999-000' present; Consumer care email address missing; Value 'ADDRESS MUMBAI' present; Field consumer_care.address is missing or empty",
       "evidence_bbox": [
         [
           28.0,
@@ -634,14 +685,14 @@
     {
       "rule_id": "R23",
       "rule_ref": "Rule 9(4)",
-      "verdict": "FAIL",
+      "verdict": "PASS",
       "severity": "high",
-      "extracted": null,
-      "expected": "Unknown predicate 'script_in'",
+      "extracted": "latin",
+      "expected": "Compliant declaration",
       "evidence_bbox": null,
-      "message_en": "Mandatory declarations must be in Hindi (Devanagari) or English.",
-      "message_hi": "\u0905\u0928\u093f\u0935\u093e\u0930\u094d\u092f \u0918\u094b\u0937\u0923\u093e\u090f\u0902 \u0939\u093f\u0902\u0926\u0940 (\u0926\u0947\u0935\u0928\u093e\u0917\u0930\u0940) \u092f\u093e \u0905\u0902\u0917\u094d\u0930\u0947\u091c\u0940 \u092e\u0947\u0902 \u0939\u094b\u0928\u0940 \u091a\u093e\u0939\u093f\u090f\u0964",
-      "fix_hint_en": "Ensure all key label text is printed in English or Hindi script."
+      "message_en": "Compliant: Declarations Script (Hindi or English)",
+      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0918\u094b\u0937\u0923\u093e\u0913\u0902 \u0915\u0940 \u0932\u093f\u092a\u093f (\u0939\u093f\u0902\u0926\u0940 \u092f\u093e \u0905\u0902\u0917\u094d\u0930\u0947\u091c\u0940)",
+      "fix_hint_en": null
     },
     {
       "rule_id": "R25",
@@ -746,8 +797,8 @@
   "summary": {
     "status": "Non-compliant",
     "counts": {
-      "PASS": 4,
-      "FAIL": 11,
+      "PASS": 8,
+      "FAIL": 7,
       "NEEDS_REVIEW": 2,
       "N/A": 2
     }
