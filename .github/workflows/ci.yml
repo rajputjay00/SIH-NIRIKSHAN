@@ -15,12 +15,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install System Dependencies (Pango/Cairo/Noto Fonts for WeasyPrint)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fonts-dejavu-core fonts-noto-core \
+            libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2
       - name: Install Dependencies
         run: |
           cd backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-dev.txt
           pip install opencv-python-headless --force-reinstall
+
       - name: Run Backend Pytest
         run: |
           cd backend
@@ -39,6 +46,8 @@ jobs:
           cd frontend
           npm ci
           npm run build
+          node src/utils/test_bbox.js
+
 
   docker-build:
     runs-on: ubuntu-latest
@@ -110,8 +119,29 @@ jobs:
               data = json.loads(resp.read().decode())
               assert data.get('summary', {}).get('status') == 'Non-compliant', f'Expected Non-compliant, got {data}'
               print('Smoke test scan PASSED!')
+              
+              # Test /api/report endpoint
+              boundary_rep = '----WebKitFormBoundary' + uuid.uuid4().hex
+              body_rep = bytearray()
+              body_rep.extend(f'--{boundary_rep}\r\n'.encode())
+              body_rep.extend(b'Content-Disposition: form-data; name="file"; filename="four_violations.png"\r\n')
+              body_rep.extend(b'Content-Type: image/png\r\n\r\n')
+              body_rep.extend(open(img_path, 'rb').read())
+              body_rep.extend(f'\r\n--{boundary_rep}\r\n'.encode())
+              body_rep.extend(b'Content-Disposition: form-data; name="result"\r\n\r\n')
+              body_rep.extend(json.dumps(data).encode('utf-8'))
+              body_rep.extend(f'\r\n--{boundary_rep}--\r\n'.encode())
+              req_rep = urllib.request.Request('http://localhost:7860/api/report', data=bytes(body_rep), headers={'Content-Type': f'multipart/form-data; boundary={boundary_rep}'})
+              with urllib.request.urlopen(req_rep) as resp_rep:
+                  assert resp_rep.status == 200, f'Expected HTTP 200 for report, got {resp_rep.status}'
+                  ct = resp_rep.headers.get('Content-Type', '')
+                  assert 'application/pdf' in ct, f'Expected application/pdf, got {ct}'
+                  pdf_data = resp_rep.read()
+                  assert pdf_data.startswith(b'%PDF'), 'Report output must be PDF'
+                  print('Smoke test report PASSED!')
           "
           docker rm -f nirikshan-smoke
+
 
       - name: Push Container Image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

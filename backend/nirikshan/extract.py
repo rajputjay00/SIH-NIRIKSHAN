@@ -206,7 +206,7 @@ def absorb_block_lines(
     if has_pin_in_key:
         return absorbed, k_line.text, "pin_found"
 
-    for idx in range(key_idx + 1, min(len(lines), key_idx + 4)):
+    for idx in range(key_idx + 1, min(len(lines), key_idx + 3)):
         cand = lines[idx]
         match = match_field_key(cand.text)
         if match:
@@ -236,8 +236,9 @@ def absorb_block_lines(
             stop_reason = "max_gap"
             break
     
-    if len(absorbed) >= 4 and stop_reason == "max_gap":
+    if len(absorbed) >= 3 and stop_reason == "max_gap":
         stop_reason = "max_lines"
+
 
     block_text = "\n".join(l.text for l in absorbed)
     return absorbed, block_text, f"block_absorbed_stop_{stop_reason}"

@@ -318,6 +318,35 @@
   evidence: "declarations.consumer_care.bbox"
   message_en: "Consumer care details must include telephone/toll-free number AND email AND contact address/name."
   message_hi: "उपभोक्ता सहायता में फोन नंबर, ईमेल और संपर्क नाम/पता शामिल होना अनिवार्य है।"
+  fix_hint_en: "Provide telephone, email, and postal address of the person/office to be contacted."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R21
+  key: LMPC.9.1.a.LEGIBILITY
+  rule_ref: "Rule 9(1)(a)"
+  title_en: "Legibility & Prominence of Declarations"
+  title_hi: "घोषणाओं की सुपाठ्यता और प्रमुखता"
+  severity: high
+  check:
+    all:
+      - present: { field: "net_quantity.value" }
+  on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - when_pass:
+        any:
+          - quality_warning_present: {}
+          - key_confidence_below: { threshold: 0.70 }
+      verdict: NEEDS_REVIEW
+      message_en: "Declarations must be legible, prominent, and clearly visible. Retake photo with better lighting, focus, or less glare if unclear."
+      message_hi: "घोषणाएं सुपाठ्य, प्रमुख और स्पष्ट रूप से दिखाई देने वाली होनी चाहिए। यदि स्पष्ट न हो तो बेहतर प्रकाश, फोकस या कम चमक के साथ फोटो पुनः लें।"
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Declarations must be legible, prominent, and clearly visible."
+  message_hi: "घोषणाएं सुपाठ्य, प्रमुख और स्पष्ट रूप से दिखाई देने वाली होनी चाहिए।"
+  fix_hint_en: "Retake photo ensuring label is in sharp focus, well lit, and without glare."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
   fix_hint_en: "Add 'For Feedback/Complaints contact Consumer Care at Phone: 1800-XXX-XXXX, Email: care@company.com'."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"

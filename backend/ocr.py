@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 import numpy as np
 from PIL import Image, ImageOps
 
@@ -44,9 +44,10 @@ def get_engine():
     return _engine
 
 
-def extract_text(image: Image.Image) -> Dict[str, Any]:
-    # Stage 1: Preprocessing (EXIF transpose, RGB conversion & downscaling <= NIRIKSHAN_MAX_SIDE px)
-    preprocess_start = time.perf_counter()
+def preprocess(image: Image.Image) -> Tuple[Image.Image, Dict[str, int], float]:
+    """Applies EXIF transpose, RGB conversion, and downscaling <= NIRIKSHAN_MAX_SIDE px.
+    Returns (processed_image, image_size_dict, scale).
+    """
     image = ImageOps.exif_transpose(image)
     if image.mode != "RGB":
         image = image.convert("RGB")
@@ -61,8 +62,17 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
         new_h = max(1, int(height * scale))
         image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
+    image_size = {"width": image.width, "height": image.height}
+    return image, image_size, round(scale, 4)
+
+
+def extract_text(image: Image.Image) -> Dict[str, Any]:
+    # Stage 1: Preprocessing (EXIF transpose, RGB conversion & downscaling <= NIRIKSHAN_MAX_SIDE px)
+    preprocess_start = time.perf_counter()
+    image, image_size, scale = preprocess(image)
     img_np = np.array(image)
     preprocess_ms = (time.perf_counter() - preprocess_start) * 1000.0
+
 
     # Stage 2: RapidOCR Inference
     ocr_start = time.perf_counter()
@@ -73,8 +83,9 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     elapsed_ms = preprocess_ms + ocr_ms
 
     logger.info(
-        f"OCR Timings - Preprocess: {preprocess_ms:.2f} ms, OCR Inference: {ocr_ms:.2f} ms, Total: {elapsed_ms:.2f} ms (max_side={max_side})"
+        f"OCR Timings - Preprocess: {preprocess_ms:.2f} ms, OCR Inference: {ocr_ms:.2f} ms, Total: {elapsed_ms:.2f} ms (image_size={image_size})"
     )
+
 
     # Stage 3: Formatting Output Lines & Normalizing Text
     lines = []

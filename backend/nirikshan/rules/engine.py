@@ -1,5 +1,6 @@
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 import yaml
 from functools import lru_cache
 
@@ -34,7 +35,7 @@ def load_catalogue() -> List[Dict[str, Any]]:
 
 
 def eval_check_block(
-    check_node: Dict[str, Any], declarations: Declarations
+    check_node: Dict[str, Any], declarations: Declarations, quality: Optional[Dict[str, Any]] = None
 ) -> Tuple[bool, List[str], Any, Any]:
     """Evaluates a check node containing 'all' or 'any'.
     Returns (is_success, details_list, last_extracted_val, last_bbox).
@@ -48,7 +49,7 @@ def eval_check_block(
 
         for pred_item in preds:
             if "any" in pred_item:
-                ok, d_list, v, b = eval_check_block(pred_item, declarations)
+                ok, d_list, v, b = eval_check_block(pred_item, declarations, quality)
                 details.extend(d_list)
                 if not ok:
                     all_ok = False
@@ -59,7 +60,7 @@ def eval_check_block(
             else:
                 pred_name = list(pred_item.keys())[0]
                 params = pred_item[pred_name]
-                ok, msg, val, bbox = eval_predicate(pred_name, params, declarations)
+                ok, msg, val, bbox = eval_predicate(pred_name, params, declarations, quality)
                 details.append(msg)
                 if not ok:
                     all_ok = False
@@ -79,7 +80,7 @@ def eval_check_block(
 
         for pred_item in preds:
             if "all" in pred_item:
-                ok, d_list, v, b = eval_check_block(pred_item, declarations)
+                ok, d_list, v, b = eval_check_block(pred_item, declarations, quality)
                 details.extend(d_list)
                 if ok:
                     any_ok = True
@@ -90,7 +91,7 @@ def eval_check_block(
             else:
                 pred_name = list(pred_item.keys())[0]
                 params = pred_item[pred_name]
-                ok, msg, val, bbox = eval_predicate(pred_name, params, declarations)
+                ok, msg, val, bbox = eval_predicate(pred_name, params, declarations, quality)
                 details.append(msg)
                 if ok:
                     any_ok = True
@@ -105,7 +106,7 @@ def eval_check_block(
 
 
 def evaluate(
-    declarations: Declarations, applicability: ApplicabilityModel
+    declarations: Declarations, applicability: ApplicabilityModel, quality: Optional[Dict[str, Any]] = None
 ) -> Tuple[List[FindingModel], SummaryModel]:
     catalogue = load_catalogue()
     findings: List[FindingModel] = []
@@ -157,7 +158,7 @@ def evaluate(
             continue
 
         # Evaluate rule check
-        check_ok, details, extracted_val, bbox = eval_check_block(rule["check"], declarations)
+        check_ok, details, extracted_val, bbox = eval_check_block(rule["check"], declarations, quality)
 
         if check_ok:
             verdict = "PASS"
@@ -168,19 +169,20 @@ def evaluate(
                 unc_list = rule["on_uncertain"] if isinstance(rule["on_uncertain"], list) else [rule["on_uncertain"]]
                 for unc in unc_list:
                     if "when_pass" in unc:
-                        u_ok, _, _, _ = eval_check_block(unc["when_pass"], declarations)
+                        u_ok, _, _, _ = eval_check_block(unc["when_pass"], declarations, quality)
                         if u_ok:
                             verdict = unc.get("verdict", "NEEDS_REVIEW")
                             msg_en_final = unc.get("message_en", msg_en_final)
                             msg_hi_final = unc.get("message_hi", msg_hi_final)
                             break
                     elif "check" in unc:
-                        u_ok, _, _, _ = eval_check_block(unc["check"], declarations)
+                        u_ok, _, _, _ = eval_check_block(unc["check"], declarations, quality)
                         if u_ok:
                             verdict = unc.get("verdict", "NEEDS_REVIEW")
                             msg_en_final = unc.get("message_en", msg_en_final)
                             msg_hi_final = unc.get("message_hi", msg_hi_final)
                             break
+
 
             finding = FindingModel(
                 rule_id=rid,

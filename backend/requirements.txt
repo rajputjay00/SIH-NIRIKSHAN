@@ -9,4 +9,9 @@ opencv-python-headless
 pyyaml
 rapidfuzz
 pydantic>=2.0
+jinja2
+qrcode[pil]
+pypdf
+weasyprint
+
 

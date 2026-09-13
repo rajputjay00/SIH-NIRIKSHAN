@@ -25,7 +25,7 @@ def get_field_value(declarations: Declarations, field_path: str) -> Any:
 
 
 def eval_predicate(
-    pred_name: str, params: Dict[str, Any], declarations: Declarations
+    pred_name: str, params: Dict[str, Any], declarations: Declarations, quality: Optional[Dict[str, Any]] = None
 ) -> Tuple[bool, Optional[str], Any, Optional[List[List[float]]]]:
     """Evaluates a named predicate against Declarations.
     Returns (is_success, detail_message, extracted_val, evidence_bbox).
@@ -192,9 +192,24 @@ def eval_predicate(
         msg = f"Confidence {conf:.2f} is below threshold {thresh:.2f}" if ok else f"Confidence {conf:.2f} >= {thresh:.2f}"
         return ok, msg, conf, bbox
 
-    elif pred_name == "is_true":
-        ok = bool(extracted_val)
-        msg = f"Field {field_path} is True" if ok else f"Field {field_path} is False"
-        return ok, msg, extracted_val, bbox
+    elif pred_name == "quality_warning_present":
+        warnings = quality.get("warnings", []) if quality else []
+        ok = len(warnings) > 0
+        msg = f"Quality warnings present: {warnings}" if ok else "No quality warnings"
+        return ok, msg, warnings, None
+
+    elif pred_name == "key_confidence_below":
+        thresh = float(params.get("threshold", 0.70))
+        confs = []
+        if declarations.net_quantity and declarations.net_quantity.confidence is not None:
+            confs.append(float(declarations.net_quantity.confidence))
+        if declarations.mrp and declarations.mrp.confidence is not None:
+            confs.append(float(declarations.mrp.confidence))
+
+        mean_conf = sum(confs) / len(confs) if confs else 0.0
+        ok = mean_conf < thresh
+        msg = f"Key fields mean confidence {mean_conf:.2f} is below threshold {thresh:.2f}" if ok else f"Key fields mean confidence {mean_conf:.2f} >= {thresh:.2f}"
+        return ok, msg, mean_conf, declarations.net_quantity.bbox if declarations.net_quantity else None
 
     return False, f"Unknown predicate '{pred_name}'", None, None
+

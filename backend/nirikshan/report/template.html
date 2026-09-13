@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Nirikshan Compliance Review Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 15mm 20mm 15mm;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 8pt;
+                font-family: 'Noto Sans', 'Noto Sans Devanagari', 'DejaVu Sans', sans-serif;
+                color: #6B7280;
+            }
+        }
+        body {
+            font-family: 'Noto Sans', 'Noto Sans Devanagari', 'DejaVu Sans', sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            color: #1F2937;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3, h4 {
+            margin-top: 0;
+            font-weight: 700;
+        }
+        /* Header */
+        .header-container {
+            border-bottom: 2px solid #2563EB;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .header-title {
+            font-size: 18pt;
+            color: #1E3A8A;
+            margin-bottom: 2px;
+        }
+        .header-subtitle {
+            font-size: 10pt;
+            color: #4B5563;
+            font-style: italic;
+        }
+        .meta-grid {
+            display: table;
+            width: 100%;
+            margin-top: 8px;
+            font-size: 8.5pt;
+            background: #F3F4F6;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        .meta-row {
+            display: table-row;
+        }
+        .meta-cell {
+            display: table-cell;
+            padding: 2px 8px;
+        }
+        .meta-label {
+            font-weight: bold;
+            color: #374151;
+        }
+
+        /* Verdict Banner */
+        .verdict-banner {
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            display: table;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .status-Non-compliant {
+            background-color: #FEE2E2;
+            border: 1.5px solid #EF4444;
+            color: #991B1B;
+        }
+        .status-Compliant {
+            background-color: #D1FAE5;
+            border: 1.5px solid #10B981;
+            color: #065F46;
+        }
+        .status-Officer-review-required, .status-Officer {
+            background-color: #FEF3C7;
+            border: 1.5px solid #F59E0B;
+            color: #92400E;
+        }
+        .status-Exempt {
+            background-color: #E0E7FF;
+            border: 1.5px solid #6366F1;
+            color: #3730A3;
+        }
+        .banner-left {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .banner-status {
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .banner-right {
+            display: table-cell;
+            text-align: right;
+            vertical-align: middle;
+            font-size: 9pt;
+        }
+        .count-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 4px;
+        }
+        .badge-pass { background: #10B981; color: white; }
+        .badge-fail { background: #EF4444; color: white; }
+        .badge-review { background: #F59E0B; color: white; }
+        .badge-na { background: #9CA3AF; color: white; }
+
+        /* Main Image */
+        .section-title {
+            font-size: 11pt;
+            color: #1F2937;
+            border-bottom: 1px solid #E5E7EB;
+            padding-bottom: 3px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+        }
+        .image-container {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .main-overlay-img {
+            max-width: 100%;
+            max-height: 380px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+        }
+
+        /* Tables */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin-bottom: 14px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #D1D5DB;
+            padding: 5px 7px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table.data-table th {
+            background-color: #F9FAFB;
+            font-weight: bold;
+            color: #374151;
+        }
+        .tag-PASS { color: #065F46; font-weight: bold; }
+        .tag-FAIL { color: #991B1B; font-weight: bold; }
+        .tag-NEEDS_REVIEW { color: #92400E; font-weight: bold; }
+        .tag-NA { color: #4B5563; }
+
+        /* Evidence Crops */
+        .crops-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+        .crop-card {
+            display: inline-block;
+            vertical-align: top;
+            width: 30%;
+            margin-right: 2%;
+            margin-bottom: 10px;
+            border: 1px solid #E5E7EB;
+            border-radius: 4px;
+            padding: 4px;
+            background: #FAFAFA;
+            box-sizing: border-box;
+        }
+        .crop-img {
+            max-width: 100%;
+            height: auto;
+            max-height: 120px;
+            display: block;
+            margin: 0 auto;
+        }
+        .crop-caption {
+            font-size: 8pt;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 4px;
+            color: #374151;
+        }
+
+        /* Integrity Footer */
+        .footer-container {
+            margin-top: 20px;
+            border-top: 1.5px solid #9CA3AF;
+            padding-top: 8px;
+            font-size: 7.5pt;
+            color: #4B5563;
+        }
+        .footer-grid {
+            display: table;
+            width: 100%;
+        }
+        .footer-left {
+            display: table-cell;
+            vertical-align: middle;
+            width: 80%;
+        }
+        .footer-right {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+            width: 20%;
+        }
+        .qr-img {
+            width: 70px;
+            height: 70px;
+        }
+        .disclaimer {
+            font-style: italic;
+            color: #6B7280;
+            margin-top: 6px;
+            font-size: 7.5pt;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header-container">
+        <div class="header-title">Nirikshan — Compliance Review Report</div>
+        <div class="header-subtitle">Legal Metrology (Packaged Commodities) Rules, 2011</div>
+        <div class="meta-grid">
+            <div class="meta-row">
+                <div class="meta-cell"><span class="meta-label">Scan Timestamp (IST):</span> {{ timestamp_ist }}</div>
+                <div class="meta-cell"><span class="meta-label">Officer:</span> {{ officer_name or "N/A" }}</div>
+            </div>
+            <div class="meta-row">
+                <div class="meta-cell"><span class="meta-label">Premises:</span> {{ premises or "N/A" }}</div>
+                <div class="meta-cell"><span class="meta-label">Remarks:</span> {{ remarks or "None" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verdict Banner -->
+    <div class="verdict-banner status-{{ summary.status | replace(' ', '-') }}">
+        <div class="banner-left">
+            <div class="banner-status">{{ summary.status }}</div>
+            {% if applicability.exempt_reason %}
+                <div style="font-size: 8.5pt; margin-top: 2px;">Exemption: {{ applicability.exempt_reason }}</div>
+            {% endif %}
+        </div>
+        <div class="banner-right">
+            <span>FAIL: <span class="count-badge badge-fail">{{ summary.counts.FAIL }}</span></span>
+            <span>REVIEW: <span class="count-badge badge-review">{{ summary.counts.NEEDS_REVIEW }}</span></span>
+            <span>PASS: <span class="count-badge badge-pass">{{ summary.counts.PASS }}</span></span>
+            <span>N/A: <span class="count-badge badge-na">{{ summary.counts['N/A'] }}</span></span>
+        </div>
+    </div>
+
+    <!-- Image with Finding Overlay -->
+    <div class="section-title">Label Evidence & Bounding Boxes</div>
+    <div class="image-container">
+        <img class="main-overlay-img" src="{{ overlay_b64 }}" alt="Label Scan with Overlay" />
+    </div>
+
+    <!-- Findings Table -->
+    <div class="section-title">Compliance Evaluation Table</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 10%;">Rule ID</th>
+                <th style="width: 12%;">Rule Ref</th>
+                <th style="width: 12%;">Verdict</th>
+                <th style="width: 32%;">Finding Message</th>
+                <th style="width: 17%;">Extracted</th>
+                <th style="width: 17%;">Expected</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in findings %}
+            <tr>
+                <td><strong>{{ f.rule_id }}</strong></td>
+                <td>{{ f.rule_ref }}</td>
+                <td><span class="tag-{{ f.verdict }}">{{ f.verdict }}</span></td>
+                <td>{{ f.message }}</td>
+                <td>{{ f.extracted if f.extracted is not none else "-" }}</td>
+                <td>{{ f.expected if f.expected is not none else "-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Evidence Crops Gallery -->
+    {% if crops %}
+    <div class="section-title">Evidence Crop Gallery</div>
+    <div class="crops-grid">
+        {% for rule_id, crop_b64 in crops.items() %}
+        <div class="crop-card">
+            <img class="crop-img" src="{{ crop_b64 }}" alt="Crop {{ rule_id }}" />
+            <div class="crop-caption">Rule {{ rule_id }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Declarations Table -->
+    <div class="section-title">Extracted Declarations Overview</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Field</th>
+                <th style="width: 45%;">Extracted Value</th>
+                <th style="width: 30%;">Confidence / Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Net Quantity</strong></td>
+                <td>{% if declarations.net_quantity %}{{ declarations.net_quantity.value }} {{ declarations.net_quantity.unit }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.net_quantity %}{{ declarations.net_quantity.confidence }} ({{ declarations.net_quantity.source }}){% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>MRP (Maximum Retail Price)</strong></td>
+                <td>{% if declarations.mrp %}₹ {{ declarations.mrp.value }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.mrp %}{{ declarations.mrp.confidence }} ({{ declarations.mrp.source }}){% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>Unit Sale Price</strong></td>
+                <td>{% if declarations.unit_sale_price %}₹ {{ declarations.unit_sale_price.value }} / {{ declarations.unit_sale_price.per_unit }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.unit_sale_price %}{{ declarations.unit_sale_price.confidence }}{% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>Generic / Common Name</strong></td>
+                <td>{% if declarations.generic_name %}{{ declarations.generic_name.value }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.generic_name %}{{ declarations.generic_name.confidence }}{% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>Date of Manufacture / Packing</strong></td>
+                <td>{% if declarations.mfg_date %}{{ declarations.mfg_date.month }}/{{ declarations.mfg_date.year }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.mfg_date %}{{ declarations.mfg_date.confidence }}{% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>Best Before / Expiry</strong></td>
+                <td>{% if declarations.best_before %}{{ declarations.best_before.month }}/{{ declarations.best_before.year }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.best_before %}{{ declarations.best_before.confidence }}{% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>Manufacturer / Packer / Importer</strong></td>
+                <td>{% if declarations.primary_entity %}{{ declarations.primary_entity.name }}, {{ declarations.primary_entity.address }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.primary_entity %}{{ declarations.primary_entity.confidence }}{% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>Consumer Care Details</strong></td>
+                <td>{% if declarations.consumer_care %}{{ declarations.consumer_care.phone or "" }} {{ declarations.consumer_care.email or "" }}{% else %}-{% endif %}</td>
+                <td>{% if declarations.consumer_care %}{{ declarations.consumer_care.confidence }}{% else %}-{% endif %}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Integrity Footer -->
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-left">
+                <div><strong>Image SHA-256:</strong> {{ image_sha256 }}</div>
+                <div><strong>Rules Version:</strong> {{ rules_version }} &nbsp;|&nbsp; <strong>Model:</strong> {{ model_version }} &nbsp;|&nbsp; <strong>Extractor:</strong> {{ extractor_version }}</div>
+                <div><strong>Git SHA:</strong> {{ git_sha }}</div>
+            </div>
+            <div class="footer-right">
+                <img class="qr-img" src="{{ qr_b64 }}" alt="QR Code" />
+            </div>
+        </div>
+        <div class="disclaimer">
+            Disclaimer: Review aid generated by software; the Legal Metrology Officer's determination prevails. | सॉफ्टवेयर द्वारा निर्मित समीक्षा सहायता; विधिक माप विज्ञान अधिकारी का निर्णय ही अंतिम होगा।
+        </div>
+    </div>
+
+</body>
+</html>

@@ -88,7 +88,9 @@ from fastapi import Form
 from nirikshan import EXTRACTOR_VERSION, extract
 from nirikshan.applicability import resolve
 from nirikshan.rules.engine import evaluate, load_catalogue
+from nirikshan.quality import assess_quality
 from nirikshan.schema import ContextModel
+
 from nirikshan.version import RULES_VERSION
 
 origins = [origin.strip() for origin in allowed_origins_raw.split(",") if origin.strip()]
@@ -164,6 +166,8 @@ async def scan_image(
     width, height = image.size
     ocr_result = ocr.extract_text(image)
 
+    quality_result = assess_quality(image)
+
     extract_start = time.perf_counter()
     declarations_obj = extract(ocr_result.get("lines", []), width, height)
     extract_ms = (time.perf_counter() - extract_start) * 1000.0
@@ -184,7 +188,7 @@ async def scan_image(
     applicability_obj = resolve(context, declarations_obj)
 
     rules_start = time.perf_counter()
-    findings_list, summary_obj = evaluate(declarations_obj, applicability_obj)
+    findings_list, summary_obj = evaluate(declarations_obj, applicability_obj, quality=quality_result)
     rules_ms = (time.perf_counter() - rules_start) * 1000.0
 
     total_elapsed = ocr_result.get("elapsed_ms", 0.0) + extract_ms + rules_ms
@@ -194,10 +198,12 @@ async def scan_image(
         "width": width,
         "height": height,
         "ocr": ocr_result,
+        "quality": quality_result,
         "declarations": declarations_obj.model_dump(),
         "applicability": applicability_obj.model_dump(),
         "findings": [f.model_dump() for f in findings_list],
         "summary": summary_obj.model_dump(),
+
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "extractor_version": EXTRACTOR_VERSION,
@@ -212,9 +218,65 @@ async def scan_image(
 
 
 
+@router.post("/report")
+async def create_report(
+    file: UploadFile = File(...),
+    result: str = Form(...),
+    officer_name: Optional[str] = Form(None),
+    premises: Optional[str] = Form(None),
+    remarks: Optional[str] = Form(None),
+    language: Optional[str] = Form("en"),
+):
+    if file.content_type and file.content_type.lower() not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Unsupported image format. Allowed formats: JPEG, PNG, WebP.",
+        )
+
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File size exceeds maximum allowed limit of 10 MB.",
+        )
+
+    try:
+        result_data = json.loads(result)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid result JSON format.",
+        )
+
+    try:
+        from nirikshan.report.render import generate_report_pdf
+        pdf_bytes = generate_report_pdf(
+            image_bytes=contents,
+            result_data=result_data,
+            officer_name=officer_name,
+            premises=premises,
+            remarks=remarks,
+            language=language or "en",
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate report PDF: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Report generation error: {str(e)}",
+        )
+
+    filename = f"Nirikshan_Report_{int(time.time())}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
+
+
 # Catch-all for unknown /api/* paths to return JSON 404 (not HTML)
 @router.get("/{api_path:path}")
 async def api_404_fallback(api_path: str):
+
     return JSONResponse(status_code=404, content={"detail": "API route not found"})
 
 

@@ -41,3 +41,31 @@ def test_extract_fixtures(fixture_path):
             assert actual_val == expected_val, (
                 f"Mismatch in {fixture_path} for {field_name}.{k}: expected {expected_val}, got {actual_val}"
             )
+
+
+def test_negative_care_product_names():
+    cases = [
+        "TOOTH & GUM CARE",
+        "SKIN CARE LOTION",
+        "HAIR CARE OIL"
+    ]
+    for text in cases:
+        lines = [
+            {"id": 0, "text": text, "confidence": 0.95, "bbox": [[10, 10], [100, 10], [100, 30], [10, 30]]}
+        ]
+        decl = extract(lines, 1600, 1200)
+        assert decl.consumer_care is None, f"Expected consumer_care to be None for product name '{text}', got {decl.consumer_care}"
+
+
+def test_facewash_absorption_cap():
+    lines = [
+        {"id": 0, "text": "Manufactured By:", "confidence": 0.9, "bbox": [[10, 10], [200, 10], [200, 30], [10, 30]]},
+        {"id": 1, "text": "Aroma Personal Care Pvt Ltd", "confidence": 0.9, "bbox": [[10, 35], [200, 35], [200, 55], [10, 55]]},
+        {"id": 2, "text": "Plot 12, Industrial Area, Haridwar", "confidence": 0.9, "bbox": [[10, 60], [200, 60], [200, 80], [10, 80]]},
+        {"id": 3, "text": "Uttarakhand - 249401", "confidence": 0.9, "bbox": [[10, 85], [200, 85], [200, 105], [10, 105]]},
+        {"id": 4, "text": "Extra Line That Should Not Be Absorbed", "confidence": 0.9, "bbox": [[10, 110], [200, 110], [200, 130], [10, 130]]},
+    ]
+    decl = extract(lines, 1600, 1200)
+    assert decl.manufacturer is not None
+    assert len(decl.manufacturer.source_line_ids) <= 3, f"Expected at most 3 lines absorbed, got {len(decl.manufacturer.source_line_ids)}"
+
