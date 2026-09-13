@@ -15,4 +15,9 @@ docker build -t nirikshan .
 docker run -p 7860:7860 nirikshan
 ```
 
-Visit `http://localhost:7860/` for the web app and `http://localhost:7860/api/health` for the API status.
+Visit `http://localhost:7860/` for the local web app and `http://localhost:7860/api/health` for the local API status.
+
+## Live Deployment (Azure Container Apps)
+- **Live Web App**: [https://nirikshan.yellowsky-50e55bef.eastasia.azurecontainerapps.io/](https://nirikshan.yellowsky-50e55bef.eastasia.azurecontainerapps.io/)
+- **Live Health API**: [https://nirikshan.yellowsky-50e55bef.eastasia.azurecontainerapps.io/api/health](https://nirikshan.yellowsky-50e55bef.eastasia.azurecontainerapps.io/api/health)
+
