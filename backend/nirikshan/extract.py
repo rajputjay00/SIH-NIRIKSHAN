@@ -166,7 +166,7 @@ def absorb_block_lines(
         cand_ymax = max(pt[1] for pt in cand.bbox)
         gap_y = cand_ymin - last_ymax
 
-        if gap_y <= 1.5 * line_h:
+        if gap_y <= max(2.5 * line_h, 40.0):
             absorbed.append(cand)
             last_ymax = cand_ymax
         else:
@@ -452,8 +452,8 @@ def parse_consumer_care_block(
     line_ids = [l.id if l.id is not None else i for i, l in enumerate(source_lines)]
 
     # Extract Email
-    email_match = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', raw_text)
-    email_val = email_match.group(0) if email_match else None
+    email_match = re.search(r'\b[A-Za-z0-9._%+-]+\s*@\s*[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', raw_text)
+    email_val = email_match.group(0).replace(" ", "") if email_match else None
 
     # Extract Phone (10 digits or 1800/1860)
     phone_match = re.search(
@@ -657,6 +657,16 @@ def extract(
             clean_country = raw_val_str.replace("Country of Origin", "").replace("Made in", "").strip(" :-_.")
             extracted_dict["country_of_origin"] = FieldModel(
                 value=clean_country if clean_country else raw_val_str,
+                raw=raw_val_str,
+                bbox=bbox,
+                confidence=round(float(conf), 4),
+                source_line_ids=line_ids,
+                source=strategy,
+            )
+        elif field_name == "generic_name":
+            clean_gen = raw_val_str.replace("Generic Name", "").replace("Common Name", "").replace("Name of Commodity", "").replace("Commodity", "").strip(" :-_.")
+            extracted_dict["generic_name"] = FieldModel(
+                value=clean_gen if clean_gen else raw_val_str,
                 raw=raw_val_str,
                 bbox=bbox,
                 confidence=round(float(conf), 4),

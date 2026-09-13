@@ -89,4 +89,11 @@ FIELD_LEXICON: Dict[str, List[str]] = {
         "contact us",
         "for queries",
     ],
+    "generic_name": [
+        "generic name",
+        "common name",
+        "name of commodity",
+        "name of the commodity",
+        "commodity",
+    ],
 }

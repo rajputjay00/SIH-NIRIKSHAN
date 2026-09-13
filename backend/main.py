@@ -3,6 +3,7 @@ import importlib.metadata
 import os
 import subprocess
 import logging
+from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -78,7 +79,12 @@ app = FastAPI(title="Nirikshan API", lifespan=lifespan)
 
 allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "*")
 import time
+from fastapi import Form
 from nirikshan import EXTRACTOR_VERSION, extract
+from nirikshan.applicability import resolve
+from nirikshan.rules.engine import evaluate, load_catalogue
+from nirikshan.schema import ContextModel
+from nirikshan.version import RULES_VERSION
 
 origins = [origin.strip() for origin in allowed_origins_raw.split(",") if origin.strip()]
 
@@ -103,13 +109,29 @@ def health_check():
         "model_loaded": MODEL_LOADED,
         "model_version": MODEL_VERSION,
         "extractor_version": EXTRACTOR_VERSION,
-        "rules_version": None,
+        "rules_version": RULES_VERSION,
         "git_sha": GIT_SHA,
     }
 
 
+@router.get("/rules")
+def get_rules_catalogue():
+    return {
+        "rules_version": RULES_VERSION,
+        "rules": load_catalogue(),
+    }
+
+
 @router.post("/scan")
-async def scan_image(file: UploadFile = File(...)):
+async def scan_image(
+    file: UploadFile = File(...),
+    package_type: Optional[str] = Form("retail"),
+    category: Optional[str] = Form("general"),
+    is_import: Optional[bool] = Form(None),
+    channel: Optional[str] = Form("physical"),
+    net_quantity_value: Optional[float] = Form(None),
+    net_quantity_unit: Optional[str] = Form(None),
+):
     if file.content_type and file.content_type.lower() not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -141,17 +163,45 @@ async def scan_image(file: UploadFile = File(...)):
     declarations_obj = extract(ocr_result.get("lines", []), width, height)
     extract_ms = (time.perf_counter() - extract_start) * 1000.0
 
+    # Build context and run applicability & rules engine
+    net_qty_override = None
+    if net_quantity_value is not None and net_quantity_unit is not None:
+        net_qty_override = {"value": net_quantity_value, "unit": net_quantity_unit}
+
+    context = ContextModel(
+        package_type=package_type or "retail",
+        category=category or "general",
+        is_import=is_import,
+        channel=channel or "physical",
+        net_quantity_override=net_qty_override,
+    )
+
+    applicability_obj = resolve(context, declarations_obj)
+
+    rules_start = time.perf_counter()
+    findings_list, summary_obj = evaluate(declarations_obj, applicability_obj)
+    rules_ms = (time.perf_counter() - rules_start) * 1000.0
+
+    total_elapsed = ocr_result.get("elapsed_ms", 0.0) + extract_ms + rules_ms
+
     return {
         "filename": file.filename,
         "width": width,
         "height": height,
         "ocr": ocr_result,
         "declarations": declarations_obj.model_dump(),
+        "applicability": applicability_obj.model_dump(),
+        "findings": [f.model_dump() for f in findings_list],
+        "summary": summary_obj.model_dump(),
+        "rules_version": RULES_VERSION,
+        "model_version": MODEL_VERSION,
+        "extractor_version": EXTRACTOR_VERSION,
         "timings": {
             "preprocess_ms": ocr_result.get("preprocess_ms", 0.0),
             "ocr_ms": ocr_result.get("ocr_ms", 0.0),
             "extract_ms": round(extract_ms, 2),
-            "elapsed_ms": round(ocr_result.get("elapsed_ms", 0.0) + extract_ms, 2),
+            "rules_ms": round(rules_ms, 2),
+            "elapsed_ms": round(total_elapsed, 2),
         },
     }
 

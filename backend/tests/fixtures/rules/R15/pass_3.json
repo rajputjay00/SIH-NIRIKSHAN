@@ -1,0 +1,24 @@
+[
+  {
+    "text": "For Feedback: Contact Executive, Phone: 1860-111-222 Email: support@corp.com",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        200,
+        10
+      ],
+      [
+        200,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  }
+]

@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -77,3 +77,39 @@ class Declarations(BaseModel):
     best_before: Optional[DateField] = None
     consumer_care: Optional[ConsumerCare] = None
     scripts_detected: List[str] = Field(default_factory=list)
+
+
+class ContextModel(BaseModel):
+    package_type: str = "retail"
+    category: str = "general"
+    is_import: Optional[bool] = None
+    channel: str = "physical"
+    net_quantity_override: Optional[Dict[str, Any]] = None
+
+
+class ApplicabilityModel(BaseModel):
+    package_type: str
+    category: str
+    is_import: bool
+    channel: str
+    exempt_reason: Optional[str] = None
+    applicable_rule_ids: List[str] = Field(default_factory=list)
+    reasons: Dict[str, str] = Field(default_factory=dict)
+
+
+class FindingModel(BaseModel):
+    rule_id: str
+    rule_ref: str
+    verdict: str
+    severity: str
+    extracted: Any = None
+    expected: Optional[str] = None
+    evidence_bbox: Optional[List[List[float]]] = None
+    message_en: str
+    message_hi: str
+    fix_hint_en: Optional[str] = None
+
+
+class SummaryModel(BaseModel):
+    status: str
+    counts: Dict[str, int] = Field(default_factory=dict)

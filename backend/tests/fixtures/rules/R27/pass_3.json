@@ -1,0 +1,68 @@
+[
+  {
+    "text": "Mfd By: Global Corp, Delhi 110001",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        200,
+        10
+      ],
+      [
+        200,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  },
+  {
+    "text": "Generic Name: Milk Chocolate Bar",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        200,
+        10
+      ],
+      [
+        200,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  },
+  {
+    "text": "Net Qty: 100 Units",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        200,
+        10
+      ],
+      [
+        200,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  }
+]

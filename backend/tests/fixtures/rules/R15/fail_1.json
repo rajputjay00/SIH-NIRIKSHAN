@@ -1,0 +1,24 @@
+[
+  {
+    "text": "Consumer Care Cell: Phone: 1800-222-333 Address: Mumbai 400001",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        200,
+        10
+      ],
+      [
+        200,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  }
+]

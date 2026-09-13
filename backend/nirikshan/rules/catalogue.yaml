@@ -1,0 +1,333 @@
+- id: R01
+  key: LMPC.6.1.a.MANUFACTURER_PACKER_IMPORTER
+  rule_ref: "Rule 6(1)(a)"
+  title_en: "Manufacturer / Packer / Importer Name & Address"
+  title_hi: "निर्माता / पैकर / आयातकर्ता का नाम और पता"
+  severity: high
+  check:
+    any:
+      - present: { field: "manufacturer.name" }
+      - present: { field: "packer.name" }
+      - present: { field: "importer.name" }
+      - present: { field: "marketer.name" }
+  on_fail: FAIL
+  evidence: "declarations.manufacturer.bbox"
+  message_en: "Every package must declare the name and address of the manufacturer, packer, or importer."
+  message_hi: "प्रत्येक पैकेज पर निर्माता, पैकर या आयातकर्ता का नाम और पता घोषित होना आवश्यक है।"
+  fix_hint_en: "Add 'Manufactured by' or 'Packed by' followed by company name and full address."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R02
+  key: LMPC.10.1.PIN_CODE
+  rule_ref: "Rule 10(1) Expl. I"
+  title_en: "6-Digit Postal Index Number (PIN)"
+  title_hi: "6-अंकों का पिन कोड"
+  severity: medium
+  check:
+    all:
+      - pin: { block: "first_entity" }
+  on_fail: FAIL
+  on_uncertain:
+    when: "declarations.manufacturer.confidence < 0.75"
+    verdict: NEEDS_REVIEW
+  evidence: "declarations.manufacturer.bbox"
+  message_en: "The manufacturer/packer/importer address must contain a valid 6-digit PIN code."
+  message_hi: "निर्माता/पैकर/आयातकर्ता के पते में 6 अंकों का वैध पिन कोड होना चाहिए।"
+  fix_hint_en: "Include the 6-digit PIN code at the end of the address line."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R04
+  key: LMPC.6.1.aa.COUNTRY_OF_ORIGIN
+  rule_ref: "Rule 6(1)(aa)"
+  title_en: "Country of Origin for Imports"
+  title_hi: "आयातित वस्तुओं का मूल देश"
+  severity: high
+  check:
+    all:
+      - present: { field: "country_of_origin.value" }
+  on_fail: FAIL
+  evidence: "declarations.importer.bbox"
+  message_en: "Imported packages must clearly state the Country of Origin."
+  message_hi: "आयातित पैकेजों पर मूल देश की स्पष्ट घोषणा होनी चाहिए।"
+  fix_hint_en: "Add 'Country of Origin: [Country]' or 'Made in [Country]' on the PDP."
+  effective_from: "2020-01-01"
+  source: "G.S.R. 629(E)"
+
+- id: R05
+  key: LMPC.6.1.b.GENERIC_NAME
+  rule_ref: "Rule 6(1)(b)"
+  title_en: "Common or Generic Name of Commodity"
+  title_hi: "वस्तु का सामान्य या जेनेरिक नाम"
+  severity: low
+  check:
+    all:
+      - present: { field: "generic_name.value" }
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.generic_name.bbox"
+  message_en: "The common or generic name of the commodity should be declared."
+  message_hi: "सामग्री का सामान्य या जेनेरिक नाम घोषित होना चाहिए।"
+  fix_hint_en: "Declare generic name clearly (e.g. 'Whole Wheat Flour', 'Milk Chocolate')."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R06
+  key: LMPC.6.1.c.NET_QUANTITY_SI_UNIT
+  rule_ref: "Rule 6(1)(c) read with Rule 12 & 13"
+  title_en: "Net Quantity in Standard SI Units"
+  title_hi: "मानक SI इकाइयों में शुद्ध मात्रा"
+  severity: high
+  check:
+    all:
+      - present: { field: "net_quantity.value" }
+      - present: { field: "net_quantity.unit" }
+      - magnitude_unit_consistent: {}
+  on_fail: FAIL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Net quantity must be declared with value and standard SI unit, adhering to unit magnitude rules."
+  message_hi: "शुद्ध मात्रा मान और मानक SI इकाई के साथ घोषित की जानी चाहिए।"
+  fix_hint_en: "Express net quantity as '500 g' (below 1 kg) or '1.5 kg' (at or above 1 kg)."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R07
+  key: LMPC.13.4.NO_COUNT_WORDS
+  rule_ref: "Rule 13(4)"
+  title_en: "Prohibition of Count Words (Dozen/Gross/Score)"
+  title_hi: "गिनती के शब्दों का निषेध (दर्जन/ग्रॉस)"
+  severity: medium
+  check:
+    all:
+      - no_count_words: {}
+  on_fail: FAIL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Count words like 'dozen', 'gross', or 'score' are prohibited in net quantity declaration."
+  message_hi: "शुद्ध मात्रा घोषणा में 'दर्जन' या 'ग्रॉस' जैसे शब्दों का प्रयोग प्रतिबंधित है।"
+  fix_hint_en: "Declare quantity using numbers (e.g. '12 Units' or '12 N') instead of '1 Dozen'."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R08
+  key: LMPC.13.5.STANDARD_SI_UNITS_ONLY
+  rule_ref: "Rule 13(5)"
+  title_en: "Standard SI Unit Symbols Only"
+  title_hi: "केवल मानक SI इकाई प्रतीक"
+  severity: medium
+  check:
+    all:
+      - unit_standard: {}
+  on_fail: FAIL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Non-standard unit abbreviations (e.g., gms, ltr, oz) are prohibited."
+  message_hi: "अमानक इकाई प्रतीकों (जैसे gms, ltr, oz) का प्रयोग प्रतिबंधित है।"
+  fix_hint_en: "Use standard SI symbols: 'g' for grams, 'kg' for kilograms, 'ml' for millilitres, 'L' for litres."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R09
+  key: LMPC.12.6.NO_QUALIFIER_WORDS
+  rule_ref: "Rule 12(6)"
+  title_en: "Prohibition of Qualifier Words in Net Quantity"
+  title_hi: "शुद्ध मात्रा में विशेषण शब्दों का निषेध"
+  severity: medium
+  check:
+    all:
+      - no_qualifier_words: {}
+  on_fail: FAIL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Qualifier words creating a misleading impression of quantity (e.g. 'approx', 'minimum', 'not less than') are prohibited."
+  message_hi: "मात्रा में भ्रम पैदा करने वाले शब्दों (जैसे 'लगभग', 'न्यूनतम') का प्रयोग मना है।"
+  fix_hint_en: "Remove qualifier words like 'approx', 'about', or 'minimum' from net quantity declaration."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R10
+  key: LMPC.6.1.d.DATE_OF_MANUFACTURE
+  rule_ref: "Rule 6(1)(d)"
+  title_en: "Month and Year of Manufacture / Packing / Import"
+  title_hi: "निर्माण / पैकिंग / आयात का माह और वर्ष"
+  severity: medium
+  check:
+    all:
+      - present: { field: "mfg_date.month" }
+      - present: { field: "mfg_date.year" }
+  on_fail: FAIL
+  on_uncertain:
+    when: "declarations.mfg_date.raw is not None and declarations.mfg_date.month is None"
+    verdict: NEEDS_REVIEW
+  evidence: "declarations.mfg_date.bbox"
+  message_en: "Month and year of manufacture, packing, or import must be declared."
+  message_hi: "निर्माण, पैकिंग या आयात का महीना और वर्ष घोषित किया जाना चाहिए।"
+  fix_hint_en: "Declare date in format 'MM/YYYY' or 'Month YYYY' near the Mfd/Pkd label."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R11
+  key: LMPC.6.1.da.BEST_BEFORE_EXPIRY
+  rule_ref: "Rule 6(1)(da)"
+  title_en: "Best Before / Expiry Date Declaration"
+  title_hi: "बेस्ट बिफोर / एक्सपायरी तिथि घोषणा"
+  severity: medium
+  check:
+    any:
+      - present: { field: "best_before.month" }
+      - present: { field: "best_before.year" }
+      - present: { field: "best_before.duration_months" }
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.best_before.bbox"
+  message_en: "Best before or use-by date should be declared for perishable commodities."
+  message_hi: "खराब होने वाली वस्तुओं के लिए बेस्ट बिफोर या एक्सपायरी तिथि घोषित की जानी चाहिए।"
+  fix_hint_en: "Add 'Best Before X Months from Packaging' or 'Expiry Date: MM/YYYY'."
+  effective_from: "2016-06-23"
+  source: "G.S.R. 629(E)"
+
+- id: R12
+  key: LMPC.6.1.e.MRP_INCL_TAXES
+  rule_ref: "Rule 6(1)(e) read with Rule 2(m)"
+  title_en: "Maximum Retail Price (MRP) & Tax Declaration"
+  title_hi: "अधिकतम खुदरा मूल्य (MRP) और कर घोषणा"
+  severity: high
+  check:
+    all:
+      - present: { field: "mrp.value" }
+      - regex: { field: "mrp.currency", pattern: "INR" }
+      - regex: { field: "mrp.raw", pattern: "[il1|]ncl(usive|\\.)?\\s*(of\\s*)?all\\s*tax(es)?" }
+  on_fail: FAIL
+  on_uncertain:
+    when: "declarations.mrp.confidence < 0.75"
+    verdict: NEEDS_REVIEW
+  evidence: "declarations.mrp.bbox"
+  message_en: "MRP must be declared in Indian Rupees (₹/Rs) and include the phrase 'Incl. of all taxes'."
+  message_hi: "MRP भारतीय रुपये (₹/Rs) में घोषित होना चाहिए और 'सभी करों सहित' लिखा होना चाहिए।"
+  fix_hint_en: "Format MRP as 'MRP ₹ [Amount] (Incl. of all taxes)'."
+  effective_from: "2018-01-01"
+  source: "G.S.R. 629(E)"
+
+- id: R14
+  key: LMPC.6.11.UNIT_SALE_PRICE
+  rule_ref: "Rule 6(11)"
+  title_en: "Unit Sale Price (USP) Declaration"
+  title_hi: "इकाई बिक्री मूल्य (USP) घोषणा"
+  severity: medium
+  check:
+    all:
+      - present: { field: "unit_sale_price.value" }
+      - approx_equal: {}
+  on_fail: FAIL
+  evidence: "declarations.unit_sale_price.bbox"
+  message_en: "Unit Sale Price must be declared and match MRP divided by net quantity."
+  message_hi: "इकाई बिक्री मूल्य घोषित होना चाहिए और MRP को शुद्ध मात्रा से विभाजित करने पर मेल खाना चाहिए।"
+  fix_hint_en: "Declare Unit Sale Price as '₹ X.XX per g/ml/kg/L'."
+  effective_from: "2022-04-01"
+  source: "G.S.R. 779(E)"
+
+- id: R15
+  key: LMPC.6.2.CONSUMER_CARE
+  rule_ref: "Rule 6(2)"
+  title_en: "Consumer Care Cell Details"
+  title_hi: "उपभोक्ता सहायता केंद्र विवरण"
+  severity: medium
+  check:
+    all:
+      - phone: {}
+      - email: {}
+      - any:
+          - present: { field: "consumer_care.name" }
+          - present: { field: "consumer_care.address" }
+  on_fail: FAIL
+  evidence: "declarations.consumer_care.bbox"
+  message_en: "Consumer care details must include telephone/toll-free number AND email AND contact address/name."
+  message_hi: "उपभोक्ता सहायता में फोन नंबर, ईमेल और संपर्क नाम/पता शामिल होना अनिवार्य है।"
+  fix_hint_en: "Add 'For Feedback/Complaints contact Consumer Care at Phone: 1800-XXX-XXXX, Email: care@company.com'."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R23
+  key: LMPC.9.4.SCRIPT_HINDI_OR_ENGLISH
+  rule_ref: "Rule 9(4)"
+  title_en: "Declarations Script (Hindi or English)"
+  title_hi: "घोषणाओं की लिपि (हिंदी या अंग्रेजी)"
+  severity: high
+  check:
+    all:
+      - script_in: { scripts: ["latin", "devanagari"] }
+  on_fail: FAIL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Mandatory declarations must be in Hindi (Devanagari) or English."
+  message_hi: "अनिवार्य घोषणाएं हिंदी (देवनागरी) या अंग्रेजी में होनी चाहिए।"
+  fix_hint_en: "Ensure all key label text is printed in English or Hindi script."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R25
+  key: LMPC.26.a.SMALL_PACKAGE_EXEMPTION
+  rule_ref: "Rule 26(a)"
+  title_en: "Small Package Exemption (<=10g/ml)"
+  title_hi: "छोटे पैकेज की छूट (<=10g/ml)"
+  severity: low
+  check:
+    all:
+      - present: { field: "net_quantity.value" }
+  on_fail: N/A
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Packages <= 10 g/ml are exempt from Chapter II declarations."
+  message_hi: "10 ग्राम/मिलीग्राम से कम के पैकेज अध्याय II से मुक्त हैं।"
+  fix_hint_en: "No action needed for exempt small packages."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R26
+  key: LMPC.3.CHAPTER_II_EXCLUSIONS
+  rule_ref: "Rule 3"
+  title_en: "Bulk & Industrial Package Exclusion (>25kg/L)"
+  title_hi: "थोक और औद्योगिक पैकेज छूट (>25kg/L)"
+  severity: low
+  check:
+    all:
+      - present: { field: "net_quantity.value" }
+  on_fail: N/A
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Packages > 25 kg/L or not for retail sale are excluded from Chapter II rules."
+  message_hi: "25 किग्रा/लीटर से अधिक के पैकेज अध्याय II के नियमों से बाहर हैं।"
+  fix_hint_en: "No action needed for bulk non-retail packages."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R27
+  key: LMPC.24.WHOLESALE_PACKAGE
+  rule_ref: "Rule 24"
+  title_en: "Wholesale Package Declarations"
+  title_hi: "थोक पैकेज घोषणाएं"
+  severity: high
+  check:
+    all:
+      - any:
+          - present: { field: "manufacturer.name" }
+          - present: { field: "packer.name" }
+      - present: { field: "generic_name.value" }
+      - present: { field: "net_quantity.value" }
+  on_fail: FAIL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Wholesale packages must contain name/address, generic name, and net quantity/count."
+  message_hi: "थोक पैकेजों पर नाम/पता, जेनेरिक नाम और शुद्ध मात्रा होनी चाहिए।"
+  fix_hint_en: "Add manufacturer details, commodity name, and total count/net quantity on wholesale pack."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R35
+  key: LMPC.7.5.FOOD_GATING_RULE
+  rule_ref: "Rule 7(5) / Rule 6(1)(a) Expl. III"
+  title_en: "Food Category Alignment (FSS Act)"
+  title_hi: "खाद्य श्रेणी समन्वय (FSS एक्ट)"
+  severity: low
+  check:
+    all:
+      - present: { field: "net_quantity.value" }
+  on_fail: PASS
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Food packages are governed by FSS Act for dates and manufacturer address; LMPC font rules apply to Net Qty, MRP, Best Before and Consumer Care."
+  message_hi: "खाद्य उत्पाद FSS एक्ट द्वारा शासित हैं; LMPC नियम शुद्ध मात्रा, MRP, बेस्ट बिफोर पर लागू होते हैं।"
+  fix_hint_en: "Ensure compliance with both FSSAI regulations and LMPC net quantity/MRP rules."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
