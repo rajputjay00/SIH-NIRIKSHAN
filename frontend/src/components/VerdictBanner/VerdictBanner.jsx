@@ -4,17 +4,25 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useT } from '../../i18n/useT';
 import styles from './VerdictBanner.module.css';
 
-export function VerdictBanner({ status = 'Compliant', exemptReason = null, children, className = '' }) {
+export function VerdictBanner({
+  status = 'Compliant',
+  exemptReason = null,
+  isWholesale = false,
+  children,
+  className = ''
+}) {
   const reducedMotion = useReducedMotion();
   const { t } = useT();
 
-  const isCompliant = status === 'Compliant';
+  const isCompliant = status === 'Compliant' || status.includes('Compliant');
   const isNonCompliant = status === 'Non-compliant';
-  const isReview = status.includes('Officer') || status.includes('Review');
+  const isReview = (status.includes('Officer') || status.includes('Review')) && !status.includes('after officer confirmation');
   const isExempt = status === 'Exempt';
 
   let bannerClass = styles.compliant;
-  let translatedStatus = t('verdict_compliant');
+  let translatedStatus = status.includes('after officer confirmation')
+    ? 'Compliant (after officer confirmation)'
+    : t('verdict_compliant');
 
   if (isNonCompliant) {
     bannerClass = styles.nonCompliant;
@@ -44,6 +52,7 @@ export function VerdictBanner({ status = 'Compliant', exemptReason = null, child
       <div>
         <div className={styles.statusText}>{translatedStatus}</div>
         {exemptReason && <div className={styles.exemptReason}>{exemptReason}</div>}
+        {isWholesale && <div className={styles.exemptReason}>Wholesale package — Rule 24 applies</div>}
       </div>
 
       {children}

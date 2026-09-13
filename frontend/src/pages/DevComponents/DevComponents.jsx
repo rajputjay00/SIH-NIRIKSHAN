@@ -91,7 +91,9 @@ export function DevComponents() {
         <VerdictBanner status="Compliant" />
         <VerdictBanner status="Non-compliant" />
         <VerdictBanner status="Officer Review Required" />
-        <VerdictBanner status="Exempt" exemptReason="Rule 26(a): Package <= 10g" />
+        <VerdictBanner status="Compliant (after officer confirmation)" />
+        <VerdictBanner status="Exempt" exemptReason="Rule 26(a): Package <= 10g exempt from all declarations" />
+        <VerdictBanner status="Compliant" isWholesale={true} />
       </div>
 
       {/* 6. Count Chips */}

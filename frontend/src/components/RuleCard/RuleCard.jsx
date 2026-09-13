@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, CheckSquare, Square, CheckCircle2 } from 'lucide-react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useT } from '../../i18n/useT';
 import { Button } from '../Button/Button';
 import styles from './RuleCard.module.css';
 
-export function RuleCard({ finding, onShowOnImage, isExpanded: defaultExpanded = false, className = '' }) {
+export function RuleCard({
+  finding,
+  onShowOnImage,
+  isExpanded: defaultExpanded = false,
+  isConfirmed = false,
+  onConfirmManual,
+  className = ''
+}) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const reducedMotion = useReducedMotion();
   const { lang, t } = useT();
@@ -16,11 +23,24 @@ export function RuleCard({ finding, onShowOnImage, isExpanded: defaultExpanded =
   const fixHint = finding.fix_hint_en || finding.fix_hint;
 
   const verdict = finding.verdict || 'N/A';
-  const badgeClass = styles[`badge${verdict.replace('/', '').replace(' ', '_')}`] || styles.badgeNA;
+  const isManual = verdict === 'MANUAL';
+  const isInfo = verdict === 'INFO';
+
+  let badgeClass = styles[`badge${verdict.replace('/', '').replace(' ', '_')}`] || styles.badgeNA;
+  if (isManual && isConfirmed) {
+    badgeClass = styles.badgeCONFIRMED;
+  }
+
+  const handleManualToggle = (e) => {
+    e.stopPropagation();
+    if (onConfirmManual) {
+      onConfirmManual(finding.rule_id);
+    }
+  };
 
   return (
     <motion.div
-      className={`${styles.ruleCard} ${className}`}
+      className={`${styles.ruleCard} ${isManual ? styles.manualCard : ''} ${className}`}
       layout={!reducedMotion}
       initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -30,7 +50,9 @@ export function RuleCard({ finding, onShowOnImage, isExpanded: defaultExpanded =
         <div className={styles.ruleMeta}>
           <span className={styles.rulePill}>{finding.rule_id}</span>
           <span className={styles.ruleRef}>{finding.rule_ref}</span>
-          <span className={`${styles.verdictBadge} ${badgeClass}`}>{verdict}</span>
+          <span className={`${styles.verdictBadge} ${badgeClass}`}>
+            {isManual ? (isConfirmed ? 'CONFIRMED' : 'MANUAL') : verdict}
+          </span>
         </div>
         <div>
           {expanded ? <ChevronUp size={18} color="var(--grey-500)" /> : <ChevronDown size={18} color="var(--grey-500)" />}
@@ -38,6 +60,20 @@ export function RuleCard({ finding, onShowOnImage, isExpanded: defaultExpanded =
       </div>
 
       <div className={styles.message}>{message}</div>
+
+      {/* MANUAL Verification Checkbox */}
+      {isManual && (
+        <div className={styles.manualCheckRow} onClick={handleManualToggle}>
+          {isConfirmed ? (
+            <CheckSquare size={20} color="var(--pass)" />
+          ) : (
+            <Square size={20} color="var(--grey-500)" />
+          )}
+          <span className={isConfirmed ? styles.confirmedText : styles.unconfirmedText}>
+            {isConfirmed ? 'I have verified this (Confirmed by Officer)' : 'I have verified this (Officer confirmation required)'}
+          </span>
+        </div>
+      )}
 
       <AnimatePresence>
         {expanded && (
@@ -81,3 +117,4 @@ export function RuleCard({ finding, onShowOnImage, isExpanded: defaultExpanded =
     </motion.div>
   );
 }
+

@@ -7,6 +7,7 @@ import styles from './RulesPage.module.css';
 export function RulesPage() {
   const { lang, setLang } = useT();
   const [allRules, setAllRules] = useState([]);
+  const [rulesVersion, setRulesVersion] = useState('1.0.0');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
@@ -14,33 +15,45 @@ export function RulesPage() {
 
   useEffect(() => {
     const fetchActiveRules = async () => {
-      let activeList = [];
+      let activeMap = {};
       try {
         const res = await fetch('/api/rules');
         if (res.ok) {
           const data = await res.json();
+          setRulesVersion(data.rules_version || data.version || '1.0.0');
           const rulesObj = data.rules || data;
-          activeList = Object.entries(rulesObj).map(([id, r]) => ({
-            id,
-            rule_ref: r.rule_ref || id,
-            title_en: r.title_en || r.description || id,
-            title_hi: r.title_hi || r.title_en || id,
-            severity: r.severity || 'high',
-            status: 'active',
-            category: r.category || 'labelling',
-            requirement: r.requirement || r.title_en || 'Mandatory legal metrology declaration check.',
-            check_method: r.check_method || 'Deterministic OCR line & bbox verification',
-            fix_hint: r.fix_hint || 'Ensure declaration is clearly printed on Principal Display Panel.',
-            source: r.source || 'LMPC Rules 2011',
-          }));
+          if (typeof rulesObj === 'object') {
+            Object.entries(rulesObj).forEach(([id, r]) => {
+              activeMap[id] = {
+                id,
+                rule_ref: r.rule_ref || id,
+                title_en: r.title_en || r.description || id,
+                title_hi: r.title_hi || r.title_en || id,
+                severity: r.severity || 'high',
+                status: 'active',
+                category: r.category || 'labelling',
+                requirement: r.requirement || r.title_en || 'Mandatory legal metrology declaration check.',
+                check_method: r.check_method || 'Deterministic OCR line & bbox verification',
+                fix_hint: r.fix_hint || 'Ensure declaration is clearly printed on Principal Display Panel.',
+                source: r.source || 'LMPC Rules 2011',
+              };
+            });
+          }
         }
       } catch (err) {
         // quiet
       }
 
-      // Merge active + planned rules
-      const merged = [...activeList, ...plannedRules];
-      setAllRules(merged);
+      // Merge planned rules, marking implemented if in activeMap
+      const mergedPlanned = plannedRules.map((pr) => {
+        if (activeMap[pr.id]) {
+          return { ...pr, status: 'active', ...activeMap[pr.id] };
+        }
+        return pr;
+      });
+
+      const activeOnly = Object.values(activeMap).filter((ar) => !plannedRules.some((pr) => pr.id === ar.id));
+      setAllRules([...activeOnly, ...mergedPlanned]);
     };
 
     fetchActiveRules();
@@ -69,7 +82,7 @@ export function RulesPage() {
         <div>
           <h1 className={styles.title}>Rules-as-Code Explorer</h1>
           <p className={styles.subtitle}>
-            Legal Metrology (Packaged Commodities) Rules 2011 — Full Catalogue ({allRules.length} Rules)
+            Legal Metrology (Packaged Commodities) Rules 2011 — Full Catalogue ({allRules.length} Rules) • <strong style={{ color: 'var(--blue-500)' }}>v{rulesVersion}</strong>
           </p>
         </div>
 
