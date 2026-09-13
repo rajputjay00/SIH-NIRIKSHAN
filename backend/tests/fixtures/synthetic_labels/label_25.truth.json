@@ -1,0 +1,41 @@
+{
+  "filename": "label_25.png",
+  "context": {
+    "package_type": "retail",
+    "category": "food",
+    "is_import": false
+  },
+  "expected_verdicts": {
+    "R01": "PASS",
+    "R02": "PASS",
+    "R03": "INFO",
+    "R04": "N/A",
+    "R05": "PASS",
+    "R06": "PASS",
+    "R07": "PASS",
+    "R08": "PASS",
+    "R09": "PASS",
+    "R10": "FAIL",
+    "R11": "N/A",
+    "R12": "PASS",
+    "R13": "N/A",
+    "R14": "PASS",
+    "R15": "PASS",
+    "R16": "PASS",
+    "R21": "PASS",
+    "R23": "PASS",
+    "R24": "PASS",
+    "R25": "PASS",
+    "R26": "PASS",
+    "R27": "N/A",
+    "R28": "N/A",
+    "R33": "PASS",
+    "R34": "N/A",
+    "R35": "PASS",
+    "C01": "PASS",
+    "C02": "PASS",
+    "C03": "PASS",
+    "C04": "PASS",
+    "C05": "N/A"
+  }
+}

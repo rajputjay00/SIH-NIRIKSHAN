@@ -9,7 +9,7 @@ from jinja2 import Template
 import qrcode
 
 from nirikshan.report.overlay import overlay_image_to_base64
-from nirikshan.report.crops import generate_evidence_crops
+from nirikshan.report.crops import generate_evidence_crops, generate_conflict_crops
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "template.html")
 
@@ -51,6 +51,7 @@ def generate_report_pdf(
     premises: Optional[str] = None,
     remarks: Optional[str] = None,
     language: str = "en",
+    surface_images_bytes: Optional[Dict[int, bytes]] = None,
 ) -> bytes:
     """Renders HTML via Jinja2 and generates PDF bytes using WeasyPrint."""
     import weasyprint
@@ -63,8 +64,31 @@ def generate_report_pdf(
     timestamp_ist = datetime.now(ist_tz).strftime("%Y-%m-%d %H:%M:%S IST")
 
     findings = sort_findings(result_data.get("findings", []), language)
-    overlay_b64 = overlay_image_to_base64(image, findings)
     crops = generate_evidence_crops(image, findings)
+
+    surfaces_info = result_data.get("surfaces", [])
+    surface_overlays = []
+    conflict_crops = []
+
+    if surfaces_info:
+        surface_images_dict = {}
+        for s in surfaces_info:
+            sid = s.get("id", 1)
+            sname = s.get("surface", "front").capitalize()
+            if surface_images_bytes and sid in surface_images_bytes:
+                s_img = Image.open(io.BytesIO(surface_images_bytes[sid]))
+            else:
+                s_img = image
+            surface_images_dict[sid] = s_img
+            overlay_uri = overlay_image_to_base64(s_img, findings, surface_id=sid)
+            surface_overlays.append({"id": sid, "surface": sname, "overlay_b64": overlay_uri})
+
+        conflict_crops = generate_conflict_crops(surface_images_dict, findings, surfaces_info)
+    else:
+        overlay_b64 = overlay_image_to_base64(image, findings)
+        surface_overlays = [{"id": 1, "surface": "Front", "overlay_b64": overlay_b64}]
+
+    overlay_b64 = surface_overlays[0]["overlay_b64"] if surface_overlays else ""
 
     rules_ver = result_data.get("rules_version", "0.1.0")
     model_ver = result_data.get("model_version", "rapidocr_1.4.4")
@@ -88,9 +112,11 @@ def generate_report_pdf(
         summary=result_data.get("summary", {}),
         applicability=result_data.get("applicability", {}),
         overlay_b64=overlay_b64,
+        surface_overlays=surface_overlays,
+        conflict_crops=conflict_crops,
         findings=findings,
         crops=crops,
-        declarations=result_data.get("declarations", {}),
+        declarations=result_data.get("declarations", {}) or result_data.get("merged", {}),
         image_sha256=image_sha256,
         rules_version=rules_ver,
         model_version=model_ver,

@@ -1,0 +1,38 @@
+{
+  "filename": "label_37.png",
+  "context": {
+    "package_type": "retail",
+    "category": "drug",
+    "is_import": false
+  },
+  "expected_verdicts": {
+    "R01": "N/A",
+    "R02": "N/A",
+    "R03": "N/A",
+    "R04": "N/A",
+    "R05": "N/A",
+    "R06": "N/A",
+    "R07": "N/A",
+    "R08": "N/A",
+    "R09": "N/A",
+    "R10": "N/A",
+    "R11": "N/A",
+    "R12": "N/A",
+    "R13": "N/A",
+    "R14": "N/A",
+    "R15": "N/A",
+    "R16": "N/A",
+    "R21": "N/A",
+    "R23": "N/A",
+    "R25": "N/A",
+    "R26": "N/A",
+    "R33": "N/A",
+    "R34": "N/A",
+    "R35": "N/A",
+    "C01": "N/A",
+    "C02": "N/A",
+    "C03": "N/A",
+    "C04": "N/A",
+    "C05": "N/A"
+  }
+}

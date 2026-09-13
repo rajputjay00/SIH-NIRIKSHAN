@@ -265,10 +265,41 @@
     </div>
 
     <!-- Image with Finding Overlay -->
-    <div class="section-title">Label Evidence & Bounding Boxes</div>
+    <div class="section-title">Label Evidence & Surface Overlays</div>
+    {% if surface_overlays and surface_overlays | length > 1 %}
+    <div class="surfaces-grid" style="display: table; width: 100%; margin-bottom: 14px;">
+        {% for surf in surface_overlays %}
+        <div class="surface-card" style="display: inline-block; vertical-align: top; width: 48%; margin-right: 2%; text-align: center; margin-bottom: 10px;">
+            <div style="font-weight: bold; font-size: 9pt; margin-bottom: 4px; color: #1E3A8A;">Surface {{ surf.id }}: {{ surf.surface }}</div>
+            <img class="main-overlay-img" src="{{ surf.overlay_b64 }}" alt="Surface {{ surf.surface }}" style="max-width: 100%; max-height: 280px; border: 1px solid #D1D5DB; border-radius: 4px;" />
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
     <div class="image-container">
         <img class="main-overlay-img" src="{{ overlay_b64 }}" alt="Label Scan with Overlay" />
     </div>
+    {% endif %}
+
+    <!-- Side-by-Side Conflict Crops -->
+    {% if conflict_crops %}
+    <div class="section-title">Cross-Surface Conflict Evidence (Side-by-Side)</div>
+    <div style="margin-bottom: 14px;">
+        {% for item in conflict_crops %}
+        <div style="border: 1.5px solid #F59E0B; background: #FEF3C7; border-radius: 6px; padding: 8px; margin-bottom: 10px;">
+            <div style="font-weight: bold; font-size: 9pt; color: #92400E; margin-bottom: 6px;">Rule {{ item.rule_id }}: {{ item.message }}</div>
+            <div style="display: table; width: 100%;">
+                {% for crop in item.crops %}
+                <div style="display: table-cell; text-align: center; vertical-align: top; padding: 4px;">
+                    <img src="{{ crop.crop_b64 }}" style="max-width: 100%; max-height: 120px; border: 1px solid #D1D5DB; border-radius: 4px;" />
+                    <div style="font-size: 8pt; font-weight: bold; color: #374151; margin-top: 2px;">Surface {{ crop.surface_id }} ({{ crop.surface_name }})</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- Findings Table -->
     <div class="section-title">Compliance Evaluation Table</div>
@@ -333,12 +364,26 @@
         <tbody>
             <tr>
                 <td><strong>Net Quantity</strong></td>
-                <td>{% if declarations.net_quantity %}{{ declarations.net_quantity.value }} {{ declarations.net_quantity.unit }}{% else %}-{% endif %}</td>
+                <td>
+                    {% if declarations.net_quantity %}
+                        {{ declarations.net_quantity.value }} {{ declarations.net_quantity.unit }}
+                        {% if declarations.net_quantity.source == "crimp_resolved" %}
+                            <span style="background: #8B5CF6; color: white; padding: 1px 4px; border-radius: 3px; font-size: 7.5pt; font-weight: bold; margin-left: 4px;">Resolved from crimp</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
                 <td>{% if declarations.net_quantity %}{{ declarations.net_quantity.confidence }} ({{ declarations.net_quantity.source }}){% else %}-{% endif %}</td>
             </tr>
             <tr>
                 <td><strong>MRP (Maximum Retail Price)</strong></td>
-                <td>{% if declarations.mrp %}₹ {{ declarations.mrp.value }}{% else %}-{% endif %}</td>
+                <td>
+                    {% if declarations.mrp %}
+                        ₹ {{ declarations.mrp.value }}
+                        {% if declarations.mrp.source == "crimp_resolved" %}
+                            <span style="background: #8B5CF6; color: white; padding: 1px 4px; border-radius: 3px; font-size: 7.5pt; font-weight: bold; margin-left: 4px;">Resolved from crimp</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
                 <td>{% if declarations.mrp %}{{ declarations.mrp.confidence }} ({{ declarations.mrp.source }}){% else %}-{% endif %}</td>
             </tr>
             <tr>
@@ -353,12 +398,26 @@
             </tr>
             <tr>
                 <td><strong>Date of Manufacture / Packing</strong></td>
-                <td>{% if declarations.mfg_date %}{{ declarations.mfg_date.month }}/{{ declarations.mfg_date.year }}{% else %}-{% endif %}</td>
+                <td>
+                    {% if declarations.mfg_date %}
+                        {{ declarations.mfg_date.month }}/{{ declarations.mfg_date.year }}
+                        {% if declarations.mfg_date.source == "crimp_resolved" %}
+                            <span style="background: #8B5CF6; color: white; padding: 1px 4px; border-radius: 3px; font-size: 7.5pt; font-weight: bold; margin-left: 4px;">Resolved from crimp</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
                 <td>{% if declarations.mfg_date %}{{ declarations.mfg_date.confidence }}{% else %}-{% endif %}</td>
             </tr>
             <tr>
                 <td><strong>Best Before / Expiry</strong></td>
-                <td>{% if declarations.best_before %}{{ declarations.best_before.month }}/{{ declarations.best_before.year }}{% else %}-{% endif %}</td>
+                <td>
+                    {% if declarations.best_before %}
+                        {{ declarations.best_before.month }}/{{ declarations.best_before.year }}
+                        {% if declarations.best_before.source == "crimp_resolved" %}
+                            <span style="background: #8B5CF6; color: white; padding: 1px 4px; border-radius: 3px; font-size: 7.5pt; font-weight: bold; margin-left: 4px;">Resolved from crimp</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
                 <td>{% if declarations.best_before %}{{ declarations.best_before.confidence }}{% else %}-{% endif %}</td>
             </tr>
             <tr>

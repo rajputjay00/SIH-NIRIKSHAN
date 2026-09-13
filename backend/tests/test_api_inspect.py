@@ -68,3 +68,46 @@ def test_api_inspect_e2e_two_surfaces():
     for f in res["findings"]:
         assert "trail" in f
         assert len(f["trail"]) > 0
+
+
+def test_api_inspect_pdf_report_generation():
+    pytest.importorskip("weasyprint")
+    from nirikshan.report.render import generate_report_pdf
+
+    front_bytes = create_synthetic_image([
+        "NET QUANTITY: 500 g",
+        "MRP Rs. 100.00 INCL. OF ALL TAXES",
+    ])
+    crimp_bytes = create_synthetic_image([
+        "MRP Rs. 120.00 INCL. OF ALL TAXES",
+        "MFG DATE: 05/2024",
+    ])
+
+    files = [
+        ("file_1", ("front.jpg", front_bytes, "image/jpeg")),
+        ("file_2", ("crimp.jpg", crimp_bytes, "image/jpeg")),
+    ]
+    data = {
+        "surface_1": "front",
+        "surface_2": "crimp",
+        "package_type": "retail",
+        "category": "general",
+    }
+
+    response = client.post("/api/inspect", files=files, data=data)
+    assert response.status_code == 200
+    inspect_res = response.json()
+
+    surface_bytes_map = {1: front_bytes, 2: crimp_bytes}
+    pdf_bytes = generate_report_pdf(
+        image_bytes=front_bytes,
+        result_data=inspect_res,
+        officer_name="Officer Test",
+        premises="Premises Test",
+        remarks="Multi-surface test",
+        language="en",
+        surface_images_bytes=surface_bytes_map,
+    )
+    assert pdf_bytes is not None
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
