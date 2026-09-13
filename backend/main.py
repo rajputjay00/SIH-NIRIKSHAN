@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 import ocr
 
@@ -43,9 +43,14 @@ GIT_SHA = get_git_sha()
 def create_warmup_image(width: int, height: int) -> Image.Image:
     img = Image.new("RGB", (width, height), color=(255, 255, 255))
     draw = ImageDraw.Draw(img)
-    draw.text((50, 50), "NET QUANTITY: 1 kg", fill=(0, 0, 0))
-    draw.text((50, 100), "MRP Rs. 150.00 INCL. OF ALL TAXES", fill=(0, 0, 0))
-    draw.text((50, 150), "MFD BY: NIRIKSHAN LABS PVT LTD", fill=(0, 0, 0))
+    try:
+        font = ImageFont.load_default()
+        draw.text((50, 50), "NET QUANTITY: 1 kg", fill=(0, 0, 0), font=font)
+        draw.text((50, 100), "MRP Rs. 150.00 INCL. OF ALL TAXES", fill=(0, 0, 0), font=font)
+        draw.text((50, 150), "MFD BY: NIRIKSHAN LABS PVT LTD", fill=(0, 0, 0), font=font)
+    except Exception:
+        draw.rectangle([50, 50, 200, 70], fill=(0, 0, 0))
+        draw.rectangle([50, 100, 300, 120], fill=(0, 0, 0))
     return img
 
 
