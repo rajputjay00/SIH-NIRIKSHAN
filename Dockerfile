@@ -11,6 +11,8 @@ RUN npm run build
 # Stage 2: Production Python Backend & SPA Server
 FROM python:3.12-slim
 
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
+
 ARG GIT_SHA=dev
 ENV GIT_SHA=${GIT_SHA}
 

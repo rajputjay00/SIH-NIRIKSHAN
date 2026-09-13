@@ -1,0 +1,68 @@
+[
+  {
+    "text": "CONSUMER CARE CELL:",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        220,
+        10
+      ],
+      [
+        220,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  },
+  {
+    "text": "NIRIKSHAN FOODS LTD, MUMBAI 400001",
+    "confidence": 0.93,
+    "bbox": [
+      [
+        10,
+        35
+      ],
+      [
+        350,
+        35
+      ],
+      [
+        350,
+        55
+      ],
+      [
+        10,
+        55
+      ]
+    ]
+  },
+  {
+    "text": "PHONE: 1800-222-333 EMAIL: HELP@NIRIKSHAN.IN",
+    "confidence": 0.92,
+    "bbox": [
+      [
+        10,
+        60
+      ],
+      [
+        400,
+        60
+      ],
+      [
+        400,
+        80
+      ],
+      [
+        10,
+        80
+      ]
+    ]
+  }
+]

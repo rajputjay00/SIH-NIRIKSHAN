@@ -1,0 +1,10 @@
+{
+  "net_quantity": {
+    "value": 250.0,
+    "unit": "g"
+  },
+  "mrp": {
+    "value": 100.0,
+    "currency": "INR"
+  }
+}

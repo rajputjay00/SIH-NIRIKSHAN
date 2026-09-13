@@ -1,0 +1,9 @@
+{
+  "scripts_detected": [
+    "devanagari"
+  ],
+  "net_quantity": {
+    "value": 500.0,
+    "unit": "g"
+  }
+}

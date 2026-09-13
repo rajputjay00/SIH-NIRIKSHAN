@@ -1,0 +1,22 @@
+{
+  "net_quantity": {
+    "value": 500.0,
+    "unit": "g",
+    "raw_unit": "g",
+    "unit_nonstandard": false
+  },
+  "mrp": {
+    "value": 150.0,
+    "currency": "INR",
+    "incl_taxes_phrase": true,
+    "paise": 0
+  },
+  "mfg_date": {
+    "month": 9,
+    "year": 2026
+  },
+  "consumer_care": {
+    "email": "CARE@NIRIKSHAN.COM",
+    "phone": "1800-123-4567"
+  }
+}

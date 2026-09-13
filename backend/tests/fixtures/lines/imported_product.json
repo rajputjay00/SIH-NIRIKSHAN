@@ -1,0 +1,46 @@
+[
+  {
+    "text": "IMPORTED BY: GLOBAL IMPORTS PVT LTD, MUMBAI 400099",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        10,
+        10
+      ],
+      [
+        450,
+        10
+      ],
+      [
+        450,
+        30
+      ],
+      [
+        10,
+        30
+      ]
+    ]
+  },
+  {
+    "text": "COUNTRY OF ORIGIN: VIETNAM",
+    "confidence": 0.94,
+    "bbox": [
+      [
+        10,
+        35
+      ],
+      [
+        300,
+        35
+      ],
+      [
+        300,
+        55
+      ],
+      [
+        10,
+        55
+      ]
+    ]
+  }
+]

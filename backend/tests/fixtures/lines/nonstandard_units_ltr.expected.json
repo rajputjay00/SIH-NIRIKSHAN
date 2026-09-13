@@ -1,0 +1,8 @@
+{
+  "net_quantity": {
+    "value": 1.0,
+    "unit": "L",
+    "raw_unit": "ltr",
+    "unit_nonstandard": true
+  }
+}

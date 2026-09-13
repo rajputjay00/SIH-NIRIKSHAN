@@ -2,6 +2,7 @@ import io
 import importlib.metadata
 import os
 import subprocess
+import logging
 from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import ocr
 
+logger = logging.getLogger("nirikshan.main")
 MODEL_LOADED = False
 
 try:
@@ -43,14 +45,18 @@ GIT_SHA = get_git_sha()
 def create_warmup_image(width: int, height: int) -> Image.Image:
     img = Image.new("RGB", (width, height), color=(255, 255, 255))
     draw = ImageDraw.Draw(img)
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
     try:
-        font = ImageFont.load_default()
-        draw.text((50, 50), "NET QUANTITY: 1 kg", fill=(0, 0, 0), font=font)
-        draw.text((50, 100), "MRP Rs. 150.00 INCL. OF ALL TAXES", fill=(0, 0, 0), font=font)
-        draw.text((50, 150), "MFD BY: NIRIKSHAN LABS PVT LTD", fill=(0, 0, 0), font=font)
+        font = ImageFont.truetype(font_path, 32)
     except Exception:
-        draw.rectangle([50, 50, 200, 70], fill=(0, 0, 0))
-        draw.rectangle([50, 100, 300, 120], fill=(0, 0, 0))
+        try:
+            font = ImageFont.load_default()
+        except Exception:
+            raise RuntimeError("Neither DejaVuSans font nor load_default could be loaded")
+
+    draw.text((50, 50), "NET QUANTITY: 1 kg", fill=(0, 0, 0), font=font)
+    draw.text((50, 100), "MRP Rs. 150.00 INCL. OF ALL TAXES", fill=(0, 0, 0), font=font)
+    draw.text((50, 150), "MFD BY: NIRIKSHAN LABS PVT LTD", fill=(0, 0, 0), font=font)
     return img
 
 
@@ -64,13 +70,16 @@ async def lifespan(app: FastAPI):
         MODEL_LOADED = True
     except Exception as e:
         MODEL_LOADED = False
-        print(f"Failed to warm up OCR model: {e}")
+        logger.warning(f"Failed to warm up OCR model: {e}")
     yield
 
 
 app = FastAPI(title="Nirikshan API", lifespan=lifespan)
 
 allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "*")
+import time
+from nirikshan import EXTRACTOR_VERSION, extract
+
 origins = [origin.strip() for origin in allowed_origins_raw.split(",") if origin.strip()]
 
 app.add_middleware(
@@ -93,6 +102,7 @@ def health_check():
         "status": "ok",
         "model_loaded": MODEL_LOADED,
         "model_version": MODEL_VERSION,
+        "extractor_version": EXTRACTOR_VERSION,
         "rules_version": None,
         "git_sha": GIT_SHA,
     }
@@ -127,15 +137,24 @@ async def scan_image(file: UploadFile = File(...)):
     width, height = image.size
     ocr_result = ocr.extract_text(image)
 
-    # Stub: Legal Metrology compliance parser (to be implemented in Task 4)
-    # compliance_result = parse_legal_metrology(ocr_result)
+    extract_start = time.perf_counter()
+    declarations_obj = extract(ocr_result.get("lines", []), width, height)
+    extract_ms = (time.perf_counter() - extract_start) * 1000.0
 
     return {
         "filename": file.filename,
         "width": width,
         "height": height,
         "ocr": ocr_result,
+        "declarations": declarations_obj.model_dump(),
+        "timings": {
+            "preprocess_ms": ocr_result.get("preprocess_ms", 0.0),
+            "ocr_ms": ocr_result.get("ocr_ms", 0.0),
+            "extract_ms": round(extract_ms, 2),
+            "elapsed_ms": round(ocr_result.get("elapsed_ms", 0.0) + extract_ms, 2),
+        },
     }
+
 
 
 # Catch-all for unknown /api/* paths to return JSON 404 (not HTML)

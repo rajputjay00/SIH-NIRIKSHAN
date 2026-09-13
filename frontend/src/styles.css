@@ -157,3 +157,88 @@ button:disabled {
   color: var(--text-muted);
   font-style: italic;
 }
+
+.declarations-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.declarations-card h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--accent);
+}
+
+.decl-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.decl-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: var(--bg-color);
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.decl-item.not-found {
+  opacity: 0.5;
+}
+
+.decl-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 140px;
+}
+
+.decl-content {
+  text-align: right;
+}
+
+.decl-value {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.decl-raw {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.decl-conf {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.decl-missing {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.ocr-toggle-section {
+  margin-top: 1rem;
+}
+
+.toggle-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: auto;
+}
+
+.toggle-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+

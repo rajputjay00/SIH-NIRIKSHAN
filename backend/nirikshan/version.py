@@ -1,0 +1,2 @@
+MODEL_VERSION = "rapidocr_1.4.4"
+EXTRACTOR_VERSION = "0.1.0"

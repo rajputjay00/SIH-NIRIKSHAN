@@ -1,0 +1,12 @@
+{
+  "net_quantity": {
+    "value": 500.0,
+    "unit": "g",
+    "unit_nonstandard": false
+  },
+  "mrp": {
+    "value": 45.0,
+    "currency": "INR",
+    "incl_taxes_phrase": true
+  }
+}

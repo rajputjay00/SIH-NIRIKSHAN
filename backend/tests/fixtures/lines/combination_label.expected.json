@@ -1,0 +1,20 @@
+{
+  "generic_name": {
+    "value": "ORGANIC WHOLE WHEAT ATTA"
+  },
+  "net_quantity": {
+    "value": 5.0,
+    "unit": "kg"
+  },
+  "mrp": {
+    "value": 320.0,
+    "incl_taxes_phrase": true
+  },
+  "unit_sale_price": {
+    "value": 64.0,
+    "per_unit": "kg"
+  },
+  "consumer_care": {
+    "phone": "1800-111-222"
+  }
+}

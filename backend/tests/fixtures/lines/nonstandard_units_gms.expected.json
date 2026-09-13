@@ -1,0 +1,8 @@
+{
+  "net_quantity": {
+    "value": 200.0,
+    "unit": "g",
+    "raw_unit": "gms",
+    "unit_nonstandard": true
+  }
+}
