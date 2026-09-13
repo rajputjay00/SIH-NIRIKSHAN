@@ -2,17 +2,22 @@ from typing import Dict, List
 
 FIELD_LEXICON: Dict[str, List[str]] = {
     "manufacturer": [
+        "manufactured in india by",
         "manufactured by",
         "mfd by",
         "mfg by",
         "md by",
         "mfd.by",
         "mfg.by",
+        "mid.by",
         "manufactured for",
         "mfd for",
         "mfg lic no",
         "made by",
         "producer",
+        "regd office",
+        "registered office",
+        "regd. office",
     ],
     "packer": [
         "packed by",
@@ -26,9 +31,10 @@ FIELD_LEXICON: Dict[str, List[str]] = {
     "marketer": [
         "marketed by",
         "mktd by",
-        "marketedby",
+        "mkto.by",
         "mkt by",
         "marketing by",
+        "arketed by",
     ],
     "country_of_origin": [
         "country of origin",
@@ -94,6 +100,7 @@ FIELD_LEXICON: Dict[str, List[str]] = {
     "consumer_care": [
         "consumer care",
         "customer care",
+        "consumer cell",
         "consumer complaints",
         "customer complaints",
         "for feedback",

@@ -3,11 +3,10 @@
     "value": 150.0,
     "unit": "ml"
   },
-  "mfg_date": {
-    "month": 22,
-    "year": 221
+  "mrp": {
+    "declared_elsewhere": "crimp"
   },
-  "manufacturer": {
-    "pin": "396230"
+  "consumer_care": {
+    "phone": "1800-10-22-221"
   }
 }

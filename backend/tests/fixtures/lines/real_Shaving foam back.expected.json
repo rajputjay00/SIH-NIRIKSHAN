@@ -1,5 +1,5 @@
 {
-  "manufacturer": {
-    "pin": "122008"
+  "mfg_date": {
+    "declared_elsewhere": "crimp"
   }
 }

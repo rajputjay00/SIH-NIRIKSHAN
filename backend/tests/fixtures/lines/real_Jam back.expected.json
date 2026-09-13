@@ -1,1 +1,13 @@
-{}
+{
+  "net_quantity": {
+    "value": 700.0,
+    "unit": "g"
+  },
+  "mrp": {
+    "declared_elsewhere": "crimp"
+  },
+  "consumer_care": {
+    "phone": "1800-10-22-221",
+    "email": "LEVER.CARE@UNILEVER.COM"
+  }
+}

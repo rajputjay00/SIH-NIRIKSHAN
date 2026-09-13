@@ -10,6 +10,8 @@
       - present: { field: "packer.name" }
       - present: { field: "importer.name" }
       - present: { field: "marketer.name" }
+      - present: { field: "primary_entity.name" }
+      - present: { field: "primary_entity.address" }
   on_fail: FAIL
   evidence: "declarations.manufacturer.bbox"
   message_en: "Every package must declare the name and address of the manufacturer, packer, or importer."
@@ -108,6 +110,13 @@
     all:
       - no_count_words: {}
   on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - absent: { field: "net_quantity.value" }
+      verdict: N/A
+      message_en: "net quantity not found — see R06"
+      message_hi: "शुद्ध मात्रा नहीं मिली — R06 देखें"
   evidence: "declarations.net_quantity.bbox"
   message_en: "Count words like 'dozen', 'gross', or 'score' are prohibited in net quantity declaration."
   message_hi: "शुद्ध मात्रा घोषणा में 'दर्जन' या 'ग्रॉस' जैसे शब्दों का प्रयोग प्रतिबंधित है।"
@@ -125,6 +134,13 @@
     all:
       - unit_standard: {}
   on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - absent: { field: "net_quantity.value" }
+      verdict: N/A
+      message_en: "net quantity not found — see R06"
+      message_hi: "शुद्ध मात्रा नहीं मिली — R06 देखें"
   evidence: "declarations.net_quantity.bbox"
   message_en: "Non-standard unit abbreviations (e.g., gms, ltr, oz) are prohibited."
   message_hi: "अमानक इकाई प्रतीकों (जैसे gms, ltr, oz) का प्रयोग प्रतिबंधित है।"
@@ -142,6 +158,13 @@
     all:
       - no_qualifier_words: {}
   on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - absent: { field: "net_quantity.value" }
+      verdict: N/A
+      message_en: "net quantity not found — see R06"
+      message_hi: "शुद्ध मात्रा नहीं मिली — R06 देखें"
   evidence: "declarations.net_quantity.bbox"
   message_en: "Qualifier words creating a misleading impression of quantity (e.g. 'approx', 'minimum', 'not less than') are prohibited."
   message_hi: "मात्रा में भ्रम पैदा करने वाले शब्दों (जैसे 'लगभग', 'न्यूनतम') का प्रयोग मना है।"
@@ -243,6 +266,20 @@
       - present: { field: "unit_sale_price.value" }
       - approx_equal: {}
   on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - declared_elsewhere: { field: "unit_sale_price" }
+      verdict: NEEDS_REVIEW
+      message_en: "Declared on crimp/other panel — photograph the crimp and add it as a second image."
+      message_hi: "क्रिम/अन्य पैनल पर घोषित — क्रिम की फोटो लें और उसे दूसरी छवि के रूप में जोड़ें।"
+    - check:
+        any:
+          - absent: { field: "mrp.value" }
+          - absent: { field: "net_quantity.value" }
+      verdict: NEEDS_REVIEW
+      message_en: "cannot verify: MRP or net quantity missing"
+      message_hi: "सत्यापित नहीं किया जा सकता: MRP या शुद्ध मात्रा गायब है"
   evidence: "declarations.unit_sale_price.bbox"
   message_en: "Unit Sale Price must be declared and match MRP divided by net quantity."
   message_hi: "इकाई बिक्री मूल्य घोषित होना चाहिए और MRP को शुद्ध मात्रा से विभाजित करने पर मेल खाना चाहिए।"

@@ -1,1 +1,8 @@
-{}
+{
+  "mrp": {
+    "declared_elsewhere": "crimp"
+  },
+  "consumer_care": {
+    "email": "admin@johnleeindia.com"
+  }
+}

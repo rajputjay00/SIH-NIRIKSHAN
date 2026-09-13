@@ -171,10 +171,7 @@ def eval_predicate(
         target = params.get("block", "first_entity")
         block = None
         if target == "first_entity":
-            for b in [declarations.manufacturer, declarations.packer, declarations.importer, declarations.marketer]:
-                if b is not None:
-                    block = b
-                    break
+            block = declarations.primary_entity
         elif hasattr(declarations, target):
             block = getattr(declarations, target)
 

@@ -102,6 +102,15 @@ def match_field_key(text: str) -> Optional[Tuple[str, str]]:
     return best_match
 
 
+def has_valid_field_value(val_str: str, f_name: str) -> bool:
+    if not val_str:
+        return False
+    if f_name in ["net_quantity", "mrp", "unit_sale_price", "mfg_date", "best_before"]:
+        if not re.search(r'\d', val_str) and not any(m in val_str.lower() for m in ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "crimp"]):
+            return False
+    return True
+
+
 def resolve_value_lines(
     lines: List[OCRLine], key_idx: int, field_name: str
 ) -> Tuple[str, List[OCRLine], str]:
@@ -112,6 +121,7 @@ def resolve_value_lines(
     k_yc = sum(pt[1] for pt in k_bbox) / 4.0
     k_xmin = min(pt[0] for pt in k_bbox)
     k_xmax = max(pt[0] for pt in k_bbox)
+
     # Strategy (a): Same line after key or separator (:, -, etc.)
     matched = match_field_key(k_text)
     matched_key_text = matched[1] if matched else ""
@@ -119,14 +129,14 @@ def resolve_value_lines(
     sep_idx = k_text.find(":")
     if sep_idx != -1 and sep_idx < len(k_text) - 1:
         after_sep = k_text[sep_idx + 1 :].strip()
-        if after_sep:
+        if has_valid_field_value(after_sep, field_name):
             return after_sep, [key_line], "same_line"
 
     if matched_key_text:
-        pattern = re.escape(matched_key_text)
-        after_key = re.sub(pattern, "", k_text, flags=re.IGNORECASE).strip(" :-_.")
-        if after_key and len(after_key) > 0:
-            return after_key, [key_line], "same_line"
+        after_key = clean_matched_key_from_line(k_text, matched_key_text)
+        if after_key and len(after_key) > 0 and after_key.lower() != k_text.lower():
+            if has_valid_field_value(after_key, field_name):
+                return after_key, [key_line], "same_line"
 
     # Strategy (c): Line to the right on the same baseline
     for cand in lines:
@@ -136,8 +146,9 @@ def resolve_value_lines(
         c_yc = sum(pt[1] for pt in c_bbox) / 4.0
         c_xmin = min(pt[0] for pt in c_bbox)
 
-        if abs(c_yc - k_yc) <= 0.6 * k_height and c_xmin >= k_xmin:
-            return cand.text.strip(), [cand], "right"
+        if abs(c_yc - k_yc) <= 0.8 * k_height and c_xmin >= k_xmin:
+            if has_valid_field_value(cand.text, field_name):
+                return cand.text.strip(), [cand], "right"
 
     # Strategy (b): Line directly below
     for next_idx in range(key_idx + 1, min(len(lines), key_idx + 4)):
@@ -163,7 +174,8 @@ def resolve_value_lines(
         left_in_range = (k_xmin - 10.0 <= c_xmin <= k_xmax + 10.0)
 
         if gap_y < 2.5 * k_height and (horiz_overlap_ratio >= 0.20 or left_in_range):
-            return cand.text.strip(), [cand], "below"
+            if has_valid_field_value(cand.text, field_name):
+                return cand.text.strip(), [cand], "below"
 
     return k_text.strip(), [key_line], "same_line"
 
@@ -315,9 +327,24 @@ def clean_matched_key_from_line(line_text: str, matched_key: str) -> str:
         return line_text.strip()
     pattern = r'^\s*' + re.escape(matched_key) + r'[\s\:\_\-\.]*'
     cleaned = re.sub(pattern, "", line_text, flags=re.IGNORECASE).strip(" :-_.")
-    if not cleaned or cleaned.lower() == line_text.lower():
-        cleaned = re.sub(re.escape(matched_key), "", line_text, flags=re.IGNORECASE).strip(" :-_.")
-    return cleaned
+    if cleaned and cleaned.lower() != line_text.lower():
+        return cleaned
+
+    no_space_key = matched_key.replace(" ", "")
+    pattern_ns = r'^\s*' + re.escape(no_space_key) + r'[\s\:\_\-\.]*'
+    cleaned_ns = re.sub(pattern_ns, "", line_text, flags=re.IGNORECASE).strip(" :-_.")
+    if cleaned_ns and cleaned_ns.lower() != line_text.lower():
+        return cleaned_ns
+
+    cleaned_sub = re.sub(re.escape(matched_key), "", line_text, flags=re.IGNORECASE).strip(" :-_.")
+    if cleaned_sub and cleaned_sub.lower() != line_text.lower():
+        return cleaned_sub
+
+    cleaned_sub_ns = re.sub(re.escape(no_space_key), "", line_text, flags=re.IGNORECASE).strip(" :-_.")
+    if cleaned_sub_ns and cleaned_sub_ns.lower() != line_text.lower():
+        return cleaned_sub_ns
+
+    return line_text.strip()
 
 
 def parse_mrp(raw_text: str) -> Dict[str, Any]:
@@ -330,7 +357,12 @@ def parse_mrp(raw_text: str) -> Dict[str, Any]:
     val_num = None
     paise_num = None
 
-    m = re.search(r'(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d{1,2})?)', text, re.IGNORECASE)
+    m = re.search(r'(?:₹|rs\.?|inr)\s*(\d+(?:\.\d{1,2})?)', text, re.IGNORECASE)
+    if not m:
+        is_batch_code = bool(re.search(r'[A-Za-z]{2,}\d+|\d+[A-Za-z]+', text))
+        if not is_batch_code:
+            m = re.search(r'(\d+(?:\.\d{1,2})?)', text)
+
     if m:
         try:
             val_num = float(m.group(1))
@@ -507,7 +539,7 @@ def parse_consumer_care_block(
     email_val = email_match.group(0).replace(" ", "") if email_match else None
 
     phone_match = re.search(
-        r'\b(?:1800|1860)[- ]?\d{3,4}[- ]?\d{3,4}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b',
+        r'(?:1800|1860)(?:[- ]?\d){6,7}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b',
         raw_text,
     )
     phone_val = phone_match.group(0) if phone_match else None
@@ -596,8 +628,9 @@ def extract(
                 line_obj.id = idx
             lines.append(line_obj)
         else:
+            lid = item.get("id") if (isinstance(item, dict) and item.get("id") is not None) else idx
             line_obj = OCRLine(
-                id=item.get("id", idx),
+                id=lid,
                 text=item["text"],
                 confidence=float(item["confidence"]),
                 bbox=item["bbox"],
@@ -609,6 +642,7 @@ def extract(
     claimed_line_ids = set()
 
     extracted_dict: Dict[str, Any] = {}
+    extracted_entities: List[EntityBlock] = []
 
     # Keyed search first
     for idx, line in enumerate(lines):
@@ -625,7 +659,9 @@ def extract(
             for l in absorbed:
                 if l.id is not None:
                     claimed_line_ids.add(l.id)
-            extracted_dict[field_name] = parse_entity_block(absorbed, field_name, matched_key)
+            eb = parse_entity_block(absorbed, field_name, matched_key)
+            extracted_dict[field_name] = eb
+            extracted_entities.append(eb)
             continue
 
         if field_name == "consumer_care":
@@ -726,22 +762,18 @@ def extract(
                 source=strategy,
             )
 
-    # Check global crimp notices if fields were not extracted or lack crimp flag
+    # Check global crimp notices and tax phrases (squash "ofalltax" / "ofaltax")
     for line in lines:
-        if is_crimp_text(line.text):
+        sq = squash(line.text)
+        has_tax = any(pat in sq for pat in ["ofalltax", "ofaltax", "inclofalltax", "inclofaltax", "inclofal", "ofal"])
+        has_crimp = is_crimp_text(line.text) or "seecodingarea" in sq or "seecrimp" in sq or "oncrimp" in sq or "atcrimp" in sq
+
+        if has_tax or has_crimp:
             txt_lower = line.text.lower()
-            if "mfg" in txt_lower or "pkd" in txt_lower or "date" in txt_lower:
-                if "mfg_date" not in extracted_dict:
-                    extracted_dict["mfg_date"] = DateField(
-                        declared_elsewhere="crimp",
-                        raw=line.text,
-                        bbox=line.bbox,
-                        confidence=round(float(line.confidence * 0.8), 4),
-                        source_line_ids=[line.id],
-                        source="crimp_notice",
-                    )
-            if "mrp" in txt_lower or "rs" in txt_lower or "price" in txt_lower:
-                if "mrp" not in extracted_dict:
+            has_rupee_val = bool(re.search(r'(?:₹|rs\.?|inr)\s*\d+|\b\d+\.\d{2}\b', line.text, re.IGNORECASE))
+
+            if (has_tax and not has_rupee_val) or has_crimp or "mrp" in txt_lower or "price" in txt_lower:
+                if "mrp" not in extracted_dict or extracted_dict["mrp"].value is None:
                     extracted_dict["mrp"] = MRP(
                         declared_elsewhere="crimp",
                         raw=line.text,
@@ -750,9 +782,19 @@ def extract(
                         source_line_ids=[line.id],
                         source="crimp_notice",
                     )
-            if "net" in txt_lower or "qty" in txt_lower or "weight" in txt_lower:
-                if "net_quantity" not in extracted_dict:
-                    extracted_dict["net_quantity"] = NetQuantity(
+            if "usp" in sq or "unitsaleprice" in sq or "unit" in txt_lower:
+                if "unit_sale_price" not in extracted_dict or extracted_dict["unit_sale_price"].value is None:
+                    extracted_dict["unit_sale_price"] = UnitSalePrice(
+                        declared_elsewhere="crimp",
+                        raw=line.text,
+                        bbox=line.bbox,
+                        confidence=round(float(line.confidence * 0.8), 4),
+                        source_line_ids=[line.id],
+                        source="crimp_notice",
+                    )
+            if "mfg" in txt_lower or "pkd" in txt_lower or "date" in txt_lower or "mfd" in sq or "batch" in sq:
+                if "mfg_date" not in extracted_dict or (extracted_dict["mfg_date"].month is None and extracted_dict["mfg_date"].year is None):
+                    extracted_dict["mfg_date"] = DateField(
                         declared_elsewhere="crimp",
                         raw=line.text,
                         bbox=line.bbox,
@@ -761,7 +803,7 @@ def extract(
                         source="crimp_notice",
                     )
             if "exp" in txt_lower or "best before" in txt_lower or "use by" in txt_lower:
-                if "best_before" not in extracted_dict:
+                if "best_before" not in extracted_dict or (extracted_dict["best_before"].month is None and extracted_dict["best_before"].year is None):
                     extracted_dict["best_before"] = DateField(
                         declared_elsewhere="crimp",
                         raw=line.text,
@@ -777,7 +819,7 @@ def extract(
     if cc_obj is None or not cc_obj.phone:
         for line in lines:
             m_phone = re.search(
-                r'\b(?:1800|1860)[- ]?\d{3,4}[- ]?\d{3,4}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b',
+                r'\b(?:1800|1860)(?:[- ]?\d){6,7}\b|\b[6-9]\d{9}\b|\b0\d{2,4}[- ]?\d{6,8}\b',
                 line.text,
             )
             if m_phone:
@@ -842,16 +884,20 @@ def extract(
             if target_ent:
                 target_ent.pin = pin_found
             else:
-                extracted_dict["manufacturer"] = EntityBlock(
+                eb_pin = EntityBlock(
                     value=pin_line.text.strip(),
                     raw=pin_line.text.strip(),
+                    name=pin_line.text.strip(),
+                    address=pin_line.text.strip(),
                     pin=pin_found,
                     bbox=pin_line.bbox,
                     confidence=round(float(pin_line.confidence * 0.8), 4),
                     source_line_ids=[pin_line.id],
                     source="global_regex",
-                    role="manufacturer",
+                    role="unqualified",
                 )
+                extracted_dict["manufacturer"] = eb_pin
+                extracted_entities.append(eb_pin)
 
     # 3. Standalone Quantity fallback
     if "net_quantity" not in extracted_dict:
@@ -878,25 +924,50 @@ def extract(
                     break
 
     # 4. Unkeyed Date fallback
-    if "mfg_date" not in extracted_dict:
-        for line in lines:
-            txt_lower = line.text.lower()
-            if "exp" in txt_lower or "best before" in txt_lower or "use by" in txt_lower:
-                continue
-            parsed = parse_date(line.text)
-            if parsed["month"] is not None or parsed["year"] is not None or parsed["duration_months"] is not None:
-                extracted_dict["mfg_date"] = DateField(
-                    day=parsed["day"],
-                    month=parsed["month"],
-                    year=parsed["year"],
-                    duration_months=parsed["duration_months"],
-                    raw=line.text.strip(),
-                    bbox=line.bbox,
-                    confidence=round(float(line.confidence * 0.8), 4),
-                    source_line_ids=[line.id],
+    skip_keywords = ["toll", "free", "1800", "1860", "tel", "phone", "helpline"]
+    unkeyed_dates = []
+    unkeyed_regex = re.compile(r'(?<![\d-])(0[1-9]|1[0-2])[-/](20[2-3]\d)(?![\d-])')
+
+    for line in lines:
+        txt_lower = line.text.lower()
+        if any(kw in txt_lower for kw in skip_keywords):
+            continue
+        for m in unkeyed_regex.finditer(line.text):
+            m_month = int(m.group(1))
+            m_year = int(m.group(2))
+            unkeyed_dates.append((m_year, m_month, line))
+
+    if unkeyed_dates:
+        unkeyed_dates.sort(key=lambda d: (d[0], d[1]))
+        if "mfg_date" not in extracted_dict or (extracted_dict["mfg_date"].month is None and extracted_dict["mfg_date"].year is None):
+            earliest = unkeyed_dates[0]
+            extracted_dict["mfg_date"] = DateField(
+                day=None,
+                month=earliest[1],
+                year=earliest[0],
+                raw=earliest[2].text.strip(),
+                bbox=earliest[2].bbox,
+                confidence=round(float(earliest[2].confidence * 0.8), 4),
+                source_line_ids=[earliest[2].id],
+                source="unkeyed",
+            )
+        if len(unkeyed_dates) >= 2:
+            latest = unkeyed_dates[-1]
+            if "best_before" not in extracted_dict:
+                extracted_dict["best_before"] = DateField(
+                    day=None,
+                    month=latest[1],
+                    year=latest[0],
+                    raw=latest[2].text.strip(),
+                    bbox=latest[2].bbox,
+                    confidence=round(float(latest[2].confidence * 0.8), 4),
+                    source_line_ids=[latest[2].id if latest[2].id is not None else 0],
                     source="unkeyed",
                 )
-                break
+            elif extracted_dict["best_before"].month is None and extracted_dict["best_before"].year is None:
+                bb = extracted_dict["best_before"]
+                bb.month = latest[1]
+                bb.year = latest[0]
 
     # 5. MRP & USP combined / standalone pattern fallback
     if "mrp" not in extracted_dict:
@@ -960,12 +1031,43 @@ def extract(
         gen_field = extract_generic_name(lines, claimed_line_ids)
         if gen_field:
             extracted_dict["generic_name"] = gen_field
+            for lid in gen_field.source_line_ids:
+                claimed_line_ids.add(lid)
+
+    # Unqualified address detection (deemed manufacturer per Rule 6(1)(a) Explanation I)
+    unqualified_patterns = [r'\bdist\.?\b', r'\bdistt\.?\b', r'\bh\.?p\.?\b', r'\bsolan\b', r'\bmumbai\b', r'\bkalbadevi\b', r'\bindia\b', r'\bdelhi\b', r'\bbaddi\b', r'\bgujarat\b', r'\bmaharashtra\b', r'\broad\b', r'\bindustrial\s+area\b']
+    for line in lines:
+        if line.id in claimed_line_ids:
+            continue
+        txt_lower = line.text.lower()
+        if any(kw in txt_lower for kw in ["mrp", "rs.", "inr", "net", "qty", "mfg", "exp", "batch", "phone", "email", "tollfree", "lever.care", "daburcares"]):
+            continue
+        m_pin = re.search(r'\b[1-9][0-9]{5}\b', line.text)
+        has_addr_kw = any(re.search(pat, txt_lower) for pat in unqualified_patterns)
+        if m_pin or has_addr_kw:
+            pin_val = m_pin.group(0) if m_pin else None
+            unq_eb = EntityBlock(
+                value=line.text.strip(),
+                raw=line.text.strip(),
+                name=line.text.strip(),
+                address=line.text.strip(),
+                pin=pin_val,
+                bbox=line.bbox,
+                confidence=round(float(line.confidence * 0.8), 4),
+                source_line_ids=[line.id],
+                source="unqualified_line",
+                role="unqualified",
+            )
+            extracted_entities.append(unq_eb)
+            if "manufacturer" not in extracted_dict and "marketer" not in extracted_dict and "packer" not in extracted_dict:
+                extracted_dict["manufacturer"] = unq_eb
 
     return Declarations(
         manufacturer=extracted_dict.get("manufacturer"),
         packer=extracted_dict.get("packer"),
         importer=extracted_dict.get("importer"),
         marketer=extracted_dict.get("marketer"),
+        entities=extracted_entities,
         country_of_origin=extracted_dict.get("country_of_origin"),
         generic_name=extracted_dict.get("generic_name"),
         net_quantity=extracted_dict.get("net_quantity"),

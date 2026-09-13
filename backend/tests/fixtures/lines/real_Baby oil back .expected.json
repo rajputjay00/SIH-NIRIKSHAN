@@ -2,12 +2,5 @@
   "net_quantity": {
     "value": 200.0,
     "unit": "ml"
-  },
-  "mfg_date": {
-    "month": 22,
-    "year": 346
-  },
-  "manufacturer": {
-    "pin": "173205"
   }
 }

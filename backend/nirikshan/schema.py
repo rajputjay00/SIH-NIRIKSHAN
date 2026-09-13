@@ -71,6 +71,7 @@ class Declarations(BaseModel):
     packer: Optional[EntityBlock] = None
     importer: Optional[EntityBlock] = None
     marketer: Optional[EntityBlock] = None
+    entities: List[EntityBlock] = Field(default_factory=list)
     country_of_origin: Optional[FieldModel] = None
     generic_name: Optional[FieldModel] = None
     net_quantity: Optional[NetQuantity] = None
@@ -80,6 +81,26 @@ class Declarations(BaseModel):
     best_before: Optional[DateField] = None
     consumer_care: Optional[ConsumerCare] = None
     scripts_detected: List[str] = Field(default_factory=list)
+
+    @property
+    def primary_entity(self) -> Optional[EntityBlock]:
+        if self.manufacturer:
+            return self.manufacturer
+        if self.packer:
+            return self.packer
+        if self.importer:
+            return self.importer
+        if self.marketer:
+            return self.marketer
+        if self.entities:
+            for e in self.entities:
+                if e.role in ["regd_office", "regd office", "registered office"]:
+                    return e
+            for e in self.entities:
+                if e.role == "unqualified":
+                    return e
+            return self.entities[0]
+        return None
 
 
 class ContextModel(BaseModel):
