@@ -1,0 +1,31 @@
+.scanContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.meshGrid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(var(--blue-500) 1px, transparent 1px);
+  background-size: 16px 16px;
+  opacity: 0.15;
+}
+
+.sweepLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--blue-500);
+  box-shadow: 0 0 12px 3px var(--blue-500);
+}

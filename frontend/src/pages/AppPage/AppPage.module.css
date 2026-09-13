@@ -1,0 +1,102 @@
+.appPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.uploadCard {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.chipScrollRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.fileDropArea {
+  border: 2px dashed var(--blue-200);
+  background-color: var(--blue-50);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.fileDropArea:hover {
+  border-color: var(--blue-500);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.dropLabel {
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.dropHint {
+  font-size: 0.8rem;
+  color: var(--grey-500);
+}
+
+.scanSection {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.countsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qualityWarning {
+  background-color: var(--review-bg);
+  color: var(--review);
+  border: 1px solid var(--review);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.declGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}

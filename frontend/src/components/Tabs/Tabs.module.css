@@ -1,0 +1,38 @@
+.tabsContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid var(--grey-100);
+  margin-bottom: 16px;
+  position: relative;
+  overflow-x: auto;
+}
+
+.tabItem {
+  position: relative;
+  padding: 10px 16px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--grey-500);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  transition: color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.activeTab {
+  color: var(--blue-600);
+}
+
+.activeUnderline {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--blue-500);
+  border-radius: 2px;
+}

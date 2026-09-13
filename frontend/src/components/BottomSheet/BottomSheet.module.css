@@ -1,0 +1,35 @@
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(12, 42, 70, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheetContent {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--white);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  padding: 16px 20px 24px 20px;
+  box-shadow: var(--shadow-float);
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.dragHandle {
+  width: 36px;
+  height: 5px;
+  background-color: var(--grey-300);
+  border-radius: 3px;
+  margin: 0 auto 16px auto;
+  cursor: grab;
+}

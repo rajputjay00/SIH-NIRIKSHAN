@@ -1,0 +1,54 @@
+.stepperContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 16px 0;
+  position: relative;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.iconCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--grey-100);
+  border: 2px solid var(--grey-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-500);
+  transition: all var(--dur-base) var(--ease-out);
+}
+
+.active .iconCircle {
+  background-color: var(--blue-50);
+  border-color: var(--blue-500);
+  color: var(--blue-500);
+}
+
+.completed .iconCircle {
+  background-color: var(--blue-500);
+  border-color: var(--blue-500);
+  color: var(--white);
+}
+
+.stepLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--grey-500);
+  text-align: center;
+}
+
+.active .stepLabel, .completed .stepLabel {
+  color: var(--navy-900);
+}

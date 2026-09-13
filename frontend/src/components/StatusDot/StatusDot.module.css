@@ -1,0 +1,28 @@
+.statusWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--grey-700);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.healthy {
+  background-color: var(--pass);
+  box-shadow: 0 0 8px var(--pass);
+}
+
+.unhealthy {
+  background-color: var(--fail);
+}
+
+.checking {
+  background-color: var(--review);
+}

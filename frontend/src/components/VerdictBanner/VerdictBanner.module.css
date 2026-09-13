@@ -1,0 +1,62 @@
+.bannerContainer {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.compliant {
+  background-color: var(--pass-bg);
+  border: 1.5px solid var(--pass);
+  color: var(--pass);
+}
+
+.nonCompliant {
+  background-color: var(--fail-bg);
+  border: 1.5px solid var(--fail);
+  color: var(--fail);
+}
+
+.reviewRequired {
+  background-color: var(--review-bg);
+  border: 1.5px solid var(--review);
+  color: var(--review);
+}
+
+.exempt {
+  background-color: var(--blue-50);
+  border: 1.5px solid var(--blue-500);
+  color: var(--navy-900);
+}
+
+.statusText {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.exemptReason {
+  font-size: 0.85rem;
+  font-weight: 400;
+  margin-top: 4px;
+  color: var(--grey-700);
+}
+
+.rippleRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  margin-top: -100px;
+  margin-left: -100px;
+  border-radius: 50%;
+  border: 2px solid var(--pass);
+  pointer-events: none;
+}

@@ -1,0 +1,43 @@
+.countChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.fail {
+  background-color: var(--fail-bg);
+  color: var(--fail);
+}
+
+.review {
+  background-color: var(--review-bg);
+  color: var(--review);
+}
+
+.pass {
+  background-color: var(--pass-bg);
+  color: var(--pass);
+}
+
+.na {
+  background-color: var(--na-bg);
+  color: var(--na);
+}
+
+.countBadge {
+  background-color: currentColor;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.fail .countBadge { background-color: var(--fail); }
+.review .countBadge { background-color: var(--review); }
+.pass .countBadge { background-color: var(--pass); }
+.na .countBadge { background-color: var(--na); }

@@ -1,0 +1,126 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--grey-50);
+  color: var(--navy-900);
+  font-family: var(--font-sans);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--navy-900);
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navLink {
+  text-decoration: none;
+  color: var(--grey-500);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.navLink:hover {
+  color: var(--navy-900);
+  background-color: var(--blue-50);
+}
+
+.activeNavLink {
+  color: var(--blue-600);
+  background-color: var(--blue-50);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  position: relative;
+}
+
+.curtainOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--blue-50);
+  z-index: 150;
+  pointer-events: none;
+}
+
+.footer {
+  border-top: 1px solid var(--grey-100);
+  background-color: var(--white);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--grey-500);
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footerRight {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--grey-500);
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 10px 14px;
+  }
+  .nav {
+    gap: 6px;
+  }
+  .navLink {
+    padding: 4px 8px;
+    font-size: 0.82rem;
+  }
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
