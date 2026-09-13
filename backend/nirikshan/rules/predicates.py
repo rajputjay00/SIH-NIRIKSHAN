@@ -259,18 +259,24 @@ def eval_predicate(
         return False, "No GTIN/barcode detected", None, None
 
     elif pred_name == "has_dimension_or_sheet_count":
-        nq = declarations.net_quantity
-        nq_raw = (nq.raw if nq and nq.raw else "").lower()
-
         dim_pattern = re.compile(r'\d+\s*(cm|m|mm)\s*[x×]\s*\d+', re.IGNORECASE)
-        sheet_pattern = re.compile(r'\b\d+\s*(sheets?|pieces?|pcs|n|count)\b|\bsheet count\b', re.IGNORECASE)
+        sheet_pattern = re.compile(r'\b\d+\s*(sheets?|pieces?|pcs|metres?|meters?)\b|\bsheet count\b|\bpiece count\b', re.IGNORECASE)
 
-        if dim_pattern.search(nq_raw) or sheet_pattern.search(nq_raw):
-            return True, "Dimensions or count declaration found", nq_raw, nq.bbox if nq else None
+        text_to_check = declarations.all_text or ""
+        if not text_to_check:
+            fields_raw = []
+            for f in [declarations.net_quantity, declarations.generic_name, declarations.mrp]:
+                if f and hasattr(f, "raw") and f.raw:
+                    fields_raw.append(f.raw)
+            text_to_check = "\n".join(fields_raw)
 
-        for f in [declarations.generic_name, declarations.mrp]:
-            if f and f.raw and (dim_pattern.search(f.raw.lower()) or sheet_pattern.search(f.raw.lower())):
-                return True, "Dimensions or count declaration found", f.raw, f.bbox
+        m_dim = dim_pattern.search(text_to_check)
+        if m_dim:
+            return True, f"Dimension declaration found: '{m_dim.group(0)}'", m_dim.group(0), declarations.net_quantity.bbox if declarations.net_quantity else None
+
+        m_sheet = sheet_pattern.search(text_to_check)
+        if m_sheet:
+            return True, f"Count declaration found: '{m_sheet.group(0)}'", m_sheet.group(0), declarations.net_quantity.bbox if declarations.net_quantity else None
 
         return False, "Dimensions/count declaration required — verify", None, None
 

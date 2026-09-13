@@ -5,7 +5,7 @@ import yaml
 from functools import lru_cache
 
 from nirikshan.rules.predicates import eval_predicate
-from nirikshan.schema import ApplicabilityModel, Declarations, FindingModel, SummaryModel
+from nirikshan.schema import ApplicabilityModel, ContextModel, Declarations, FindingModel, SummaryModel
 
 
 CATALOGUE_PATH = os.path.join(os.path.dirname(__file__), "catalogue.yaml")
@@ -105,12 +105,19 @@ def eval_check_block(
     return False, ["Invalid check node"], None, None
 
 
+import datetime
+
 def evaluate(
-    declarations: Declarations, applicability: ApplicabilityModel, quality: Optional[Dict[str, Any]] = None
+    declarations: Declarations,
+    applicability: ApplicabilityModel,
+    quality: Optional[Dict[str, Any]] = None,
+    context: Optional[ContextModel] = None,
 ) -> Tuple[List[FindingModel], SummaryModel]:
     catalogue = load_catalogue()
     findings: List[FindingModel] = []
-    counts = {"PASS": 0, "FAIL": 0, "NEEDS_REVIEW": 0, "N/A": 0}
+    counts = {"PASS": 0, "FAIL": 0, "NEEDS_REVIEW": 0, "MANUAL": 0, "INFO": 0, "N/A": 0}
+
+    ref_date = (context.reference_date if context and context.reference_date else None) or datetime.date.today().isoformat()
 
     for rule in catalogue:
         rid = rule["id"]
@@ -157,11 +164,31 @@ def evaluate(
             counts["N/A"] += 1
             continue
 
+        # Generic effective date check against context.reference_date
+        eff_from = rule.get("effective_from")
+        eff_to = rule.get("effective_to")
+        if (eff_from and ref_date < eff_from) or (eff_to and ref_date > eff_to):
+            finding = FindingModel(
+                rule_id=rid,
+                rule_ref=rref,
+                verdict="N/A",
+                severity=severity,
+                extracted=None,
+                expected=None,
+                evidence_bbox=None,
+                message_en=f"not in force on {ref_date}",
+                message_hi=f"{ref_date} को लागू नहीं है",
+                fix_hint_en=None,
+            )
+            findings.append(finding)
+            counts["N/A"] += 1
+            continue
+
         # Evaluate rule check
         check_ok, details, extracted_val, bbox = eval_check_block(rule["check"], declarations, quality)
 
         if check_ok:
-            verdict = "PASS"
+            verdict = rule.get("verdict") or rule.get("on_pass") or "PASS"
             msg_en_final = f"Compliant: {rule['title_en']}"
             msg_hi_final = f"अनुपालन: {rule['title_hi']}"
 
@@ -171,18 +198,17 @@ def evaluate(
                     if "when_pass" in unc:
                         u_ok, _, _, _ = eval_check_block(unc["when_pass"], declarations, quality)
                         if u_ok:
-                            verdict = unc.get("verdict", "NEEDS_REVIEW")
+                            verdict = unc.get("verdict", verdict)
                             msg_en_final = unc.get("message_en", msg_en_final)
                             msg_hi_final = unc.get("message_hi", msg_hi_final)
                             break
                     elif "check" in unc:
                         u_ok, _, _, _ = eval_check_block(unc["check"], declarations, quality)
                         if u_ok:
-                            verdict = unc.get("verdict", "NEEDS_REVIEW")
+                            verdict = unc.get("verdict", verdict)
                             msg_en_final = unc.get("message_en", msg_en_final)
                             msg_hi_final = unc.get("message_hi", msg_hi_final)
                             break
-
 
             finding = FindingModel(
                 rule_id=rid,
@@ -241,10 +267,10 @@ def evaluate(
             findings.append(finding)
             counts[verdict] += 1
 
-    # Overall Summary calculation
+    # Overall Summary calculation: MANUAL counts towards "Officer review required", INFO never affects status
     if counts["FAIL"] > 0:
         status = "Non-compliant"
-    elif counts["NEEDS_REVIEW"] > 0:
+    elif counts["NEEDS_REVIEW"] > 0 or counts["MANUAL"] > 0:
         status = "Officer review required"
     elif applicability.exempt_reason:
         status = "Exempt"

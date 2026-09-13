@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 import numpy as np
 from PIL import Image, ImageOps
 

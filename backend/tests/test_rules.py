@@ -31,7 +31,7 @@ def test_rule_fixtures(fixture_path):
 
     declarations = extract(lines_data, 1600, 1200)
 
-    # Determine context if wholesale, import or food in fixture path
+    # Determine context if wholesale, import, food, R13, R28, or R34 in fixture path
     ctx = ContextModel()
     if "R27" in fixture_path:
         ctx.package_type = "wholesale"
@@ -39,9 +39,15 @@ def test_rule_fixtures(fixture_path):
         ctx.category = "food"
     if "R04" in fixture_path:
         ctx.is_import = True
+    if "R13" in fixture_path:
+        ctx.reference_date = "2021-05-01"
+    if "R28" in fixture_path:
+        ctx.package_type = "combination"
+    if "R34" in fixture_path:
+        ctx.category = "textile"
 
     applicability = resolve(ctx, declarations)
-    findings, summary = evaluate(declarations, applicability)
+    findings, summary = evaluate(declarations, applicability, context=ctx)
 
     findings_by_id = {f.rule_id: f for f in findings}
 

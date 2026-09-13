@@ -1275,5 +1275,6 @@ def extract(
         multi_unit_note=multi_unit_note,
         mrp_candidates=mrp_candidates,
         gtin=gtin_field,
+        all_text="\n".join(l.text for l in lines),
     )
 

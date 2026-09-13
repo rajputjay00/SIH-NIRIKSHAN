@@ -84,6 +84,7 @@ class Declarations(BaseModel):
     multi_unit_note: bool = False
     mrp_candidates: List[FieldModel] = Field(default_factory=list)
     gtin: Optional[FieldModel] = None
+    all_text: Optional[str] = None
     @property
     def primary_entity(self) -> Optional[EntityBlock]:
         if self.manufacturer:

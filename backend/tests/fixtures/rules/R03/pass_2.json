@@ -1,0 +1,24 @@
+[
+  {
+    "text": "Packed by: Zenith Retail Ltd",
+    "confidence": 0.95,
+    "bbox": [
+      [
+        0,
+        0
+      ],
+      [
+        100,
+        0
+      ],
+      [
+        100,
+        10
+      ],
+      [
+        0,
+        10
+      ]
+    ]
+  }
+]

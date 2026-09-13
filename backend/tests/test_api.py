@@ -110,3 +110,12 @@ def test_real_ocr_smoke_test():
     assert "ocr" in data
     assert "full_text" in data["ocr"]
     assert "ocr_ms" in data["ocr"]
+
+
+def test_get_rules_catalogue():
+    response = client.get("/api/rules")
+    assert response.status_code == 200
+    data = response.json()
+    assert "rules_version" in data
+    assert "rules" in data
+    assert len(data["rules"]) == 26

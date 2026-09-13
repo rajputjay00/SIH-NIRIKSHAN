@@ -47,6 +47,24 @@
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
 
+- id: R03
+  key: LMPC.6.1.a.RESPONSIBLE_ENTITY
+  rule_ref: "Rule 6(1)(a) Expl. I–II"
+  title_en: "Responsible Entity Identification"
+  title_hi: "उत्तरदायी संस्था की पहचान"
+  severity: low
+  check:
+    all:
+      - responsible_entity: {}
+  on_fail: FAIL
+  verdict: INFO
+  evidence: "declarations.manufacturer.bbox"
+  message_en: "Responsible entity (primary entity and role) must be declared; marketer is deemed responsible if present."
+  message_hi: "उत्तरदायी संस्था (प्राथमिक संस्था और भूमिका) घोषित होनी चाहिए; यदि मार्केटर मौजूद है तो उसे उत्तरदायी माना जाएगा।"
+  fix_hint_en: "Declare full name and address of manufacturer, packer, importer, or marketer."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
 - id: R04
   key: LMPC.6.1.aa.COUNTRY_OF_ORIGIN
   rule_ref: "Rule 6(1)(aa)"
@@ -269,6 +287,24 @@
   effective_from: "2018-01-01"
   source: "G.S.R. 629(E)"
 
+- id: R13
+  key: LMPC.6.1.e.MRP_PAISE_ROUNDING
+  rule_ref: "Rule 6(1)(e)"
+  title_en: "MRP Fractional Paise Rounding (.00 or .50)"
+  title_hi: "एमआरपी अंश पैसा पूर्णांकन (.00 या .50)"
+  severity: low
+  check:
+    all:
+      - mrp_paise_valid: {}
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.mrp.bbox"
+  message_en: "MRP paise must be declared as .00 or .50."
+  message_hi: "एमआरपी पैसा .00 या .50 के रूप में घोषित होना चाहिए।"
+  fix_hint_en: "Round MRP fractional paise to .00 or .50."
+  effective_from: "2011-03-01"
+  effective_to: "2022-03-31"
+  source: "LMPC Rules 2011"
+
 - id: R14
   key: LMPC.6.11.UNIT_SALE_PRICE
   rule_ref: "Rule 6(11)"
@@ -318,7 +354,24 @@
   evidence: "declarations.consumer_care.bbox"
   message_en: "Consumer care details must include telephone/toll-free number AND email AND contact address/name."
   message_hi: "उपभोक्ता सहायता में फोन नंबर, ईमेल और संपर्क नाम/पता शामिल होना अनिवार्य है।"
-  fix_hint_en: "Provide telephone, email, and postal address of the person/office to be contacted."
+  fix_hint_en: "Add 'For Feedback/Complaints contact Consumer Care at Phone: 1800-XXX-XXXX, Email: care@company.com'."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R16
+  key: LMPC.6.3.MRP_ALTERATION_STICKER
+  rule_ref: "Rule 6(3)–(4)"
+  title_en: "Consistent MRP Declaration (No Altered/Sticker MRP)"
+  title_hi: "संगत एमआरपी घोषणा (कोई बदला/स्टिकर एमआरपी नहीं)"
+  severity: high
+  check:
+    all:
+      - no_conflicting_mrp: {}
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.mrp.bbox"
+  message_en: "possible sticker / altered MRP"
+  message_hi: "संभावित स्टिकर / बदला हुआ एमआरपी"
+  fix_hint_en: "Ensure only one clear, consistent MRP is marked on the package without overlapping stickers."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
 
@@ -347,10 +400,6 @@
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
 
-  fix_hint_en: "Add 'For Feedback/Complaints contact Consumer Care at Phone: 1800-XXX-XXXX, Email: care@company.com'."
-  effective_from: "2011-03-01"
-  source: "LMPC Rules 2011"
-
 - id: R23
   key: LMPC.9.4.SCRIPT_HINDI_OR_ENGLISH
   rule_ref: "Rule 9(4)"
@@ -365,6 +414,23 @@
   message_en: "Mandatory declarations must be in Hindi (Devanagari) or English."
   message_hi: "अनिवार्य घोषणाएं हिंदी (देवनागरी) या अंग्रेजी में होनी चाहिए।"
   fix_hint_en: "Ensure all key label text is printed in English or Hindi script."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R24
+  key: LMPC.9.2.LIQUID_OUTER_WRAPPER
+  rule_ref: "Rule 9(2)–(3)"
+  title_en: "Declarations Readability Through Liquid / Outer Wrapper"
+  title_hi: "तरल/पारदर्शी बाहरी आवरण के माध्यम से घोषणाएं"
+  severity: medium
+  check:
+    all:
+      - manual_checklist_check: {}
+  on_fail: MANUAL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "declarations not read through liquid / outer wrapper carries declarations"
+  message_hi: "तरल के माध्यम से घोषणाएं नहीं पढ़ी गईं / बाहरी आवरण पर घोषणाएं होनी चाहिए"
+  fix_hint_en: "Verify that declarations are clearly legible through transparent liquid or printed on outer wrapper."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
 
@@ -420,6 +486,64 @@
   message_en: "Wholesale packages must contain name/address, generic name, and net quantity/count."
   message_hi: "थोक पैकेजों पर नाम/पता, जेनेरिक नाम और शुद्ध मात्रा होनी चाहिए।"
   fix_hint_en: "Add manufacturer details, commodity name, and total count/net quantity on wholesale pack."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R28
+  key: LMPC.6.5.COMBINATION_MULTI_PIECE
+  rule_ref: "Rule 6(5)"
+  title_en: "Combination / Multi-piece Pack Component Declarations"
+  title_hi: "कॉम्बिनेशन / मल्टी-पीस पैक घटक घोषणाएं"
+  severity: medium
+  check:
+    all:
+      - manual_checklist_check: {}
+  on_fail: MANUAL
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "main pack carries declarations for components"
+  message_hi: "मुख्य पैक में घटकों के लिए घोषणाएं शामिल हैं"
+  fix_hint_en: "Verify that main outer package declares net contents and details for each component item."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R33
+  key: LMPC.6.4A.GTIN_BARCODE
+  rule_ref: "Rule 6(4A)"
+  title_en: "GTIN / Barcode Declaration"
+  title_hi: "जीटीआईएन / बारकोड घोषणा"
+  severity: low
+  check:
+    all:
+      - has_gtin: {}
+  on_fail: PASS
+  on_uncertain:
+    - when_pass:
+        all:
+          - has_gtin: {}
+      verdict: INFO
+      message_en: "INFO: GTIN/barcode present on package"
+      message_hi: "सूचना: पैकेज पर जीटीआईएन/बारकोड मौजूद है"
+  evidence: "declarations.gtin.bbox"
+  message_en: "GTIN/barcode declaration is optional under Rule 6(4A)."
+  message_hi: "नियम 6(4A) के तहत जीटीआईएन/बारकोड घोषणा वैकल्पिक है।"
+  fix_hint_en: "Optionally add EAN/UPC/GTIN barcode to PDP."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: R34
+  key: LMPC.14.DIMENSIONS_COUNT_DECLARATION
+  rule_ref: "Rules 14–17"
+  title_en: "Dimensions / Sheet Count Declaration for Specific Categories"
+  title_hi: "विशिष्ट श्रेणियों के लिए आयाम / टुकड़ा संख्या घोषणा"
+  severity: low
+  check:
+    all:
+      - has_dimension_or_sheet_count: {}
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "dimensions/count declaration required — verify"
+  message_hi: "आयाम/संख्या घोषणा आवश्यक है — सत्यापित करें"
+  fix_hint_en: "Declare size dimensions (e.g. 100 cm x 200 cm) or piece count for textiles, sheets, and containers."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
 
