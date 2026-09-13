@@ -66,12 +66,17 @@ async def lifespan(app: FastAPI):
     global MODEL_LOADED
     try:
         # Warm up with both large (1600x1200) and standard (600x400) images
-        ocr.extract_text(create_warmup_image(1600, 1200))
-        ocr.extract_text(create_warmup_image(600, 400))
-        MODEL_LOADED = True
+        res1 = ocr.extract_text(create_warmup_image(1600, 1200))
+        res2 = ocr.extract_text(create_warmup_image(600, 400))
+        if res1.get("lines") and res2.get("lines"):
+            MODEL_LOADED = True
+            logger.info("OCR model warmed up successfully")
+        else:
+            MODEL_LOADED = False
+            logger.warning("OCR warm-up did not return any text lines")
     except Exception as e:
         MODEL_LOADED = False
-        logger.warning(f"Failed to warm up OCR model: {e}")
+        logger.warning(f"Failed to warm up OCR model: {e}", exc_info=True)
     yield
 
 

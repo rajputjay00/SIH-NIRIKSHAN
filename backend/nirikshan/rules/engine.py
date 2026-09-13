@@ -212,6 +212,8 @@ def evaluate(
         status = "Non-compliant"
     elif counts["NEEDS_REVIEW"] > 0:
         status = "Officer review required"
+    elif applicability.exempt_reason:
+        status = "Exempt"
     else:
         status = "Compliant"
 

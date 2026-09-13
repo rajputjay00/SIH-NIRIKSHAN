@@ -77,3 +77,16 @@ def test_drug_dpco_exempt():
     app = resolve(ctx, decl)
     assert app.applicable_rule_ids == []
     assert "Rule 26(c)" in (app.exempt_reason or "")
+    from nirikshan.rules.engine import evaluate
+    findings, summary = evaluate(decl, app)
+    assert summary.status == "Exempt"
+
+
+def test_10g_sachet_summary_status_exempt():
+    decl = Declarations(net_quantity=NetQuantity(value=10.0, unit="g"))
+    ctx = ContextModel()
+    app = resolve(ctx, decl)
+    from nirikshan.rules.engine import evaluate
+    findings, summary = evaluate(decl, app)
+    assert summary.status == "Exempt"
+

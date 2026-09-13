@@ -76,6 +76,7 @@ def test_ten_gram_sachet():
     findings, summary = evaluate(declarations, applicability)
     for f in findings:
         assert f.verdict == "N/A"
+    assert summary.status == "Exempt"
 
 
 @pytest.mark.slow
