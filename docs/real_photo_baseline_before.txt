@@ -1,0 +1,17 @@
+Photo                     | Net Qty    | MRP        | Mfg Date   | Phone           | PIN     
+------------------------------------------------------------------------------------------
+Baby oil back             | N/A        | N/A        | N/A        | N/A             | N/A     
+Baby oil front            | N/A        | N/A        | N/A        | N/A             | N/A     
+Facewash back             | N/A        | N/A        | N/A        | N/A             | N/A     
+Facewash front            | N/A        | N/A        | N/A        | N/A             | N/A     
+Jam back                  | 700.0 g    | N/A        | N/A        | N/A             | N/A     
+Jam front                 | N/A        | N/A        | N/A        | N/A             | N/A     
+Jam side                  | N/A        | N/A        | N/A        | N/A             | N/A     
+Minoxidil back            | N/A        | N/A        | N/A        | N/A             | N/A     
+Minoxidil front           | N/A        | N/A        | N/A        | N/A             | N/A     
+Pickle back               | N/A        | N/A        | N/A        | N/A             | N/A     
+Pickle front              | N/A        | N/A        | N/A        | N/A             | N/A     
+Shaving foam back         | N/A        | N/A        | N/A        | N/A             | N/A     
+Shaving foam front        | N/A        | N/A        | N/A        | N/A             | N/A     
+Toothpaste back           | N/A        | N/A        | N/A        | N/A             | N/A     
+Toothpaste front          | N/A        | N/A        | N/A        | N/A             | N/A     
