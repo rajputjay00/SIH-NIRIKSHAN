@@ -24,14 +24,21 @@ def test_rule_fixtures(fixture_path):
     assert os.path.exists(expected_path), f"Missing expected file for {fixture_path}"
 
     with open(fixture_path, "r", encoding="utf-8") as f:
-        lines_data = json.load(f)
+        raw_fixture = json.load(f)
+
+    context_dict = {}
+    if isinstance(raw_fixture, dict) and "lines" in raw_fixture:
+        lines_data = raw_fixture["lines"]
+        context_dict = raw_fixture.get("context", {})
+    else:
+        lines_data = raw_fixture
 
     with open(expected_path, "r", encoding="utf-8") as f:
         expected_data = json.load(f)
 
     declarations = extract(lines_data, 1600, 1200)
 
-    # Determine context if wholesale, import, food, R13, R28, or R34 in fixture path
+    # Determine default context by rule path fallback, then apply fixture context_dict
     ctx = ContextModel()
     if "R27" in fixture_path:
         ctx.package_type = "wholesale"
@@ -39,12 +46,23 @@ def test_rule_fixtures(fixture_path):
         ctx.category = "food"
     if "R04" in fixture_path:
         ctx.is_import = True
-    if "R13" in fixture_path:
-        ctx.reference_date = "2021-05-01"
-    if "R28" in fixture_path:
-        ctx.package_type = "combination"
     if "R34" in fixture_path:
         ctx.category = "textile"
+
+    if "package_type" in context_dict:
+        ctx.package_type = context_dict["package_type"]
+    if "category" in context_dict:
+        ctx.category = context_dict["category"]
+    if "is_import" in context_dict:
+        ctx.is_import = context_dict["is_import"]
+    if "reference_date" in context_dict:
+        ctx.reference_date = context_dict["reference_date"]
+    if "net_quantity" in context_dict:
+        nq_val = context_dict["net_quantity"]
+        if isinstance(nq_val, (int, float)):
+            ctx.net_quantity_override = {"value": float(nq_val), "unit": "g"}
+        elif isinstance(nq_val, dict):
+            ctx.net_quantity_override = nq_val
 
     applicability = resolve(ctx, declarations)
     findings, summary = evaluate(declarations, applicability, context=ctx)

@@ -1,10 +1,10 @@
 {
   "context": {
-    "net_quantity": 10
+    "reference_date": "2024-01-01"
   },
   "lines": [
     {
-      "text": "Net Qty: 10g",
+      "text": "MRP Rs 99.25 Incl. of all taxes",
       "confidence": 0.95,
       "bbox": [
         [

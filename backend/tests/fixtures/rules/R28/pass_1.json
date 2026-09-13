@@ -1,24 +1,29 @@
-[
-  {
-    "text": "Combination Pack 100g",
-    "confidence": 0.95,
-    "bbox": [
-      [
-        0,
-        0
-      ],
-      [
-        100,
-        0
-      ],
-      [
-        100,
-        10
-      ],
-      [
-        0,
-        10
+{
+  "context": {
+    "package_type": "combination"
+  },
+  "lines": [
+    {
+      "text": "Combination Pack 100g",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          0
+        ],
+        [
+          100,
+          10
+        ],
+        [
+          0,
+          10
+        ]
       ]
-    ]
-  }
-]
+    }
+  ]
+}

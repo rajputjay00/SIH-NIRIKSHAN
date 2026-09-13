@@ -1,24 +1,29 @@
-[
-  {
-    "text": "Combination Pack 250g",
-    "confidence": 0.95,
-    "bbox": [
-      [
-        0,
-        0
-      ],
-      [
-        100,
-        0
-      ],
-      [
-        100,
-        10
-      ],
-      [
-        0,
-        10
+{
+  "context": {
+    "package_type": "retail"
+  },
+  "lines": [
+    {
+      "text": "Standard Retail Pack",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          0
+        ],
+        [
+          100,
+          10
+        ],
+        [
+          0,
+          10
+        ]
       ]
-    ]
-  }
-]
+    }
+  ]
+}

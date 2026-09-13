@@ -56,11 +56,11 @@
   check:
     all:
       - responsible_entity: {}
-  on_fail: FAIL
+  on_fail: N/A
   verdict: INFO
   evidence: "declarations.manufacturer.bbox"
-  message_en: "Responsible entity (primary entity and role) must be declared; marketer is deemed responsible if present."
-  message_hi: "उत्तरदायी संस्था (प्राथमिक संस्था और भूमिका) घोषित होनी चाहिए; यदि मार्केटर मौजूद है तो उसे उत्तरदायी माना जाएगा।"
+  message_en: "no entity identified — see R01"
+  message_hi: "कोई संस्था नहीं पहचानी गई — R01 देखें"
   fix_hint_en: "Declare full name and address of manufacturer, packer, importer, or marketer."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
@@ -515,7 +515,7 @@
   check:
     all:
       - has_gtin: {}
-  on_fail: PASS
+  on_fail: N/A
   on_uncertain:
     - when_pass:
         all:
@@ -524,8 +524,8 @@
       message_en: "INFO: GTIN/barcode present on package"
       message_hi: "सूचना: पैकेज पर जीटीआईएन/बारकोड मौजूद है"
   evidence: "declarations.gtin.bbox"
-  message_en: "GTIN/barcode declaration is optional under Rule 6(4A)."
-  message_hi: "नियम 6(4A) के तहत जीटीआईएन/बारकोड घोषणा वैकल्पिक है।"
+  message_en: "no barcode detected"
+  message_hi: "कोई बारकोड नहीं मिला"
   fix_hint_en: "Optionally add EAN/UPC/GTIN barcode to PDP."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
