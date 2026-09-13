@@ -74,5 +74,20 @@
 
   "officer_name": "निरीक्षक का नाम",
   "premises_location": "परिसर / स्थान",
-  "inspection_remarks": "निरीक्षण टिप्पणी"
+  "inspection_remarks": "निरीक्षण टिप्पणी",
+
+  "surface_tag": "सतह टैग",
+  "surface_front": "सामने (Front)",
+  "surface_back": "पीछे (Back)",
+  "surface_side": "साइड (Side)",
+  "surface_bottom": "निचला हिस्सा (Bottom)",
+  "surface_crimp": "क्रिम (Crimp)",
+  "surface_other": "अन्य (Other)",
+  "progress_360": "360° कवरेज",
+  "surfaces_captured": "सतहें कैप्चर की गईं",
+  "conflicts_header": "सतह विरोधाभास पाए गए",
+  "why_trail_btn": "क्यों?",
+  "trail_timeline": "निर्णय प्रक्रिया समयरेखा",
+  "resolved_from_crimp": "क्रिम से प्राप्त",
+  "split_view_conflict": "विभाजित दृश्य विरोधाभास"
 }

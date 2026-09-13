@@ -15,6 +15,7 @@ export function RuleCard({
   className = ''
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const [showTrail, setShowTrail] = useState(false);
   const reducedMotion = useReducedMotion();
   const { lang, t } = useT();
 
@@ -25,6 +26,7 @@ export function RuleCard({
   const verdict = finding.verdict || 'N/A';
   const isManual = verdict === 'MANUAL';
   const isInfo = verdict === 'INFO';
+  const isFromCrimp = finding.source === 'crimp' || finding.surface === 'crimp';
 
   let badgeClass = styles[`badge${verdict.replace('/', '').replace(' ', '_')}`] || styles.badgeNA;
   if (isManual && isConfirmed) {
@@ -53,8 +55,24 @@ export function RuleCard({
           <span className={`${styles.verdictBadge} ${badgeClass}`}>
             {isManual ? (isConfirmed ? 'CONFIRMED' : 'MANUAL') : verdict}
           </span>
+          {isFromCrimp && (
+            <span className={styles.crimpChip}>{t('resolved_from_crimp')}</span>
+          )}
         </div>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {finding.trail && finding.trail.length > 0 && (
+            <button
+              type="button"
+              className={styles.whyBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTrail(!showTrail);
+                if (!expanded) setExpanded(true);
+              }}
+            >
+              {t('why_trail_btn')}
+            </button>
+          )}
           {expanded ? <ChevronUp size={18} color="var(--grey-500)" /> : <ChevronDown size={18} color="var(--grey-500)" />}
         </div>
       </div>
@@ -101,6 +119,33 @@ export function RuleCard({
             {fixHint && (
               <div className={styles.fixHint}>
                 <strong>{t('fix_hint_label')}:</strong> {fixHint}
+              </div>
+            )}
+
+            {/* Why Trail Timeline */}
+            {showTrail && finding.trail && (
+              <div className={styles.trailContainer}>
+                <div className={styles.trailHeader}>{t('trail_timeline')}</div>
+                <div className={styles.trailTimeline}>
+                  {finding.trail.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`${styles.trailStep} ${
+                        item.status === 'FAIL' ? styles.stepFail : item.status === 'NEEDS_REVIEW' ? styles.stepReview : styles.stepPass
+                      }`}
+                    >
+                      <div className={styles.stepDot} />
+                      <div className={styles.stepContent}>
+                        <div className={styles.stepTitle}>
+                          <span>{item.title}</span>
+                          <span className={styles.stepBadge}>{item.status}</span>
+                        </div>
+                        {item.input && <div className={styles.stepInput}>Input: "{item.input}"</div>}
+                        {item.detail && <div className={styles.stepDetail}>{item.detail}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

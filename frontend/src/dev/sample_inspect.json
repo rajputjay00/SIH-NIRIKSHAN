@@ -1,0 +1,119 @@
+{
+  "surfaces": [
+    {
+      "id": 1,
+      "surface": "front",
+      "image_size": { "width": 1600, "height": 1200 },
+      "declarations": {
+        "mrp": { "value": 45.0, "raw": "MRP Rs 45", "bbox": [[100, 200], [300, 200], [300, 250], [100, 250]], "confidence": 0.95 },
+        "net_quantity": { "value": 200.0, "unit": "g", "raw": "Net Wt 200 gms", "unit_nonstandard": true, "bbox": [[100, 300], [350, 300], [350, 350], [100, 350]], "confidence": 0.92 }
+      }
+    },
+    {
+      "id": 2,
+      "surface": "crimp",
+      "image_size": { "width": 1600, "height": 1200 },
+      "declarations": {
+        "mrp": { "value": 40.0, "raw": "MRP Rs 40.00", "bbox": [[50, 50], [200, 50], [200, 90], [50, 90]], "confidence": 0.98, "surface": "crimp" },
+        "mfg_date": { "value": "05/2024", "raw": "MFG 05/24", "bbox": [[220, 50], [400, 50], [400, 90], [220, 90]], "confidence": 0.96, "surface": "crimp" }
+      }
+    }
+  ],
+  "merged": {
+    "manufacturer": { "name": "Standard Products Ltd", "address": "Okhla Phase 3, New Delhi - 110020", "role": "manufacturer" },
+    "net_quantity": { "value": 200.0, "unit": "g", "raw": "Net Wt 200 gms", "unit_nonstandard": true, "bbox": [[100, 300], [350, 300], [350, 350], [100, 350]], "confidence": 0.92 },
+    "mrp": { "value": 45.0, "raw": "MRP Rs 45", "bbox": [[100, 200], [300, 200], [300, 250], [100, 250]], "confidence": 0.95 },
+    "mfg_date": { "raw": "MFG 05/24", "surface": "crimp", "source": "crimp", "bbox": [[220, 50], [400, 50], [400, 90], [220, 90]], "confidence": 0.96 }
+  },
+  "conflicts": [
+    {
+      "field": "mrp",
+      "severity": "high",
+      "message": "Dual MRP detected across surfaces: Front declares ₹45.00 vs Crimp declares ₹40.00",
+      "surfaces": [
+        { "id": 1, "surface": "front", "value": 45.0, "bbox": [[100, 200], [300, 200], [300, 250], [100, 250]] },
+        { "id": 2, "surface": "crimp", "value": 40.0, "bbox": [[50, 50], [200, 50], [200, 90], [50, 90]] }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "R12",
+      "rule_ref": "Rule 6(1)(e)",
+      "verdict": "FAIL",
+      "severity": "high",
+      "extracted": "MRP Rs 45",
+      "expected": "MRP ₹ 45.00 (inclusive of all taxes)",
+      "message_en": "MRP declaration must include 'inclusive of all taxes' phrase and rupee symbol",
+      "message_hi": "एमआरपी घोषणा में 'सभी करों सहित' वाक्य और रुपये का प्रतीक शामिल होना चाहिए",
+      "fix_hint_en": "Print as: MRP ₹ 45.00 (inclusive of all taxes)",
+      "evidence_bbox": [[100, 200], [300, 200], [300, 250], [100, 250]],
+      "evidence_refs": [
+        { "surface_id": 1, "surface": "front", "bbox": [[100, 200], [300, 200], [300, 250], [100, 250]] },
+        { "surface_id": 2, "surface": "crimp", "bbox": [[50, 50], [200, 50], [200, 90], [50, 90]] }
+      ],
+      "trail": [
+        { "step": "applicability", "title": "Context Evaluation", "status": "PASS", "detail": "Package type: Retail, Category: General" },
+        { "step": "predicate", "title": "regex_check: incl_of_all_taxes", "status": "FAIL", "input": "MRP Rs 45", "detail": "Missing mandatory phrase 'inclusive of all taxes'" },
+        { "step": "verdict", "title": "Final Verdict", "status": "FAIL", "detail": "Rule 6(1)(e) failed on Front Surface" }
+      ]
+    },
+    {
+      "rule_id": "R08",
+      "rule_ref": "Rule 13(5)",
+      "verdict": "FAIL",
+      "severity": "medium",
+      "extracted": "200 gms",
+      "expected": "200 g",
+      "message_en": "Non-standard unit abbreviation 'gms' used; must be standard SI unit 'g'",
+      "message_hi": "गैर-मानक इकाई 'gms' का उपयोग किया गया; मानक SI इकाई 'g' होनी चाहिए",
+      "evidence_bbox": [[100, 300], [350, 300], [350, 350], [100, 350]],
+      "evidence_refs": [
+        { "surface_id": 1, "surface": "front", "bbox": [[100, 300], [350, 300], [350, 350], [100, 350]] }
+      ],
+      "trail": [
+        { "step": "applicability", "title": "Context Evaluation", "status": "PASS", "detail": "SI unit rule applies to retail package" },
+        { "step": "predicate", "title": "standard_unit_check", "status": "FAIL", "input": "200 gms", "detail": "'gms' is non-standard under LMPC Rule 13(5)" },
+        { "step": "verdict", "title": "Final Verdict", "status": "FAIL", "detail": "Rule 13(5) non-compliant" }
+      ]
+    },
+    {
+      "rule_id": "R10",
+      "rule_ref": "Rule 6(1)(d)",
+      "verdict": "PASS",
+      "severity": "high",
+      "extracted": "05/2024",
+      "message_en": "Date of manufacture clearly declared on crimp (MFG 05/24)",
+      "message_hi": "निर्माण की तिथि क्रिम्प पर स्पष्ट रूप से घोषित (MFG 05/24)",
+      "evidence_refs": [
+        { "surface_id": 2, "surface": "crimp", "bbox": [[220, 50], [400, 50], [400, 90], [220, 90]] }
+      ],
+      "trail": [
+        { "step": "applicability", "title": "Context Evaluation", "status": "PASS", "detail": "Date declaration required" },
+        { "step": "predicate", "title": "mfg_date_regex", "status": "PASS", "input": "MFG 05/24", "detail": "Valid MM/YY format found on crimp" },
+        { "step": "verdict", "title": "Final Verdict", "status": "PASS", "detail": "Rule 6(1)(d) compliant" }
+      ]
+    }
+  ],
+  "summary": {
+    "status": "Non-compliant",
+    "counts": {
+      "FAIL": 2,
+      "NEEDS_REVIEW": 0,
+      "PASS": 1,
+      "N/A": 0
+    }
+  },
+  "applicability": {
+    "package_type": "retail",
+    "category": "general",
+    "is_import": false,
+    "exempt_reason": null
+  },
+  "declarations": {
+    "manufacturer": { "name": "Standard Products Ltd", "address": "Okhla Phase 3, New Delhi - 110020", "role": "manufacturer" },
+    "net_quantity": { "value": 200.0, "unit": "g", "raw": "Net Wt 200 gms", "unit_nonstandard": true, "bbox": [[100, 300], [350, 300], [350, 350], [100, 350]], "confidence": 0.92 },
+    "mrp": { "value": 45.0, "raw": "MRP Rs 45", "bbox": [[100, 200], [300, 200], [300, 250], [100, 250]], "confidence": 0.95 },
+    "mfg_date": { "raw": "MFG 05/24", "surface": "crimp", "source": "crimp", "bbox": [[220, 50], [400, 50], [400, 90], [220, 90]], "confidence": 0.96 }
+  }
+}

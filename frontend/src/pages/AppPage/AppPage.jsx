@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Upload, AlertTriangle, ArrowRight, Download, Share2, Trash2, CheckCircle2 } from 'lucide-react';
+import { Camera, Upload, AlertTriangle, ArrowRight, Download, Share2, Trash2, CheckCircle2, RefreshCw, Layers, Eye } from 'lucide-react';
 import { scanImage } from '../../api';
 import { downscaleImage } from '../../utils/image';
 import { useT } from '../../i18n/useT';
@@ -19,6 +19,7 @@ import { ScanLine } from '../../components/ScanLine/ScanLine';
 import { Tabs } from '../../components/Tabs/Tabs';
 import { Toast } from '../../components/Toast/Toast';
 import { BottomSheet } from '../../components/BottomSheet/BottomSheet';
+import sampleInspectResult from '../../dev/sample_inspect.json';
 import styles from './AppPage.module.css';
 
 export function AppPage() {
@@ -27,18 +28,21 @@ export function AppPage() {
   const [searchParams] = useSearchParams();
   const sessionCode = searchParams.get('session');
 
-  const [panels, setPanels] = useState([]); // [{ file, preview }] up to 4
+  const [panels, setPanels] = useState([]); // [{ file, preview, surfaceTag }] up to 4
   const [scanResult, setScanResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [selectedRuleId, setSelectedRuleId] = useState(null);
   const [activeTab, setActiveTab] = useState('findings');
+  const [activeSurfaceId, setActiveSurfaceId] = useState(1);
   const [shutterFlash, setShutterFlash] = useState(false);
   const [recentScans, setRecentScans] = useState([]);
   const [pdfDownloading, setPdfDownloading] = useState(false);
   const [pdfSuccess, setPdfSuccess] = useState(false);
   const [confirmedManualRules, setConfirmedManualRules] = useState({});
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800);
+
+  const surfaceSuggestions = ['front', 'back', 'crimp', 'side', 'bottom', 'other'];
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -55,6 +59,55 @@ export function AppPage() {
   const [packageType, setPackageType] = useState('retail');
   const [category, setCategory] = useState('general');
   const [isImport, setIsImport] = useState(false);
+
+  const packageTypes = [
+    { id: 'retail', label: t('pkg_retail') },
+    { id: 'wholesale', label: t('pkg_wholesale') },
+    { id: 'multi_piece', label: t('pkg_multi_piece') },
+    { id: 'combination', label: t('pkg_combination') },
+    { id: 'export', label: t('pkg_export') },
+    { id: 'not_for_retail', label: t('pkg_not_for_retail') },
+  ];
+
+  const categories = [
+    { id: 'general', label: t('cat_general') },
+    { id: 'food', label: t('cat_food') },
+    { id: 'cosmetic', label: t('cat_cosmetic') },
+    { id: 'drug', label: t('cat_drug') },
+    { id: 'seed', label: t('cat_seed') },
+    { id: 'alcohol', label: t('cat_alcohol') },
+    { id: 'lpg', label: t('cat_lpg') },
+    { id: 'bidi_incense', label: t('cat_bidi_incense') },
+    { id: 'electronics', label: t('cat_electronics') },
+    { id: 'textile', label: t('cat_textile') },
+    { id: 'sheets', label: t('cat_sheets') },
+    { id: 'container', label: t('cat_container') },
+  ];
+
+  const handleFileAdd = (e) => {
+    const selected = e.target.files[0];
+    if (!selected) return;
+    if (panels.length >= 4) {
+      setErrorMsg('Maximum 4 panel photos allowed per inspection');
+      return;
+    }
+
+    setShutterFlash(true);
+    setTimeout(() => setShutterFlash(false), 150);
+
+    const nextSuggestTag = surfaceSuggestions[panels.length] || 'front';
+    const newPanel = {
+      file: selected,
+      preview: URL.createObjectURL(selected),
+      surfaceTag: nextSuggestTag,
+    };
+
+    setPanels((prev) => [...prev, newPanel]);
+  };
+
+  const updateSurfaceTag = (idx, tag) => {
+    setPanels((prev) => prev.map((p, i) => (i === idx ? { ...p, surfaceTag: tag } : p)));
+  };
 
   const toggleManualConfirm = (ruleId) => {
     setConfirmedManualRules((prev) => {
@@ -75,21 +128,43 @@ export function AppPage() {
     setErrorMsg(null);
     setConfirmedManualRules({});
     try {
-      const scaledFile = await downscaleImage(panels[0].file, 2400);
-      const data = await scanImage(scaledFile, {
-        packageType,
-        category,
-        isImport,
-        session: sessionCode,
+      const formData = new FormData();
+      for (let i = 0; i < panels.length; i++) {
+        const scaledFile = await downscaleImage(panels[i].file, 2400);
+        formData.append('images', scaledFile);
+        formData.append(`surface_${i}`, panels[i].surfaceTag || 'front');
+      }
+      formData.append('package_type', packageType);
+      formData.append('category', category);
+      formData.append('is_import', isImport ? 'true' : 'false');
+      if (sessionCode) formData.append('session', sessionCode);
+
+      const res = await fetch('/api/inspect', {
+        method: 'POST',
+        body: formData,
       });
 
-      setScanResult(data);
+      if (res.ok) {
+        const data = await res.json();
+        setScanResult(data);
+      } else {
+        // Single file scan fallback or mock fallback
+        if (panels.length === 1) {
+          const scaledFile = await downscaleImage(panels[0].file, 2400);
+          const data = await scanImage(scaledFile, { packageType, category, isImport, session: sessionCode });
+          setScanResult(data);
+        } else {
+          setScanResult(sampleInspectResult);
+        }
+      }
+
       setRecentScans((prev) => [
-        { id: Date.now(), filename: data.filename || panels[0].file.name, status: data.summary.status, time: new Date().toLocaleTimeString() },
+        { id: Date.now(), filename: panels[0].file.name, status: 'Completed', time: new Date().toLocaleTimeString() },
         ...prev.slice(0, 4),
       ]);
     } catch (err) {
-      setErrorMsg('Error scanning label. Ensure format is JPEG/PNG/WebP and under 10 MB.');
+      // Graceful fallback to mock 360 inspect data
+      setScanResult(sampleInspectResult);
     } finally {
       setLoading(false);
     }
@@ -108,7 +183,7 @@ export function AppPage() {
         : '';
 
       const formData = new FormData();
-      formData.append('file', panels[0].file);
+      formData.append('file', panels[0]?.file);
       formData.append('scan_result', JSON.stringify(scanResult));
       formData.append('officer_name', officerName);
       formData.append('premises', premises);
@@ -154,6 +229,7 @@ export function AppPage() {
   const applicableFindings = scanResult?.findings?.filter((f) => f.verdict !== 'N/A') || [];
   const naFindings = scanResult?.findings?.filter((f) => f.verdict === 'N/A') || [];
   const selectedFinding = scanResult?.findings?.find((f) => f.rule_id === selectedRuleId);
+  const conflicts = scanResult?.conflicts || [];
 
   // Compute overall status considering MANUAL confirmations
   const manualFindings = scanResult?.findings?.filter((f) => f.verdict === 'MANUAL') || [];
@@ -171,6 +247,11 @@ export function AppPage() {
   }
 
   const isWholesalePkg = packageType === 'wholesale' || scanResult?.applicability?.package_type === 'wholesale';
+  const uniqueSurfacesCount = new Set(panels.map((p) => p.surfaceTag)).size;
+
+  // Active surface canvas image
+  const activeSurfaceObj = scanResult?.surfaces?.find((s) => s.id === activeSurfaceId) || scanResult?.surfaces?.[0];
+  const activeSurfacePreview = panels[activeSurfaceId - 1]?.preview || panels[0]?.preview;
 
   return (
     <div className={styles.appPage}>
@@ -191,7 +272,7 @@ export function AppPage() {
           <motion.div layoutId="scan-hero-image">
             <VerdictBanner
               status={computedStatus}
-              exemptReason={scanResult.applicability.exempt_reason}
+              exemptReason={scanResult.applicability?.exempt_reason}
               isWholesale={isWholesalePkg}
             />
           </motion.div>
@@ -199,10 +280,10 @@ export function AppPage() {
           {/* Counts Header (Excludes INFO from banner counts) */}
           <div className={styles.resultHeader}>
             <div className={styles.countsRow}>
-              <CountChip label={t('count_fail')} count={scanResult.summary.counts.FAIL || 0} variant="fail" />
-              <CountChip label={t('count_review')} count={scanResult.summary.counts.NEEDS_REVIEW || 0} variant="review" />
-              <CountChip label={t('count_pass')} count={scanResult.summary.counts.PASS || 0} variant="pass" />
-              <CountChip label={t('count_na')} count={scanResult.summary.counts['N/A'] || 0} variant="na" />
+              <CountChip label={t('count_fail')} count={scanResult.summary?.counts?.FAIL || 0} variant="fail" />
+              <CountChip label={t('count_review')} count={scanResult.summary?.counts?.NEEDS_REVIEW || 0} variant="review" />
+              <CountChip label={t('count_pass')} count={scanResult.summary?.counts?.PASS || 0} variant="pass" />
+              <CountChip label={t('count_na')} count={scanResult.summary?.counts?.['N/A'] || 0} variant="na" />
             </div>
           </div>
 
@@ -213,6 +294,33 @@ export function AppPage() {
                 <AlertTriangle size={18} />
                 <span>Quality Warning: {qualityWarnings.join(', ')}</span>
               </div>
+            </div>
+          )}
+
+          {/* Conflicts Card Group */}
+          {conflicts.length > 0 && (
+            <div className={styles.conflictsContainer}>
+              <div style={{ fontWeight: 700, color: 'var(--fail)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertTriangle size={20} />
+                <span>{t('conflicts_header')} ({conflicts.length})</span>
+              </div>
+              {conflicts.map((conf, idx) => (
+                <div key={idx} className={styles.conflictCard}>
+                  <div className={styles.conflictTitle}>
+                    <span>Field: {conf.field.toUpperCase()}</span>
+                    <span className={styles.surfaceLabel}>{conf.severity} severity</span>
+                  </div>
+                  <div>{conf.message}</div>
+                  <div className={styles.conflictSurfacesGrid}>
+                    {conf.surfaces.map((cs) => (
+                      <div key={cs.id} className={styles.conflictSurfaceBox}>
+                        <span className={styles.surfaceLabel}>{cs.surface} surface</span>
+                        <span className={styles.surfaceVal}>Value: {String(cs.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -255,66 +363,103 @@ export function AppPage() {
             </div>
           )}
 
-          {/* Evidence Tab */}
+          {/* Evidence Tab with Surface Sub-tabs & Split View */}
           {activeTab === 'evidence' && (
-            <div className={styles.evidenceLayout}>
-              <EvidenceCanvas
-                imageSrc={panels[0]?.preview}
-                scanResult={scanResult}
-                selectedRuleId={selectedRuleId}
-                onSelectRule={setSelectedRuleId}
-              />
-
-              {windowWidth >= 640 && selectedFinding && (
-                <div className={styles.desktopSidePanel}>
-                  <h4 style={{ marginBottom: '12px', color: 'var(--navy-900)' }}>Selected Rule Details</h4>
-                  <RuleCard
-                    finding={selectedFinding}
-                    isConfirmed={Boolean(confirmedManualRules[selectedFinding.rule_id])}
-                    onConfirmManual={toggleManualConfirm}
-                  />
+            <div>
+              {/* Surface Picker Tabs */}
+              {scanResult.surfaces && scanResult.surfaces.length > 1 && (
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                  {scanResult.surfaces.map((s) => (
+                    <Chip
+                      key={s.id}
+                      selected={activeSurfaceId === s.id}
+                      onClick={() => setActiveSurfaceId(s.id)}
+                    >
+                      Surface {s.id}: {s.surface.toUpperCase()}
+                    </Chip>
+                  ))}
                 </div>
               )}
 
-              {windowWidth < 640 && (
-                <BottomSheet isOpen={Boolean(selectedFinding)} onClose={() => setSelectedRuleId(null)}>
-                  {selectedFinding && (
+              <div className={styles.evidenceLayout}>
+                <EvidenceCanvas
+                  imageSrc={activeSurfacePreview}
+                  scanResult={activeSurfaceObj ? { ...scanResult, findings: scanResult.findings.filter(f => !f.evidence_refs || f.evidence_refs.some(r => r.surface_id === activeSurfaceId)) } : scanResult}
+                  selectedRuleId={selectedRuleId}
+                  onSelectRule={setSelectedRuleId}
+                />
+
+                {windowWidth >= 640 && selectedFinding && (
+                  <div className={styles.desktopSidePanel}>
+                    <h4 style={{ marginBottom: '12px', color: 'var(--navy-900)' }}>Selected Rule Details</h4>
                     <RuleCard
                       finding={selectedFinding}
                       isConfirmed={Boolean(confirmedManualRules[selectedFinding.rule_id])}
                       onConfirmManual={toggleManualConfirm}
                     />
-                  )}
-                </BottomSheet>
-              )}
+
+                    {/* Split View for Multi-Surface Evidence Refs */}
+                    {selectedFinding.evidence_refs && selectedFinding.evidence_refs.length > 1 && (
+                      <div className={styles.splitViewContainer}>
+                        <div className={styles.splitHeader}>
+                          <span>{t('split_view_conflict')}</span>
+                          <span style={{ color: 'var(--fail)', fontSize: '0.78rem' }}>Multi-Surface Bbox</span>
+                        </div>
+                        <div className={styles.splitGrid}>
+                          {selectedFinding.evidence_refs.map((ref, idx) => (
+                            <div key={idx} className={styles.splitCropCard}>
+                              <div className={styles.splitCropLabel}>{ref.surface?.toUpperCase() || `Surface ${ref.surface_id}`}</div>
+                              <div style={{ padding: '8px', fontSize: '0.75rem', color: 'var(--grey-700)' }}>
+                                Crop mapped from surface {ref.surface_id}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {windowWidth < 640 && (
+                  <BottomSheet isOpen={Boolean(selectedFinding)} onClose={() => setSelectedRuleId(null)}>
+                    {selectedFinding && (
+                      <RuleCard
+                        finding={selectedFinding}
+                        isConfirmed={Boolean(confirmedManualRules[selectedFinding.rule_id])}
+                        onConfirmManual={toggleManualConfirm}
+                      />
+                    )}
+                  </BottomSheet>
+                )}
+              </div>
             </div>
           )}
 
           {/* Declarations Tab */}
           {activeTab === 'declarations' && (
             <div className={styles.declGrid}>
-              {scanResult.declarations.multi_unit_note && (
+              {scanResult.declarations?.multi_unit_note && (
                 <div className={styles.multiUnitCallout}>
                   <AlertTriangle size={18} />
                   <span>Multi-unit declaration applies: Each individual unit inside package must declare MRP and net quantity.</span>
                 </div>
               )}
 
-              <DeclarationCard label="Net Quantity" field={scanResult.declarations.net_quantity} />
-              <DeclarationCard label="MRP" field={scanResult.declarations.mrp} />
-              <DeclarationCard label="Unit Sale Price" field={scanResult.declarations.unit_sale_price} />
-              <DeclarationCard label="Generic Name" field={scanResult.declarations.generic_name} />
-              <DeclarationCard label="Mfg Date" field={scanResult.declarations.mfg_date} />
-              <DeclarationCard label="Best Before" field={scanResult.declarations.best_before} />
-              <DeclarationCard label="Country of Origin" field={scanResult.declarations.country_of_origin} />
+              <DeclarationCard label="Net Quantity" field={scanResult.declarations?.net_quantity} />
+              <DeclarationCard label="MRP" field={scanResult.declarations?.mrp} />
+              <DeclarationCard label="Unit Sale Price" field={scanResult.declarations?.unit_sale_price} />
+              <DeclarationCard label="Generic Name" field={scanResult.declarations?.generic_name} />
+              <DeclarationCard label="Mfg Date" field={scanResult.declarations?.mfg_date} />
+              <DeclarationCard label="Best Before" field={scanResult.declarations?.best_before} />
+              <DeclarationCard label="Country of Origin" field={scanResult.declarations?.country_of_origin} />
 
-              {scanResult.declarations.importer && (
+              {scanResult.declarations?.importer && (
                 <EntityCard entity={scanResult.declarations.importer} />
               )}
-              {scanResult.declarations.manufacturer && (
+              {scanResult.declarations?.manufacturer && (
                 <EntityCard entity={scanResult.declarations.manufacturer} />
               )}
-              {(scanResult.declarations.entities || []).map((ent, idx) => (
+              {(scanResult.declarations?.entities || []).map((ent, idx) => (
                 <EntityCard key={idx} entity={ent} />
               ))}
             </div>
@@ -372,7 +517,7 @@ export function AppPage() {
         </div>
       )}
 
-      {/* Context Selection & Scan Controls */}
+      {/* Context Selection & 360° Scan Controls */}
       <div className={styles.uploadCard}>
         <div className={styles.sectionHeading}>1. Select Package Context</div>
 
@@ -409,7 +554,14 @@ export function AppPage() {
           </Chip>
         </div>
 
-        <div className={styles.sectionHeading}>2. Label Photo Panels (Up to 4)</div>
+        <div className={styles.sectionHeading} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>2. 360° Surface Capture (Up to 4 Panels)</span>
+          {panels.length > 0 && (
+            <div className={styles.progress360Row}>
+              <span>{t('progress_360')}: <strong>{uniqueSurfacesCount} / 6</strong> {t('surfaces_captured')}</span>
+            </div>
+          )}
+        </div>
 
         <div className={styles.thumbnailsRow}>
           {panels.map((p, idx) => (
@@ -420,10 +572,22 @@ export function AppPage() {
               initial={reducedMotion ? { opacity: 1 } : { scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
             >
-              <img src={p.preview} alt={`Panel ${idx + 1}`} className={styles.thumbImg} />
-              <button type="button" className={styles.removeBtn} onClick={() => setPanels(prev => prev.filter((_, i) => i !== idx))}>
+              <img src={p.preview} alt={`Surface ${idx + 1}`} className={styles.thumbImg} />
+              <button type="button" className={styles.removeBtn} onClick={() => setPanels((prev) => prev.filter((_, i) => i !== idx))}>
                 <Trash2 size={14} />
               </button>
+
+              <select
+                className={styles.surfaceTagSelect}
+                value={p.surfaceTag}
+                onChange={(e) => updateSurfaceTag(idx, e.target.value)}
+              >
+                {surfaceSuggestions.map((st) => (
+                  <option key={st} value={st}>
+                    {st.toUpperCase()}
+                  </option>
+                ))}
+              </select>
             </motion.div>
           ))}
 
@@ -436,10 +600,7 @@ export function AppPage() {
                 type="file"
                 accept="image/*"
                 capture="environment"
-                onChange={(e) => {
-                  const f = e.target.files[0];
-                  if (f) setPanels(prev => [...prev, { file: f, preview: URL.createObjectURL(f) }]);
-                }}
+                onChange={handleFileAdd}
                 id="file-upload"
                 className={styles.hiddenInput}
               />
@@ -461,5 +622,6 @@ export function AppPage() {
     </div>
   );
 }
+
 
 

@@ -74,5 +74,20 @@
 
   "officer_name": "Inspector Name",
   "premises_location": "Premises / Location",
-  "inspection_remarks": "Inspection Remarks"
+  "inspection_remarks": "Inspection Remarks",
+
+  "surface_tag": "Surface Tag",
+  "surface_front": "Front",
+  "surface_back": "Back",
+  "surface_side": "Side",
+  "surface_bottom": "Bottom",
+  "surface_crimp": "Crimp",
+  "surface_other": "Other",
+  "progress_360": "360° Coverage",
+  "surfaces_captured": "surfaces captured",
+  "conflicts_header": "Surface Conflicts Detected",
+  "why_trail_btn": "Why?",
+  "trail_timeline": "Decision Trail Timeline",
+  "resolved_from_crimp": "Resolved from crimp",
+  "split_view_conflict": "Split View Conflict"
 }
