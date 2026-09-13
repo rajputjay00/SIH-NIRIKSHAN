@@ -275,19 +275,20 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 10%;">Rule ID</th>
-                <th style="width: 12%;">Rule Ref</th>
-                <th style="width: 12%;">Verdict</th>
+                <th style="width: 8%;">Rule ID</th>
+                <th style="width: 18%; white-space: nowrap; min-width: 100px;">Rule Ref</th>
+                <th style="width: 10%;">Verdict</th>
                 <th style="width: 32%;">Finding Message</th>
-                <th style="width: 17%;">Extracted</th>
-                <th style="width: 17%;">Expected</th>
+                <th style="width: 16%;">Extracted</th>
+                <th style="width: 16%;">Expected</th>
             </tr>
         </thead>
         <tbody>
             {% for f in findings %}
             <tr>
                 <td><strong>{{ f.rule_id }}</strong></td>
-                <td>{{ f.rule_ref }}</td>
+                <td style="white-space: nowrap; min-width: 100px;">{{ f.rule_ref }}</td>
+
                 <td><span class="tag-{{ f.verdict }}">{{ f.verdict }}</span></td>
                 <td>{{ f.message }}</td>
                 <td>{{ f.extracted if f.extracted is not none else "-" }}</td>

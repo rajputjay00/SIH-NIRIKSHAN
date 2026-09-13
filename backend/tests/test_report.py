@@ -41,9 +41,11 @@ def test_report_pdf_generation_en():
     for page in reader.pages:
         full_text += page.extract_text() or ""
 
-    collapsed_text = " ".join(full_text.split())
-    assert "R12" in collapsed_text, "English PDF must contain R12"
-    assert "Rule 6(1)(e)" in collapsed_text, "English PDF must contain Rule 6(1)(e)"
+    import re
+    cleaned_text = re.sub(r"\s+", "", full_text)
+    assert "R12" in cleaned_text, "English PDF must contain R12"
+    assert "Rule6(1)(e)" in cleaned_text, "English PDF must contain Rule6(1)(e)"
+
 
 
 def test_report_pdf_generation_hi():

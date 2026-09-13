@@ -1161,8 +1161,11 @@ def extract(
         if line.id in claimed_line_ids:
             continue
         txt_lower = line.text.lower()
-        if any(kw in txt_lower for kw in ["mrp", "rs.", "inr", "net", "qty", "mfg", "exp", "batch", "phone", "email", "tollfree", "lever.care", "daburcares"]):
+        if any(kw in txt_lower for kw in ["mrp", "rs.", "inr", "net", "qty", "mfg", "exp", "batch", "phone", "email", "tollfree"]):
             continue
+        if re.search(r'\b[A-Za-z0-9._%+-]+\s*@\s*[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', line.text):
+            continue
+
         m_pin = re.search(r'\b[1-9][0-9]{5}\b', line.text)
         has_addr_kw = any(re.search(pat, txt_lower) for pat in unqualified_patterns)
         if m_pin or has_addr_kw:
