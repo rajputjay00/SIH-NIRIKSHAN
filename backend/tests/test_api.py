@@ -118,4 +118,4 @@ def test_get_rules_catalogue():
     data = response.json()
     assert "rules_version" in data
     assert "rules" in data
-    assert len(data["rules"]) == 26
+    assert len(data["rules"]) == 31

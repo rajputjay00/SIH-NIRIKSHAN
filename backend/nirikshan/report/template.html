@@ -290,7 +290,16 @@
                 <td style="white-space: nowrap; min-width: 100px;">{{ f.rule_ref }}</td>
 
                 <td><span class="tag-{{ f.verdict }}">{{ f.verdict }}</span></td>
-                <td>{{ f.message }}</td>
+                <td>
+                    <div>{{ f.message }}</div>
+                    {% if f.trail %}
+                    <ul style="margin: 4px 0 0 10px; padding: 0; font-size: 7pt; color: #4B5563; list-style-type: disc;">
+                        {% for step in f.trail %}
+                        <li><strong>{{ step.step }}:</strong> {{ step.detail }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </td>
                 <td>{{ f.extracted if f.extracted is not none else "-" }}</td>
                 <td>{{ f.expected if f.expected is not none else "-" }}</td>
             </tr>

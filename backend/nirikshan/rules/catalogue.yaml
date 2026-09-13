@@ -563,3 +563,89 @@
   fix_hint_en: "Ensure compliance with both FSSAI regulations and LMPC net quantity/MRP rules."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
+
+- id: C01
+  key: CROSS_SURFACE.MRP_CONFLICT
+  rule_ref: "Rule 18(2A) / Rule 6(3)"
+  title_en: "Cross-Surface MRP Conflict"
+  title_hi: "सतहों के बीच MRP अंतर"
+  severity: high
+  check:
+    all:
+      - no_surface_conflict: { field: "mrp" }
+  on_fail: FAIL
+  evidence: "declarations.mrp.bbox"
+  message_en: "MRP differs across surfaces (possible sticker or altered MRP)"
+  message_hi: "विभिन्न सतहों पर MRP अलग-अलग है (संभावित स्टिकर या बदला हुआ MRP)"
+  fix_hint_en: "Ensure MRP declared on all packaging surfaces is identical."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: C02
+  key: CROSS_SURFACE.NET_QTY_CONFLICT
+  rule_ref: "Rule 6(1)(c)"
+  title_en: "Cross-Surface Net Quantity Conflict"
+  title_hi: "सतहों के बीच शुद्ध मात्रा अंतर"
+  severity: medium
+  check:
+    all:
+      - no_surface_conflict: { field: "net_quantity" }
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Net quantity differs across surfaces"
+  message_hi: "विभिन्न सतहों पर शुद्ध मात्रा अलग-अलग है"
+  fix_hint_en: "Verify net quantity declaration across all surfaces."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: C03
+  key: CROSS_SURFACE.DATE_CONFLICT
+  rule_ref: "Rule 6(1)(d)"
+  title_en: "Cross-Surface Date Conflict"
+  title_hi: "सतहों के बीच तिथि अंतर"
+  severity: medium
+  check:
+    all:
+      - no_surface_conflict: { field: "mfg_date" }
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.mfg_date.bbox"
+  message_en: "Manufacturing date or best before date differs across surfaces"
+  message_hi: "विभिन्न सतहों पर निर्माण/सर्वश्रेष्ठ तिथि अलग-अलग है"
+  fix_hint_en: "Ensure dates declared on all surfaces match."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: C04
+  key: CROSS_SURFACE.MANUFACTURER_CONFLICT
+  rule_ref: "Rule 6(1)(a)"
+  title_en: "Cross-Surface Manufacturer Conflict"
+  title_hi: "सतहों के बीच निर्माता अंतर"
+  severity: medium
+  check:
+    all:
+      - no_surface_conflict: { field: "primary_entity" }
+  on_fail: NEEDS_REVIEW
+  evidence: "declarations.manufacturer.bbox"
+  message_en: "Primary entity or manufacturer name differs across surfaces"
+  message_hi: "विभिन्न सतहों पर निर्माता/इकाई नाम अलग-अलग है"
+  fix_hint_en: "Ensure consistent manufacturer/packer/importer name across surfaces."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+
+- id: C05
+  key: CROSS_SURFACE.ORIGIN_CONFLICT
+  rule_ref: "Rule 6(1)(aa)"
+  title_en: "Cross-Surface Country of Origin Conflict"
+  title_hi: "सतहों के बीच मूल देश अंतर"
+  severity: high
+  check:
+    all:
+      - no_surface_conflict: { field: "country_of_origin" }
+  on_fail: FAIL
+  evidence: "declarations.country_of_origin.bbox"
+  message_en: "Country of origin differs across surfaces"
+  message_hi: "विभिन्न सतहों पर मूल देश अलग-अलग है"
+  fix_hint_en: "Ensure declared country of origin is consistent across surfaces."
+  effective_from: "2011-03-01"
+  source: "LMPC Rules 2011"
+

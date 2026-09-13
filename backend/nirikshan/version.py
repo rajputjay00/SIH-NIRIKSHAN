@@ -8,7 +8,7 @@ CATALOGUE_PATH = os.path.join(os.path.dirname(__file__), "rules", "catalogue.yam
 if os.path.exists(CATALOGUE_PATH):
     with open(CATALOGUE_PATH, "rb") as f:
         catalogue_bytes = f.read()
-    RULES_VERSION = "0.1.0+" + hashlib.sha256(catalogue_bytes).hexdigest()[:12]
+    RULES_VERSION = "0.2.0+" + hashlib.sha256(catalogue_bytes).hexdigest()[:12]
 else:
-    RULES_VERSION = "0.1.0+unknown"
+    RULES_VERSION = "0.2.0+unknown"
 

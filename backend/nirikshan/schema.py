@@ -17,6 +17,8 @@ class FieldModel(BaseModel):
     source_line_ids: List[int] = Field(default_factory=list)
     source: Optional[str] = None
     declared_elsewhere: Optional[str] = None
+    surface_id: Optional[int] = None
+    surface: Optional[str] = None
 
 
 class NetQuantity(FieldModel):
@@ -133,11 +135,36 @@ class FindingModel(BaseModel):
     extracted: Any = None
     expected: Optional[str] = None
     evidence_bbox: Optional[List[List[float]]] = None
+    evidence_refs: List[Dict[str, Any]] = Field(default_factory=list)
     message_en: str
     message_hi: str
     fix_hint_en: Optional[str] = None
+    trail: List[Dict[str, str]] = Field(default_factory=list)
 
 
 class SummaryModel(BaseModel):
     status: str
     counts: Dict[str, int] = Field(default_factory=dict)
+
+
+class ConflictSurfaceModel(BaseModel):
+    id: int
+    surface: str
+    value: Any = None
+    bbox: Optional[List[List[float]]] = None
+
+
+class ConflictModel(BaseModel):
+    field: str
+    surfaces: List[ConflictSurfaceModel] = Field(default_factory=list)
+    severity: str
+
+
+class SurfaceResultModel(BaseModel):
+    id: int
+    surface: str
+    image_size: Dict[str, int]
+    scale: float
+    ocr: Dict[str, Any]
+    quality: Optional[Dict[str, Any]] = None
+    declarations: Declarations

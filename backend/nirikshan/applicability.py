@@ -5,7 +5,8 @@ from nirikshan.schema import ApplicabilityModel, ContextModel, Declarations
 ALL_RULE_IDS = [
     "R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09",
     "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R21", "R23",
-    "R24", "R25", "R26", "R27", "R28", "R33", "R34", "R35"
+    "R24", "R25", "R26", "R27", "R28", "R33", "R34", "R35",
+    "C01", "C02", "C03", "C04", "C05"
 ]
 
 
@@ -170,11 +171,14 @@ def resolve(
             applicable_rule_ids.remove("R12")
             reasons["R12"] = "Rule 6(1)(e) proviso: state excise"
 
-    # Import rule R04
+    # Import rules R04, C05
     if not is_import:
         if "R04" in applicable_rule_ids:
             applicable_rule_ids.remove("R04")
             reasons["R04"] = "Rule 6(1)(aa): applies only to imported packages"
+        if "C05" in applicable_rule_ids:
+            applicable_rule_ids.remove("C05")
+            reasons["C05"] = "Rule 6(1)(aa): applies only to imported packages"
 
     # Unit Sale Price R14
     is_exact_base_unit = (
