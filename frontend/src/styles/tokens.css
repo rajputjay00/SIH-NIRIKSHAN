@@ -1,0 +1,41 @@
+/* Nirikshan UI design tokens — derived from the logo (navy) and the reference deck (light blue) */
+:root {
+  /* brand */
+  --navy-900: #0C2A46;   /* logo navy: headings, header, primary text on light */
+  --navy-700: #1B3F63;
+  --blue-500: #4FA3D1;   /* primary accent: buttons, links, active states */
+  --blue-600: #1F6FA5;   /* hover / pressed */
+  --blue-200: #A9D8EE;   /* chips, outlines, secondary fills */
+  --blue-50:  #EAF5FB;   /* card tints, section backgrounds */
+  --saffron:  #FB7E13;   /* brand accent ONLY (wordmark lines, hero underline) — not for UI states */
+  --green-brand: #247E42;
+
+  /* neutrals */
+  --white: #FFFFFF;
+  --grey-50:  #F6F8FB;   /* page background */
+  --grey-100: #EEF2F6;
+  --grey-300: #CBD5E1;
+  --grey-500: #6B7A8C;   /* secondary text */
+  --grey-700: #3B4A5C;
+
+  /* verdicts (muted, palette-compatible) */
+  --pass:   #1E9E5A;  --pass-bg:   #E6F6EC;
+  --fail:   #D64545;  --fail-bg:   #FCEAEA;
+  --review: #E0A100;  --review-bg: #FFF6DB;
+  --na:     #9AA7B5;  --na-bg:     #F1F4F7;
+
+  /* shape & elevation (from the reference deck) */
+  --radius-xl: 24px; --radius-lg: 20px; --radius-md: 14px; --radius-sm: 10px;
+  --shadow-card: 0 10px 30px rgba(12, 42, 70, 0.08);
+  --shadow-float: 0 20px 50px rgba(12, 42, 70, 0.14);
+  --glass-bg: rgba(255,255,255,0.55); --glass-border: rgba(255,255,255,0.7); --glass-blur: 14px;
+
+  /* type */
+  --font-sans: "Plus Jakarta Sans", "Manrope", "Inter", system-ui, sans-serif;
+  --font-devanagari: "Noto Sans Devanagari", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms; --dur-base: 280ms; --dur-slow: 600ms;
+}

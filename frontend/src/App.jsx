@@ -195,8 +195,12 @@ export default function App() {
   return (
     <div className="container">
       <header className="header">
-        <h1>Nirikshan — Label Compliance Inspector</h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/brand/mark-blue.svg" height="32" alt="Nirikshan" />
+          Nirikshan
+        </h1>
         <div className={`status-badge ${isOnline ? 'online' : 'offline'}`}>
+
           {status}
         </div>
       </header>
