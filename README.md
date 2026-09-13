@@ -2,6 +2,7 @@
 title: Nirikshan
 sdk: docker
 app_port: 7860
+hardware: cpu-basic
 ---
 
 # Nirikshan
