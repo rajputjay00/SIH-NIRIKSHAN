@@ -2,6 +2,7 @@ node_modules
 .venv
 venv
 dist
+backend/static
 .git
 *.onnx
 __pycache__

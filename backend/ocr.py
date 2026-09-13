@@ -29,10 +29,7 @@ def get_engine():
 
         from rapidocr_onnxruntime import RapidOCR
 
-        try:
-            _engine = RapidOCR(num_threads=threads)
-        except TypeError:
-            _engine = RapidOCR()
+        _engine = RapidOCR(intra_op_num_threads=threads)
     return _engine
 
 

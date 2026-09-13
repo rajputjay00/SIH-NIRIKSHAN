@@ -83,6 +83,20 @@ def test_scan_image_payload_too_large():
     assert response.status_code == 413
 
 
+def test_spa_blocks_path_traversal():
+    response = client.get("/..%2Fmain.py")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    assert "import fastapi" not in response.text
+
+
+def test_api_404_returns_json():
+    response = client.get("/api/does-not-exist")
+    assert response.status_code == 404
+    assert "application/json" in response.headers.get("content-type", "")
+    assert response.json() == {"detail": "API route not found"}
+
+
 @pytest.mark.slow
 def test_real_ocr_smoke_test():
     img_bytes = create_test_image_bytes(fmt="PNG", size=(400, 200), text="NET QTY 500g")

@@ -40,8 +40,8 @@ def get_git_sha() -> str:
 GIT_SHA = get_git_sha()
 
 
-def create_warmup_image() -> Image.Image:
-    img = Image.new("RGB", (800, 600), color=(255, 255, 255))
+def create_warmup_image(width: int, height: int) -> Image.Image:
+    img = Image.new("RGB", (width, height), color=(255, 255, 255))
     draw = ImageDraw.Draw(img)
     draw.text((50, 50), "NET QUANTITY: 1 kg", fill=(0, 0, 0))
     draw.text((50, 100), "MRP Rs. 150.00 INCL. OF ALL TAXES", fill=(0, 0, 0))
@@ -52,10 +52,10 @@ def create_warmup_image() -> Image.Image:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global MODEL_LOADED
-    # Warm up both detection and recognition models with a standard label image
     try:
-        warmup_img = create_warmup_image()
-        ocr.extract_text(warmup_img)
+        # Warm up with both large (1600x1200) and standard (600x400) images
+        ocr.extract_text(create_warmup_image(1600, 1200))
+        ocr.extract_text(create_warmup_image(600, 400))
         MODEL_LOADED = True
     except Exception as e:
         MODEL_LOADED = False
@@ -147,16 +147,19 @@ async def api_post_404_fallback(api_path: str):
 # Include API Router
 app.include_router(router)
 
-# Serve Static Files & SPA Fallback for non-/api paths
-static_dir = os.path.join(os.path.dirname(__file__), "static")
+# Serve Static Files & SPA Fallback for non-/api paths (Path Traversal Safe)
+static_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), "static"))
 if os.path.exists(static_dir):
-    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
+    assets_dir = os.path.join(static_dir, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        file_path = os.path.join(static_dir, full_path)
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
+        target = os.path.realpath(os.path.join(static_dir, full_path))
+        base = static_dir
+        if os.path.isfile(target) and (target == base or target.startswith(base + os.sep)):
+            return FileResponse(target)
         index_path = os.path.join(static_dir, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)

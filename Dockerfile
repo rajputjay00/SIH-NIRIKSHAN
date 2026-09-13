@@ -3,7 +3,7 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY frontend/ ./
 RUN npm run build
@@ -16,22 +16,19 @@ ENV GIT_SHA=${GIT_SHA}
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY backend/requirements.txt backend/requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
 
-# Copy built frontend static files
-COPY --from=frontend-builder /app/frontend/dist ./static
-
-# Copy backend source code
+# Copy backend source code FIRST so static copy overrides stale static files
 COPY backend/ .
 
-# Create non-root user (uid 1000) and grant access
+# Copy built frontend static files over static directory
+COPY --from=frontend-builder /app/frontend/dist ./static
+
+# Create non-root user (uid 1000) and set explicit HOME
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
+ENV HOME=/home/appuser
 
 EXPOSE 7860
 
