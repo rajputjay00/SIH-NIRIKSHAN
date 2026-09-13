@@ -36,13 +36,16 @@ class MRP(FieldModel):
 
 class UnitSalePrice(FieldModel):
     value: Optional[float] = None
+    per_qty: float = 1.0
     per_unit: Optional[str] = None
+    value_per_base_unit: Optional[float] = None
 
 
 class DateField(FieldModel):
     day: Optional[int] = None
     month: Optional[int] = None
     year: Optional[int] = None
+    duration_months: Optional[int] = None
 
 
 class EntityBlock(FieldModel):

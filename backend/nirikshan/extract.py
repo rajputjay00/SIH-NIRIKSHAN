@@ -249,12 +249,22 @@ def parse_net_quantity(raw_text: str) -> Dict[str, Any]:
     }
 
 
+def clean_matched_key_from_line(line_text: str, matched_key: str) -> str:
+    if not matched_key:
+        return line_text.strip()
+    pattern = r'^\s*' + re.escape(matched_key) + r'[\s\:\_\-\.]*'
+    cleaned = re.sub(pattern, "", line_text, flags=re.IGNORECASE).strip(" :-_.")
+    if not cleaned or cleaned.lower() == line_text.lower():
+        cleaned = re.sub(re.escape(matched_key), "", line_text, flags=re.IGNORECASE).strip(" :-_.")
+    return cleaned
+
+
 def parse_mrp(raw_text: str) -> Dict[str, Any]:
     text = fix_numeric_confusions(raw_text)
     currency, _ = normalize_currency(text)
 
-    # Check inclusive of all taxes phrase
-    tax_pattern = r'incl(usive|.)?\s*(of\s*)?all\s*tax(es)?'
+    # Check inclusive of all taxes phrase (tolerates OCR confusion on first letter)
+    tax_pattern = r'[il1|]ncl(usive|\.)?\s*(of\s*)?all\s*tax(es)?'
     has_tax_phrase = bool(re.search(tax_pattern, text, re.IGNORECASE))
 
     # Extract MRP float value
@@ -288,15 +298,27 @@ def parse_unit_sale_price(raw_text: str) -> Dict[str, Any]:
     text = fix_numeric_confusions(raw_text)
 
     val_num = None
+    per_qty = 1.0
     per_u = None
+    val_per_base = None
 
-    m = re.search(r'(\d+(?:\.\d+)?)\s*(?:/|per)\s*([a-zA-Z]+)', text, re.IGNORECASE)
+    m = re.search(
+        r'(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:/|per)\s*(\d+(?:\.\d+)?)?\s*([a-zA-Z]+|[\u0900-\u097F]+)',
+        text,
+        re.IGNORECASE,
+    )
     if m:
         try:
             val_num = float(m.group(1))
-            unit_str = m.group(2)
+            if m.group(2):
+                per_qty = float(m.group(2))
+            else:
+                per_qty = 1.0
+            unit_str = m.group(3)
             std_u, _, _ = parse_unit_token(unit_str)
             per_u = std_u
+            if per_qty > 0:
+                val_per_base = round(val_num / per_qty, 4)
         except ValueError:
             pass
     else:
@@ -304,12 +326,15 @@ def parse_unit_sale_price(raw_text: str) -> Dict[str, Any]:
         if m2:
             try:
                 val_num = float(m2.group(1))
+                val_per_base = val_num
             except ValueError:
                 pass
 
     return {
         "value": val_num,
+        "per_qty": per_qty,
         "per_unit": per_u,
+        "value_per_base_unit": val_per_base,
     }
 
 
@@ -320,6 +345,19 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
     month_val = None
     year_val = None
 
+    # Check relative date forms e.g. "6 months from packaging", "30 days", "1 year"
+    m_mon = re.search(r'\b(\d+)\s*months?\b', text, re.IGNORECASE)
+    if m_mon:
+        return {"day": None, "month": None, "year": None, "duration_months": int(m_mon.group(1))}
+
+    m_yr = re.search(r'\b(\d+)\s*years?\b', text, re.IGNORECASE)
+    if m_yr:
+        return {"day": None, "month": None, "year": None, "duration_months": int(m_yr.group(1)) * 12}
+
+    m_day = re.search(r'\b(\d+)\s*days?\b', text, re.IGNORECASE)
+    if m_day:
+        return {"day": None, "month": None, "year": None, "duration_months": round(int(m_day.group(1)) / 30)}
+
     # 1. DD/MM/YYYY or DD.MM.YYYY or DD-MM-YYYY
     m1 = re.search(r'\b(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})\b', text)
     if m1:
@@ -327,7 +365,7 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
         month_val = int(m1.group(2))
         y = int(m1.group(3))
         year_val = y + 2000 if y < 100 else y
-        return {"day": day_val, "month": month_val, "year": year_val}
+        return {"day": day_val, "month": month_val, "year": year_val, "duration_months": None}
 
     # 2. MM/YYYY or MM-YYYY or MM.YYYY
     m2 = re.search(r'\b(\d{1,2})[\/\.\-](\d{2,4})\b', text)
@@ -335,7 +373,7 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
         month_val = int(m2.group(1))
         y = int(m2.group(2))
         year_val = y + 2000 if y < 100 else y
-        return {"day": None, "month": month_val, "year": year_val}
+        return {"day": None, "month": month_val, "year": year_val, "duration_months": None}
 
     # 3. Mon YYYY e.g. Sep 2026 or September 2026
     m3 = re.search(r'\b([a-zA-Z]{3,9})\s*[\/\.\-,\s]\s*(\d{2,4})\b', text)
@@ -345,13 +383,13 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
             month_val = MONTH_NAMES[mon_str]
             y = int(m3.group(2))
             year_val = y + 2000 if y < 100 else y
-            return {"day": None, "month": month_val, "year": year_val}
+            return {"day": None, "month": month_val, "year": year_val, "duration_months": None}
 
-    return {"day": day_val, "month": month_val, "year": year_val}
+    return {"day": day_val, "month": month_val, "year": year_val, "duration_months": None}
 
 
 def parse_entity_block(
-    lines: List[OCRLine], role_name: str
+    lines: List[OCRLine], role_name: str, matched_key: str = ""
 ) -> EntityBlock:
     source_lines = lines
     raw_text = "\n".join(l.text for l in source_lines)
@@ -371,10 +409,23 @@ def parse_entity_block(
             state_val = st
             break
 
-    # Clean name / address
-    clean_addr = raw_text
-    if pin_val:
-        clean_addr = clean_addr.replace(pin_val, "").strip()
+    name_val = None
+    addr_lines = []
+
+    if source_lines:
+        first_rem = clean_matched_key_from_line(source_lines[0].text, matched_key)
+        if first_rem:
+            name_val = first_rem
+            addr_lines = [l.text.strip() for l in source_lines[1:] if l.text.strip()]
+        else:
+            if len(source_lines) > 1:
+                name_val = source_lines[1].text.strip()
+                addr_lines = [l.text.strip() for l in source_lines[2:] if l.text.strip()]
+            else:
+                name_val = None
+                addr_lines = []
+
+    address_val = ", ".join(addr_lines) if addr_lines else None
 
     return EntityBlock(
         value=raw_text.strip(),
@@ -383,15 +434,17 @@ def parse_entity_block(
         confidence=round(float(conf), 4),
         source_line_ids=line_ids,
         source="block_absorbed",
-        name=source_lines[0].text.strip() if source_lines else None,
-        address=clean_addr.replace("\n", ", "),
+        name=name_val,
+        address=address_val,
         pin=pin_val,
         state=state_val,
         role=role_name,
     )
 
 
-def parse_consumer_care_block(lines: List[OCRLine]) -> ConsumerCare:
+def parse_consumer_care_block(
+    lines: List[OCRLine], matched_key: str = ""
+) -> ConsumerCare:
     source_lines = lines
     raw_text = "\n".join(l.text for l in source_lines)
     conf = min(l.confidence for l in source_lines) if source_lines else 0.0
@@ -409,12 +462,35 @@ def parse_consumer_care_block(lines: List[OCRLine]) -> ConsumerCare:
     )
     phone_val = phone_match.group(0) if phone_match else None
 
-    # Clean address/name
-    addr_clean = raw_text
-    if email_val:
-        addr_clean = addr_clean.replace(email_val, "")
-    if phone_val:
-        addr_clean = addr_clean.replace(phone_val, "")
+    def clean_contact_info(text: str) -> str:
+        res = text
+        if email_val:
+            res = res.replace(email_val, "")
+        if phone_val:
+            res = res.replace(phone_val, "")
+        res = re.sub(r'\b(?:phone|email|tel|mobile|contact)[\s\:\.]*', '', res, flags=re.IGNORECASE)
+        return res.strip(" :-_,.")
+
+    name_val = None
+    addr_lines = []
+
+    if source_lines:
+        first_rem = clean_matched_key_from_line(source_lines[0].text, matched_key)
+        first_rem_cleaned = clean_contact_info(first_rem)
+        if first_rem_cleaned:
+            name_val = first_rem_cleaned
+            addr_lines = [clean_contact_info(l.text) for l in source_lines[1:]]
+        else:
+            if len(source_lines) > 1:
+                cand_name = clean_contact_info(source_lines[1].text)
+                name_val = cand_name if cand_name else None
+                addr_lines = [clean_contact_info(l.text) for l in source_lines[2:]]
+            else:
+                name_val = None
+                addr_lines = []
+
+    non_empty_addr = [a for a in addr_lines if a]
+    address_val = ", ".join(non_empty_addr) if non_empty_addr else None
 
     return ConsumerCare(
         value=raw_text.strip(),
@@ -423,8 +499,8 @@ def parse_consumer_care_block(lines: List[OCRLine]) -> ConsumerCare:
         confidence=round(float(conf), 4),
         source_line_ids=line_ids,
         source="block_absorbed",
-        name=source_lines[0].text.strip() if source_lines else None,
-        address=addr_clean.strip().replace("\n", ", "),
+        name=name_val,
+        address=address_val,
         phone=phone_val,
         email=email_val,
     )
@@ -502,7 +578,7 @@ def extract(
             for l in absorbed:
                 if l.id is not None:
                     claimed_line_ids.add(l.id)
-            extracted_dict[field_name] = parse_entity_block(absorbed, field_name)
+            extracted_dict[field_name] = parse_entity_block(absorbed, field_name, matched_key)
             continue
 
         if field_name == "consumer_care":
@@ -510,7 +586,7 @@ def extract(
             for l in absorbed:
                 if l.id is not None:
                     claimed_line_ids.add(l.id)
-            extracted_dict["consumer_care"] = parse_consumer_care_block(absorbed)
+            extracted_dict["consumer_care"] = parse_consumer_care_block(absorbed, matched_key)
             continue
 
         # Single value fields
@@ -555,7 +631,9 @@ def extract(
             parsed = parse_unit_sale_price(raw_val_str)
             extracted_dict["unit_sale_price"] = UnitSalePrice(
                 value=parsed["value"],
+                per_qty=parsed["per_qty"],
                 per_unit=parsed["per_unit"],
+                value_per_base_unit=parsed["value_per_base_unit"],
                 raw=raw_val_str,
                 bbox=bbox,
                 confidence=round(float(conf), 4),
@@ -568,6 +646,7 @@ def extract(
                 day=parsed["day"],
                 month=parsed["month"],
                 year=parsed["year"],
+                duration_months=parsed["duration_months"],
                 raw=raw_val_str,
                 bbox=bbox,
                 confidence=round(float(conf), 4),

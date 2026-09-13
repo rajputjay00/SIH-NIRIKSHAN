@@ -1,0 +1,32 @@
+[
+  {
+    "text": "Manufactured By: ABC Traders Pvt Ltd",
+    "confidence": 0.96,
+    "bbox": [
+      [10, 10],
+      [300, 10],
+      [300, 30],
+      [10, 30]
+    ]
+  },
+  {
+    "text": "Plot 4, MIDC",
+    "confidence": 0.95,
+    "bbox": [
+      [10, 35],
+      [200, 35],
+      [200, 55],
+      [10, 55]
+    ]
+  },
+  {
+    "text": "Pune - 411001, Maharashtra",
+    "confidence": 0.94,
+    "bbox": [
+      [10, 60],
+      [250, 60],
+      [250, 80],
+      [10, 80]
+    ]
+  }
+]
