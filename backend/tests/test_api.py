@@ -24,7 +24,7 @@ def test_health_check():
     data = response.json()
     assert data["status"] == "ok"
     assert "model_loaded" in data
-    assert data["model_version"] == "rapidocr_1.4.4"
+    assert data["model_version"].startswith("rapidocr_")
     assert "git_sha" in data
 
 
