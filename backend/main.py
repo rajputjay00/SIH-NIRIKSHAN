@@ -5,7 +5,7 @@ import subprocess
 from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageDraw
 
@@ -149,18 +149,18 @@ app.include_router(router)
 
 # Serve Static Files & SPA Fallback for non-/api paths (Path Traversal Safe)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
-if os.path.exists(static_dir):
-    assets_dir = os.path.join(static_dir, "assets")
-    if os.path.exists(assets_dir):
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+assets_dir = os.path.join(static_dir, "assets")
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        base = os.path.realpath(static_dir)
-        target = os.path.realpath(os.path.join(static_dir, full_path))
-        if os.path.isfile(target) and target.startswith(base + os.sep):
-            return FileResponse(target)
-        index_path = os.path.join(base, "index.html")
-        if os.path.exists(index_path):
-            return FileResponse(index_path)
-        raise HTTPException(status_code=404, detail="Static files not built")
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    base = os.path.realpath(static_dir)
+    target = os.path.realpath(os.path.join(static_dir, full_path))
+    if os.path.isfile(target) and target.startswith(base + os.sep):
+        return FileResponse(target)
+    index_path = os.path.join(base, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return HTMLResponse("<!DOCTYPE html><html><body><div id='root'></div></body></html>", status_code=200)
