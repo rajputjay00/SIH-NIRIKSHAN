@@ -1,24 +1,31 @@
 import io
 from unittest.mock import patch
+import pytest
 from fastapi.testclient import TestClient
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from main import app
 
 client = TestClient(app)
 
 
-def create_test_image_bytes(fmt="PNG", size=(100, 100), color=(255, 0, 0)):
+def create_test_image_bytes(fmt="PNG", size=(200, 100), text="TEST LABEL 123"):
     buf = io.BytesIO()
-    img = Image.new("RGB", size, color)
+    img = Image.new("RGB", size, color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    draw.text((10, 10), text, fill=(0, 0, 0))
     img.save(buf, format=fmt)
     return buf.getvalue()
 
 
 def test_health_check():
-    response = client.get("/health")
+    response = client.get("/api/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "model_loaded" in data
+    assert data["model_version"] == "rapidocr_1.4.4"
+    assert "git_sha" in data
 
 
 @patch("ocr.extract_text")
@@ -37,12 +44,14 @@ def test_scan_image_success(mock_extract_text):
                 "bbox": [[0.0, 20.0], [50.0, 20.0], [50.0, 30.0], [0.0, 30.0]],
             },
         ],
-        "elapsed_ms": 42.5,
+        "preprocess_ms": 1.2,
+        "ocr_ms": 42.5,
+        "elapsed_ms": 43.7,
     }
 
     img_bytes = create_test_image_bytes(fmt="PNG", size=(200, 150))
     response = client.post(
-        "/scan",
+        "/api/scan",
         files={"file": ("test_label.png", img_bytes, "image/png")},
     )
 
@@ -59,7 +68,7 @@ def test_scan_image_success(mock_extract_text):
 
 def test_scan_image_unsupported_media_type():
     response = client.post(
-        "/scan",
+        "/api/scan",
         files={"file": ("test.pdf", b"%PDF-1.4...", "application/pdf")},
     )
     assert response.status_code == 415
@@ -68,7 +77,22 @@ def test_scan_image_unsupported_media_type():
 def test_scan_image_payload_too_large():
     large_bytes = b"0" * (11 * 1024 * 1024)
     response = client.post(
-        "/scan",
+        "/api/scan",
         files={"file": ("large.png", large_bytes, "image/png")},
     )
     assert response.status_code == 413
+
+
+@pytest.mark.slow
+def test_real_ocr_smoke_test():
+    img_bytes = create_test_image_bytes(fmt="PNG", size=(400, 200), text="NET QTY 500g")
+    response = client.post(
+        "/api/scan",
+        files={"file": ("smoke_test.png", img_bytes, "image/png")},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["filename"] == "smoke_test.png"
+    assert "ocr" in data
+    assert "full_text" in data["ocr"]
+    assert "ocr_ms" in data["ocr"]

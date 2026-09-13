@@ -1,0 +1,10 @@
+node_modules
+.venv
+venv
+dist
+.git
+*.onnx
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache

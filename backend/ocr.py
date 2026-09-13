@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from typing import Any, Dict
 import numpy as np
@@ -11,21 +12,36 @@ if not logger.handlers:
 _engine = None
 
 
+def get_thread_count() -> int:
+    env_val = os.getenv("NIRIKSHAN_THREADS")
+    if env_val and env_val.isdigit():
+        return int(env_val)
+    return os.cpu_count() or 4
+
+
 def get_engine():
     global _engine
     if _engine is None:
+        threads = get_thread_count()
+        os.environ["OMP_NUM_THREADS"] = str(threads)
+        os.environ["OPENBLAS_NUM_THREADS"] = str(threads)
+        os.environ["MKL_NUM_THREADS"] = str(threads)
+
         from rapidocr_onnxruntime import RapidOCR
 
-        _engine = RapidOCR()
+        try:
+            _engine = RapidOCR(num_threads=threads)
+        except TypeError:
+            _engine = RapidOCR()
     return _engine
 
 
 def extract_text(image: Image.Image) -> Dict[str, Any]:
-    # 1. Preprocess: convert to RGB
+    # Stage 1: Preprocessing (RGB conversion & downscaling <= 1600 px)
+    preprocess_start = time.perf_counter()
     if image.mode != "RGB":
         image = image.convert("RGB")
 
-    # 2. Downscale if longest side > 1600 px
     width, height = image.size
     max_dim = max(width, height)
     if max_dim > 1600:
@@ -34,16 +50,22 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
         new_h = max(1, int(height * scale))
         image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    # 3. Run RapidOCR & measure execution time
     img_np = np.array(image)
-    start_time = time.perf_counter()
+    preprocess_ms = (time.perf_counter() - preprocess_start) * 1000.0
+
+    # Stage 2: RapidOCR Inference
+    ocr_start = time.perf_counter()
     engine = get_engine()
     result, _ = engine(img_np)
-    elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+    ocr_ms = (time.perf_counter() - ocr_start) * 1000.0
 
-    logger.info(f"OCR processing completed in {elapsed_ms:.2f} ms")
+    elapsed_ms = preprocess_ms + ocr_ms
 
-    # 4. Format output lines & full_text
+    logger.info(
+        f"OCR Timings - Preprocess: {preprocess_ms:.2f} ms, OCR Inference: {ocr_ms:.2f} ms, Total: {elapsed_ms:.2f} ms"
+    )
+
+    # Stage 3: Formatting Output Lines
     lines = []
     text_list = []
 
@@ -65,5 +87,7 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     return {
         "full_text": full_text,
         "lines": lines,
+        "preprocess_ms": round(preprocess_ms, 2),
+        "ocr_ms": round(ocr_ms, 2),
         "elapsed_ms": round(elapsed_ms, 2),
     }
