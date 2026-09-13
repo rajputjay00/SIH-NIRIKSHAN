@@ -13,6 +13,13 @@
       - present: { field: "primary_entity.name" }
       - present: { field: "primary_entity.address" }
   on_fail: FAIL
+  on_uncertain:
+    - when_pass:
+        all:
+          - is_true: { field: "multi_unit_note" }
+      verdict: PASS
+      message_en: "Compliant: Manufacturer / Packer / Importer Name & Address (INFO: manufacturing unit identified by batch code — permitted; officer to read the batch code)"
+      message_hi: "अनुपालन: निर्माता / पैकर / आयातकर्ता का नाम और पता (सूचना: बैच कोड द्वारा पहचानी गई निर्माण इकाई - अनुमति है; अधिकारी बैच कोड पढ़ें)"
   evidence: "declarations.manufacturer.bbox"
   message_en: "Every package must declare the name and address of the manufacturer, packer, or importer."
   message_hi: "प्रत्येक पैकेज पर निर्माता, पैकर या आयातकर्ता का नाम और पता घोषित होना आवश्यक है।"
@@ -67,6 +74,13 @@
     all:
       - present: { field: "generic_name.value" }
   on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - when_pass:
+        all:
+          - confidence_below: { field: "generic_name.confidence", threshold: 0.8 }
+      verdict: NEEDS_REVIEW
+      message_en: "verify generic name"
+      message_hi: "जेनेरिक नाम सत्यापित करें"
   evidence: "declarations.generic_name.bbox"
   message_en: "The common or generic name of the commodity should be declared."
   message_hi: "सामग्री का सामान्य या जेनेरिक नाम घोषित होना चाहिए।"

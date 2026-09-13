@@ -11,3 +11,4 @@ if os.path.exists(CATALOGUE_PATH):
     RULES_VERSION = "0.1.0+" + hashlib.sha256(catalogue_bytes).hexdigest()[:12]
 else:
     RULES_VERSION = "0.1.0+unknown"
+

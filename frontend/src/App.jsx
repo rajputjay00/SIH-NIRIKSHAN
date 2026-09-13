@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { checkHealth, scanImage } from './api';
+import { mapBbox } from './utils/bbox';
 
 export default function App() {
   const [status, setStatus] = useState('Checking...');
@@ -72,24 +73,19 @@ export default function App() {
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
 
+      const ocrImageSize = scanResult.ocr?.image_size || { width: img.width, height: img.height };
+      const drawnSize = { width: canvas.width, height: canvas.height };
+
       const findings = scanResult.findings || [];
       findings.forEach((finding) => {
         if (!finding.evidence_bbox || finding.verdict === 'N/A') return;
         const bbox = finding.evidence_bbox;
         const isSelected = selectedRuleId === finding.rule_id;
 
-        // Extract coordinates
-        let minX, minY, maxX, maxY;
-        if (bbox.length === 4 && Array.isArray(bbox[0])) {
-          minX = Math.min(...bbox.map((p) => p[0]));
-          minY = Math.min(...bbox.map((p) => p[1]));
-          maxX = Math.max(...bbox.map((p) => p[0]));
-          maxY = Math.max(...bbox.map((p) => p[1]));
-        } else if (bbox.length === 4) {
-          [minX, minY, maxX, maxY] = bbox;
-        } else {
-          return;
-        }
+        const mappedBox = mapBbox(bbox, ocrImageSize, drawnSize);
+        if (!mappedBox) return;
+        
+        const [minX, minY, maxX, maxY] = mappedBox;
 
         const width = maxX - minX;
         const height = maxY - minY;
@@ -429,9 +425,21 @@ export default function App() {
                       <div className="decl-label">{label}</div>
                       {hasValue ? (
                         <div className="decl-content">
-                          <div className="decl-value">{displayVal}</div>
+                          <div className={`decl-value ${expandedRuleId === key ? '' : 'clamped'}`}>
+                            {displayVal}
+                          </div>
                           {field.raw && field.raw !== displayVal && (
-                            <div className="decl-raw">Raw: {field.raw}</div>
+                            <div className={`decl-raw ${expandedRuleId === key ? '' : 'clamped'}`}>
+                              Raw: {field.raw}
+                            </div>
+                          )}
+                          {((displayVal && displayVal.length > 100) || (field.raw && field.raw.length > 50)) && (
+                            <button 
+                              className="btn-more" 
+                              onClick={() => setExpandedRuleId(expandedRuleId === key ? null : key)}
+                            >
+                              {expandedRuleId === key ? 'Show less' : 'Show more'}
+                            </button>
                           )}
                           {conf && <div className="decl-conf">Confidence: {conf}%</div>}
                         </div>

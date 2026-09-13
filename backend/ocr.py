@@ -54,6 +54,7 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     max_side = int(os.getenv("NIRIKSHAN_MAX_SIDE", "2400"))
     width, height = image.size
     max_dim = max(width, height)
+    scale = 1.0
     if max_dim > max_side:
         scale = float(max_side) / max_dim
         new_w = max(1, int(width * scale))
@@ -100,6 +101,8 @@ def extract_text(image: Image.Image) -> Dict[str, Any]:
     return {
         "full_text": full_text,
         "lines": lines,
+        "image_size": {"width": image.width, "height": image.height},
+        "scale": round(scale, 4),
         "preprocess_ms": round(preprocess_ms, 2),
         "ocr_ms": round(ocr_ms, 2),
         "elapsed_ms": round(elapsed_ms, 2),

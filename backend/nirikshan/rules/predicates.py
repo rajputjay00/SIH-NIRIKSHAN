@@ -192,4 +192,9 @@ def eval_predicate(
         msg = f"Confidence {conf:.2f} is below threshold {thresh:.2f}" if ok else f"Confidence {conf:.2f} >= {thresh:.2f}"
         return ok, msg, conf, bbox
 
+    elif pred_name == "is_true":
+        ok = bool(extracted_val)
+        msg = f"Field {field_path} is True" if ok else f"Field {field_path} is False"
+        return ok, msg, extracted_val, bbox
+
     return False, f"Unknown predicate '{pred_name}'", None, None

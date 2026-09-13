@@ -81,7 +81,7 @@ class Declarations(BaseModel):
     best_before: Optional[DateField] = None
     consumer_care: Optional[ConsumerCare] = None
     scripts_detected: List[str] = Field(default_factory=list)
-
+    multi_unit_note: bool = False
     @property
     def primary_entity(self) -> Optional[EntityBlock]:
         if self.manufacturer:

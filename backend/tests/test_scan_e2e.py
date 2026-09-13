@@ -122,3 +122,46 @@ def test_wholesale_pack():
     findings_dict = {f.rule_id: f for f in findings}
 
     assert findings_dict["R27"].verdict == "PASS"
+    assert findings_dict["R27"].verdict == "PASS"
+
+from io import BytesIO
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_image_dimensions_and_scale():
+    # Test 1: 1000x500 with EXIF orientation 6 (rotated 90 CW -> transposed to 500x1000)
+    img1 = Image.new('RGB', (1000, 500), color='white')
+    exif = img1.getexif()
+    exif[274] = 6 # 0x0112 is 274, Orientation
+    
+    buf1 = BytesIO()
+    img1.save(buf1, format='JPEG', exif=exif)
+    buf1.seek(0)
+    
+    response = client.post(
+        '/api/scan',
+        files={'file': ('img1.jpg', buf1, 'image/jpeg')},
+        data={'package_type': 'retail', 'category': 'general'}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data['ocr']['image_size'] == {'width': 500, 'height': 1000}
+    assert data['ocr']['scale'] == 1.0
+
+    # Test 2: 4000x3000 image, should be downscaled to max side 2400 (scale 0.6)
+    img2 = Image.new('RGB', (4000, 3000), color='white')
+    buf2 = BytesIO()
+    img2.save(buf2, format='JPEG')
+    buf2.seek(0)
+    
+    response2 = client.post(
+        '/api/scan',
+        files={'file': ('img2.jpg', buf2, 'image/jpeg')},
+        data={'package_type': 'retail', 'category': 'general'}
+    )
+    assert response2.status_code == 200
+    data2 = response2.json()
+    assert data2['ocr']['image_size'] == {'width': 2400, 'height': 1800}
+    assert data2['ocr']['scale'] == 0.6

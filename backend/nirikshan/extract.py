@@ -87,17 +87,29 @@ def match_field_key(text: str) -> Optional[Tuple[str, str]]:
     
     all_keys.sort(key=lambda x: len(x[2]), reverse=True)
 
+    bad_care_prefixes = ["tooth", "gum", "dental", "skin", "hair", "oral", "body", "baby", "face", "sun", "foot", "hand", "health"]
+
+    def is_rejected(field_name, text):
+        if field_name == "consumer_care":
+            text_lower = text.lower()
+            for prefix in bad_care_prefixes:
+                if f"{prefix} care" in text_lower or f"{prefix}care" in text_lower or f"{prefix} cell" in text_lower or f"{prefix}cell" in text_lower:
+                    return True
+        return False
+
     for field_name, key, sq_key in all_keys:
         if sq_text.startswith(sq_key) or sq_key in sq_text:
-            return field_name, key
+            if not is_rejected(field_name, text):
+                return field_name, key
 
     best_match = None
     best_score = 0
     for field_name, key, sq_key in all_keys:
         score = fuzz.partial_ratio(sq_key, sq_text)
         if score >= 88 and score > best_score:
-            best_score = score
-            best_match = (field_name, key)
+            if not is_rejected(field_name, text):
+                best_score = score
+                best_match = (field_name, key)
 
     return best_match
 
@@ -182,16 +194,32 @@ def resolve_value_lines(
 
 def absorb_block_lines(
     lines: List[OCRLine], key_idx: int
-) -> Tuple[List[OCRLine], str]:
+) -> Tuple[List[OCRLine], str, str]:
     absorbed = [lines[key_idx]]
     k_line = lines[key_idx]
     last_ymax = max(pt[1] for pt in k_line.bbox)
     line_h = max(1.0, last_ymax - min(pt[1] for pt in k_line.bbox))
+    stop_reason = "max_gap"
+    prose_verbs = ["is", "are", "based", "contains", "read", "use", "keep", "apply", "store"]
 
-    for idx in range(key_idx + 1, len(lines)):
+    has_pin_in_key = bool(re.search(r'\b[1-9][0-9]{5}\b', k_line.text))
+    if has_pin_in_key:
+        return absorbed, k_line.text, "pin_found"
+
+    for idx in range(key_idx + 1, min(len(lines), key_idx + 4)):
         cand = lines[idx]
         match = match_field_key(cand.text)
         if match:
+            stop_reason = "new_key"
+            break
+
+        words = cand.text.split()
+        if len(words) >= 12:
+            stop_reason = "prose_length"
+            break
+        cand_lower = cand.text.lower()
+        if any(verb in cand_lower.split() for verb in prose_verbs):
+            stop_reason = "prose_verb"
             break
 
         cand_ymin = min(pt[1] for pt in cand.bbox)
@@ -201,11 +229,18 @@ def absorb_block_lines(
         if gap_y <= max(2.5 * line_h, 40.0):
             absorbed.append(cand)
             last_ymax = cand_ymax
+            if re.search(r'\b[1-9][0-9]{5}\b', cand.text):
+                stop_reason = "pin_found"
+                break
         else:
+            stop_reason = "max_gap"
             break
+    
+    if len(absorbed) >= 4 and stop_reason == "max_gap":
+        stop_reason = "max_lines"
 
     block_text = "\n".join(l.text for l in absorbed)
-    return absorbed, block_text
+    return absorbed, block_text, f"block_absorbed_stop_{stop_reason}"
 
 
 def parse_net_quantity(raw_text: str) -> Dict[str, Any]:
@@ -475,7 +510,7 @@ def parse_date(raw_text: str) -> Dict[str, Any]:
 
 
 def parse_entity_block(
-    lines: List[OCRLine], role_name: str, matched_key: str = ""
+    lines: List[OCRLine], role_name: str, matched_key: str = "", source: str = "block_absorbed"
 ) -> EntityBlock:
     source_lines = lines
     raw_text = "\n".join(l.text for l in source_lines)
@@ -517,7 +552,7 @@ def parse_entity_block(
         bbox=bbox,
         confidence=round(float(conf), 4),
         source_line_ids=line_ids,
-        source="block_absorbed",
+        source=source,
         name=name_val,
         address=address_val,
         pin=pin_val,
@@ -527,7 +562,7 @@ def parse_entity_block(
 
 
 def parse_consumer_care_block(
-    lines: List[OCRLine], matched_key: str = ""
+    lines: List[OCRLine], matched_key: str = "", source: str = "block_absorbed"
 ) -> ConsumerCare:
     source_lines = lines
     raw_text = "\n".join(l.text for l in source_lines)
@@ -580,7 +615,7 @@ def parse_consumer_care_block(
         bbox=bbox,
         confidence=round(float(conf), 4),
         source_line_ids=line_ids,
-        source="block_absorbed",
+        source=source,
         name=name_val,
         address=address_val,
         phone=phone_val,
@@ -589,28 +624,52 @@ def parse_consumer_care_block(
 
 
 def extract_generic_name(
-    lines: List[OCRLine], claimed_line_ids: set
+    lines: List[OCRLine], claimed_line_ids: set, image_h: int = 1200
 ) -> Optional[FieldModel]:
+    stopwords = ["directions", "use", "composition", "ingredients", "store", "caution", "warning", "benefits", "contains", "keep", "shake", "apply", "for external", "net", "mrp", "mfd", "batch"]
+    commodity_nouns = ["paste", "cream", "oil", "biscuits", "biscuit", "jam", "pickle", "atta", "flour", "rice", "soap", "shampoo", "powder", "wash", "foam", "solution", "tablets", "tea", "coffee", "salt", "sugar", "spices", "noodles", "noodle", "juice", "drink", "ghee", "butter", "oats", "cereal", "oatmeal", "flakes", "chips", "namkeen", "snack", "lotion", "serum", "cleanser", "gel", "sauce", "ketchup", "pasta", "pulses", "dal", "lentils", "milk", "cheese", "yogurt", "dahi", "paneer"]
+
+
     candidates = []
-    for idx, line in enumerate(lines[:5]):
+    for line in lines:
         if line.id in claimed_line_ids:
             continue
         text = line.text.strip()
         words = text.split()
-        if len(words) == 1 and text.isupper():
+        if not (1 <= len(words) <= 5):
             continue
-        if len(text) >= 3:
-            candidates.append((len(text), line))
+        if any(char.isdigit() for char in text):
+            continue
+        text_lower = text.lower()
+        if any(sw in text_lower for sw in stopwords):
+            continue
+        
+        has_commodity = any(noun in text_lower.split() for noun in commodity_nouns)
+        
+        # Check if in upper 40%
+        c_ymin = min(pt[1] for pt in line.bbox)
+        is_top = (c_ymin / max(1, image_h)) <= 0.4
+
+        score = 0
+        if has_commodity:
+            score += 100
+        if is_top:
+            score += 50
+        # Longer is better if ties
+        score += len(text)
+
+        candidates.append((score, line, has_commodity))
 
     if candidates:
         candidates.sort(key=lambda x: x[0], reverse=True)
-        best_line = candidates[0][1]
+        best_score, best_line, has_commodity = candidates[0]
         line_id = best_line.id if best_line.id is not None else 0
+        conf = 0.9 if has_commodity else 0.5
         return FieldModel(
             value=best_line.text.strip(),
             raw=best_line.text.strip(),
             bbox=best_line.bbox,
-            confidence=round(float(best_line.confidence * 0.6), 4),
+            confidence=conf,
             source_line_ids=[line_id],
             source="top_header_heuristic",
         )
@@ -655,21 +714,21 @@ def extract(
             continue
 
         if field_name in ["manufacturer", "packer", "importer", "marketer"]:
-            absorbed, block_text = absorb_block_lines(lines, idx)
+            absorbed, block_text, stop_reason = absorb_block_lines(lines, idx)
             for l in absorbed:
                 if l.id is not None:
                     claimed_line_ids.add(l.id)
-            eb = parse_entity_block(absorbed, field_name, matched_key)
+            eb = parse_entity_block(absorbed, field_name, matched_key, stop_reason)
             extracted_dict[field_name] = eb
             extracted_entities.append(eb)
             continue
 
         if field_name == "consumer_care":
-            absorbed, block_text = absorb_block_lines(lines, idx)
+            absorbed, block_text, stop_reason = absorb_block_lines(lines, idx)
             for l in absorbed:
                 if l.id is not None:
                     claimed_line_ids.add(l.id)
-            extracted_dict["consumer_care"] = parse_consumer_care_block(absorbed, matched_key)
+            extracted_dict["consumer_care"] = parse_consumer_care_block(absorbed, matched_key, stop_reason)
             continue
 
         raw_val_str, source_lines, strategy = resolve_value_lines(lines, idx, field_name)
@@ -729,6 +788,8 @@ def extract(
             )
         elif field_name in ["mfg_date", "best_before"]:
             parsed = parse_date(raw_val_str)
+            if parsed["day"] is None and parsed["month"] is None and parsed["year"] is None and parsed["duration_months"] is None:
+                continue
             extracted_dict[field_name] = DateField(
                 day=parsed["day"],
                 month=parsed["month"],
@@ -1028,7 +1089,7 @@ def extract(
 
     # Generic name heuristic if missing
     if "generic_name" not in extracted_dict:
-        gen_field = extract_generic_name(lines, claimed_line_ids)
+        gen_field = extract_generic_name(lines, claimed_line_ids, image_h)
         if gen_field:
             extracted_dict["generic_name"] = gen_field
             for lid in gen_field.source_line_ids:
@@ -1062,6 +1123,13 @@ def extract(
             if "manufacturer" not in extracted_dict and "marketer" not in extracted_dict and "packer" not in extracted_dict:
                 extracted_dict["manufacturer"] = unq_eb
 
+    multi_unit_note = False
+    for line in lines:
+        text_lower = line.text.lower()
+        if "name" in text_lower and "address" in text_lower and "mfg" in text_lower and "unit" in text_lower and "batch" in text_lower:
+            multi_unit_note = True
+            break
+
     return Declarations(
         manufacturer=extracted_dict.get("manufacturer"),
         packer=extracted_dict.get("packer"),
@@ -1077,5 +1145,6 @@ def extract(
         best_before=extracted_dict.get("best_before"),
         consumer_care=extracted_dict.get("consumer_care"),
         scripts_detected=scripts,
+        multi_unit_note=multi_unit_note,
     )
 
