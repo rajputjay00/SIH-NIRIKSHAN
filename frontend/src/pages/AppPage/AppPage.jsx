@@ -14,6 +14,7 @@ import { RuleCard } from '../../components/RuleCard/RuleCard';
 import { EvidenceCanvas } from '../../components/EvidenceCanvas/EvidenceCanvas';
 import { DeclarationCard } from '../../components/DeclarationCard/DeclarationCard';
 import { EntityCard } from '../../components/EntityCard/EntityCard';
+import { TolPanel } from '../../components/TolPanel/TolPanel';
 import { Stepper } from '../../components/Stepper/Stepper';
 import { ScanLine } from '../../components/ScanLine/ScanLine';
 import { Tabs } from '../../components/Tabs/Tabs';
@@ -134,6 +135,41 @@ export function AppPage() {
   const [category, setCategory] = useState('general');
   const [isImport, setIsImport] = useState(false);
   const [geometryChecks, setGeometryChecks] = useState(false);
+
+  const mergeTolFinding = (finding) => {
+    if (!finding || !scanResult) return;
+    setScanResult((prev) => {
+      if (!prev) return prev;
+      const existing = prev.findings || [];
+      const index = existing.findIndex((f) => f.rule_id === finding.rule_id);
+      let updatedFindings;
+      if (index >= 0) {
+        updatedFindings = existing.map((f, i) => (i === index ? { ...f, ...finding } : f));
+      } else {
+        updatedFindings = [...existing, finding];
+      }
+
+      const counts = { PASS: 0, FAIL: 0, NEEDS_REVIEW: 0, MANUAL: 0, INFO: 0, 'N/A': 0 };
+      updatedFindings.forEach((f) => {
+        counts[f.verdict] = (counts[f.verdict] || 0) + 1;
+      });
+
+      let status = prev.summary?.status;
+      if (counts.FAIL > 0) status = 'Non-compliant';
+      else if (counts.NEEDS_REVIEW > 0 || counts.MANUAL > 0) status = 'Officer review required';
+      else if (status === 'Non-compliant' || status === 'Officer review required') status = 'Compliant';
+
+      return {
+        ...prev,
+        findings: updatedFindings,
+        summary: {
+          ...prev.summary,
+          status,
+          counts,
+        },
+      };
+    });
+  };
 
   const packageTypes = [
     { id: 'retail', label: t('pkg_retail') },
@@ -412,11 +448,21 @@ export function AppPage() {
               { id: 'findings', label: t('tab_findings') },
               { id: 'evidence', label: t('tab_evidence') },
               { id: 'declarations', label: t('tab_declarations') },
+              { id: 'tol', label: t('tab_tol') },
               { id: 'report', label: t('tab_report') },
             ]}
             activeTab={activeTab}
             onChange={setActiveTab}
           />
+
+          {/* Tol / Weighing Tab */}
+          {activeTab === 'tol' && (
+            <TolPanel
+              key={scanResult.id || 'tol_panel'}
+              declaredField={scanResult.declarations?.net_quantity || scanResult.merged?.net_quantity}
+              onFinding={mergeTolFinding}
+            />
+          )}
 
           {/* Findings Tab */}
           {activeTab === 'findings' && (
