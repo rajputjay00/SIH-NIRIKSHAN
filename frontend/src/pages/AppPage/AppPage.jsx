@@ -42,7 +42,7 @@ function maapFor(findingOrId, merged) {
 
 
 export function AppPage() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const reducedMotion = useReducedMotion();
   const [searchParams] = useSearchParams();
   const sessionCode = searchParams.get('session');
