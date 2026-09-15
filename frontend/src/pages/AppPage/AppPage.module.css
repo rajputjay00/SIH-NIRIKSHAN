@@ -476,15 +476,31 @@
   line-height: 1.35;
 }
 
-.whatGetsCheckedCard {
+.uploadCard {
   background-color: var(--white);
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 24px;
   border: 1px solid var(--grey-100);
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
+}
+
+.railCardWrapper {
+  margin: 4px 0;
+}
+
+.resultRailWrapper {
+  margin: 12px 0 16px;
+}
+
+.railCardWrapper {
+  margin: 4px 0;
+}
+
+.resultRailWrapper {
+  margin: 12px 0 16px;
 }
 
 .exampleRulesSection {

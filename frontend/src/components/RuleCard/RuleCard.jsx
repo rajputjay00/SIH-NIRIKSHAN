@@ -52,8 +52,9 @@ export function RuleCard({
     >
       <div className={styles.headerRow} onClick={() => setExpanded(!expanded)}>
         <div className={styles.ruleMeta}>
-          <span className={styles.rulePill}>{finding.rule_id}</span>
-          <span className={styles.ruleRef}>{finding.rule_ref}</span>
+          <span className={styles.rulePill}>
+            {finding.rule_ref && finding.rule_ref !== finding.rule_id ? `${finding.rule_ref} · ${finding.rule_id}` : finding.rule_id}
+          </span>
           <span className={`${styles.verdictBadge} ${badgeClass}`}>
             {isManual ? (isConfirmed ? 'CONFIRMED' : 'MANUAL') : verdict}
           </span>
@@ -77,6 +78,10 @@ export function RuleCard({
           )}
           {expanded ? <ChevronUp size={18} color="var(--grey-500)" /> : <ChevronDown size={18} color="var(--grey-500)" />}
         </div>
+      </div>
+
+      <div className={styles.verdictExplanation}>
+        {t(`verdict_desc_${verdict.replace(/[\/ ]/g, '_')}`) || t('verdict_desc_NA')}
       </div>
 
       <div className={styles.message}>{message}</div>

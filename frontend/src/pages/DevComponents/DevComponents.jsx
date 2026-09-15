@@ -20,6 +20,7 @@ import { LanguageToggle } from '../../components/LanguageToggle/LanguageToggle';
 import { StatusDot } from '../../components/StatusDot/StatusDot';
 import { QRPair } from '../../components/QRPair/QRPair';
 import { Logo } from '../../components/Logo/Logo';
+import { WorkflowRail } from '../../components/WorkflowRail/WorkflowRail';
 import styles from './DevComponents.module.css';
 
 export function DevComponents() {
@@ -40,7 +41,7 @@ export function DevComponents() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--white)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--grey-100)' }}>
           <div style={{ background: 'var(--navy-900)', color: 'var(--white)', padding: '6px 16px', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
             <span>NIRIKSHAN · Legal Metrology Compliance &amp; Inspection System</span>
-            <span>EN | Backend Online</span>
+            <span>EN | System Ready</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -139,6 +140,27 @@ export function DevComponents() {
         <Stepper activeStep={2} />
         <div style={{ position: 'relative', height: '80px', backgroundColor: 'var(--navy-900)', borderRadius: 'var(--radius-md)' }}>
           <ScanLine isScanning={true} />
+        </div>
+      </div>
+
+      {/* 7b. WorkflowRail */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>7b. WorkflowRail (Sequential 7-Stage Rail)</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <h5 style={{ margin: '0 0 8px 0', color: 'var(--grey-700)' }}>1. All Stages Idle (Default Landing View)</h5>
+            <WorkflowRail />
+          </div>
+
+          <div>
+            <h5 style={{ margin: '0 0 8px 0', color: 'var(--grey-700)' }}>2. Active State (Stage 3 "Understand the fields" Active, 1-2 Done)</h5>
+            <WorkflowRail activeStageIndex={2} />
+          </div>
+
+          <div>
+            <h5 style={{ margin: '0 0 8px 0', color: 'var(--grey-700)' }}>3. All Stages Done (Completed Audit)</h5>
+            <WorkflowRail stageStates={['done', 'done', 'done', 'done', 'done', 'done', 'done']} />
+          </div>
         </div>
       </div>
 

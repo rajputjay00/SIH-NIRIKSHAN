@@ -20,6 +20,7 @@ import { ScanLine } from '../../components/ScanLine/ScanLine';
 import { Tabs } from '../../components/Tabs/Tabs';
 import { Toast } from '../../components/Toast/Toast';
 import { BottomSheet } from '../../components/BottomSheet/BottomSheet';
+import { WorkflowRail } from '../../components/WorkflowRail/WorkflowRail';
 import sampleInspectResult from '../../dev/sample_inspect.json';
 import styles from './AppPage.module.css';
 
@@ -61,6 +62,53 @@ export function AppPage() {
   const [pdfSuccess, setPdfSuccess] = useState(false);
   const [confirmedManualRules, setConfirmedManualRules] = useState({});
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800);
+  const [inFlightStageIndex, setInFlightStageIndex] = useState(1);
+  const [reportDownloaded, setReportDownloaded] = useState(false);
+
+  const getRailStageStates = () => {
+    if (loading) {
+      return [
+        'done',
+        inFlightStageIndex >= 1 ? 'active' : 'idle',
+        inFlightStageIndex >= 2 ? 'active' : 'idle',
+        inFlightStageIndex >= 3 ? 'active' : 'idle',
+        'idle',
+        'idle',
+        'idle',
+      ];
+    }
+
+    if (errorMsg && !scanResult) {
+      const failIdx = inFlightStageIndex || 1;
+      return [
+        'done',
+        failIdx === 1 ? 'active' : failIdx > 1 ? 'done' : 'idle',
+        failIdx === 2 ? 'active' : failIdx > 2 ? 'done' : 'idle',
+        failIdx === 3 ? 'active' : failIdx > 3 ? 'done' : 'idle',
+        'idle',
+        'idle',
+        'idle',
+      ];
+    }
+
+    if (scanResult) {
+      return [
+        'done',
+        'done',
+        'done',
+        'done',
+        'done',
+        'active',
+        reportDownloaded ? 'done' : 'idle',
+      ];
+    }
+
+    if (panels.length > 0) {
+      return ['done', 'idle', 'idle', 'idle', 'idle', 'idle', 'idle'];
+    }
+
+    return ['idle', 'idle', 'idle', 'idle', 'idle', 'idle', 'idle'];
+  };
 
   const surfaceSuggestions = ['front', 'back', 'crimp', 'side', 'bottom', 'other'];
 
@@ -238,6 +286,12 @@ export function AppPage() {
     setLoading(true);
     setErrorMsg(null);
     setConfirmedManualRules({});
+    setInFlightStageIndex(1);
+    setReportDownloaded(false);
+
+    const t1 = setTimeout(() => setInFlightStageIndex(2), 1200);
+    const t2 = setTimeout(() => setInFlightStageIndex(3), 2400);
+
     try {
       const formData = new FormData();
       for (let i = 0; i < panels.length; i++) {
@@ -255,6 +309,9 @@ export function AppPage() {
         method: 'POST',
         body: formData,
       });
+
+      clearTimeout(t1);
+      clearTimeout(t2);
 
       if (res.ok) {
         const data = await res.json();
@@ -275,8 +332,9 @@ export function AppPage() {
         ...prev.slice(0, 4),
       ]);
     } catch (err) {
-      // Graceful fallback to mock 360 inspect data
-      setScanResult(sampleInspectResult);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      setErrorMsg(err.message || 'Scan failed');
     } finally {
       setLoading(false);
     }
@@ -315,6 +373,7 @@ export function AppPage() {
       a.download = `nirikshan_report_${scanResult.filename || 'scan'}.pdf`;
       a.click();
       setPdfSuccess(true);
+      setReportDownloaded(true);
       setTimeout(() => setPdfSuccess(false), 3000);
     } catch (err) {
       setErrorMsg('Failed to download PDF report');
@@ -441,6 +500,11 @@ export function AppPage() {
               ))}
             </div>
           )}
+
+          {/* Workflow Rail visible above result tabs */}
+          <div className={styles.resultRailWrapper}>
+            <WorkflowRail stageStates={getRailStageStates()} compact={true} />
+          </div>
 
           {/* Result Tabs */}
           <Tabs
@@ -736,6 +800,7 @@ export function AppPage() {
               animate={{ scale: 1, opacity: 1 }}
             >
               <img src={p.preview} alt={`Surface ${idx + 1}`} className={styles.thumbImg} />
+              {loading && idx === 0 && <ScanLine isScanning={true} />}
               <button type="button" className={styles.removeBtn} onClick={() => setPanels((prev) => prev.filter((_, i) => i !== idx))}>
                 <Trash2 size={14} />
               </button>
@@ -769,6 +834,11 @@ export function AppPage() {
               />
             </div>
           )}
+        </div>
+
+        {/* Live Workflow Rail during capture & scan setup */}
+        <div className={styles.railCardWrapper}>
+          <WorkflowRail stageStates={getRailStageStates()} compact={true} />
         </div>
 
         <Button

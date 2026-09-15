@@ -1,0 +1,173 @@
+.railContainer {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.stageCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--white);
+  border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+  position: relative;
+  min-width: 0;
+}
+
+.stageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.iconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+
+.stageLabel {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.stageDesc {
+  font-size: 0.78rem;
+  color: var(--grey-500);
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* 1. Idle state (muted, --na tones) */
+.idle {
+  background-color: var(--white);
+  border-color: var(--grey-100);
+}
+
+.idle .iconBox {
+  background-color: var(--na-bg);
+  color: var(--na);
+}
+
+.idle .stageLabel {
+  color: var(--navy-900);
+}
+
+.idle .stageDesc {
+  color: var(--grey-500);
+}
+
+/* 2. Active state (tinted with a slow soft pulse) */
+.active {
+  background-color: var(--blue-50);
+  border-color: var(--blue-200);
+  box-shadow: 0 4px 12px rgba(79, 163, 209, 0.15);
+}
+
+.active .iconBox {
+  background-color: var(--blue-500);
+  color: var(--white);
+}
+
+.active .stageLabel {
+  color: var(--navy-900);
+  font-weight: 800;
+}
+
+.active .stageDesc {
+  color: var(--navy-700);
+}
+
+.activePulseBadge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--blue-500);
+}
+
+/* 3. Done state (check mark, --pass tones) */
+.done {
+  background-color: var(--white);
+  border-color: var(--grey-300);
+}
+
+.done .iconBox {
+  background-color: var(--pass-bg);
+  color: var(--pass);
+}
+
+.checkIcon {
+  color: var(--pass);
+}
+
+.done .stageLabel {
+  color: var(--navy-900);
+}
+
+.done .stageDesc {
+  color: var(--grey-700);
+}
+
+/* Thin Connectors */
+.connector {
+  align-self: center;
+  width: 12px;
+  height: 2px;
+  background-color: var(--grey-300);
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+
+.connectorDone {
+  background-color: var(--pass);
+}
+
+/* Compact Rail Modifier */
+.compactRail .stageCard {
+  padding: 10px 12px;
+  gap: 4px;
+}
+
+.compactRail .iconBox {
+  width: 26px;
+  height: 26px;
+}
+
+.compactRail .stageLabel {
+  font-size: 0.8rem;
+}
+
+.compactRail .stageDesc {
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+/* Responsive vertical stack on narrow screens */
+@media (max-width: 900px) {
+  .railContainer {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .connector {
+    width: 2px;
+    height: 12px;
+    align-self: center;
+  }
+}

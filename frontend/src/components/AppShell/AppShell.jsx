@@ -23,6 +23,7 @@ export function AppShell() {
     status: 'checking',
     isOnline: false,
     rules_version: null,
+    model_version: null,
     git_sha: null,
   });
 
@@ -35,6 +36,7 @@ export function AppShell() {
           status: 'online',
           isOnline: true,
           rules_version: data.rules_version || '0.4.0',
+          model_version: data.model_version || data.model || 'RapidOCR-v1',
           git_sha: data.git_sha || 'head',
         });
       } else {
@@ -77,7 +79,12 @@ export function AppShell() {
         <span className={styles.utilityTitle}>{t('utility_strip_title')}</span>
         <div className={styles.utilityRight}>
           <LanguageToggle />
-          <StatusDot isOnline={healthInfo.isOnline} showText={true} />
+          <div
+            className={styles.statusDotWrapper}
+            title={`Rules v${healthInfo.rules_version || '0.4.0'} | Model ${healthInfo.model_version || 'RapidOCR-v1'} | Commit ${healthInfo.git_sha || 'head'}`}
+          >
+            <StatusDot isOnline={healthInfo.isOnline} showText={true} />
+          </div>
         </div>
       </div>
 

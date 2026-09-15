@@ -192,6 +192,22 @@
   gap: 20px;
 }
 
+.capabilitiesSection {
+  background: var(--white);
+  border: 1px solid var(--grey-100);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.workflowSection {
+  background: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-card);
+}
+
 .eyebrowWrapper {
   display: flex;
   align-items: center;

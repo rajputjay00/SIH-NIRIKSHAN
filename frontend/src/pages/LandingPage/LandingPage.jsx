@@ -24,6 +24,7 @@ import { CountChip } from '../../components/CountChip/CountChip';
 import { ScanLine } from '../../components/ScanLine/ScanLine';
 import { Stepper } from '../../components/Stepper/Stepper';
 import { Skeleton } from '../../components/Skeleton/Skeleton';
+import { WorkflowRail } from '../../components/WorkflowRail/WorkflowRail';
 import { useT } from '../../i18n/useT';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import sampleResult from '../../dev/sample_result.json';
@@ -210,15 +211,6 @@ export function LandingPage() {
     },
   ];
 
-  const workflowSteps = [
-    { num: '01', title: t('step01_title'), desc: t('step01_desc') },
-    { num: '02', title: t('step02_title'), desc: t('step02_desc') },
-    { num: '03', title: t('step03_title'), desc: t('step03_desc') },
-    { num: '04', title: t('step04_title'), desc: t('step04_desc') },
-    { num: '05', title: t('step05_title'), desc: t('step05_desc') },
-    { num: '06', title: t('step06_title'), desc: t('step06_desc') },
-  ];
-
   return (
     <div className={styles.landingContainer}>
       {/* Ambient Orbs */}
@@ -342,7 +334,7 @@ export function LandingPage() {
       </div>
 
       {/* 2. Core Capabilities Grid Section */}
-      <div className={styles.sectionBlock}>
+      <div className={`${styles.sectionBlock} ${styles.capabilitiesSection}`}>
         <div className={styles.eyebrowWrapper}>
           <span className={styles.eyebrowChip}>{t('eyebrow_capabilities')}</span>
         </div>
@@ -382,28 +374,13 @@ export function LandingPage() {
       </div>
 
       {/* 3. How An Inspection Runs Section */}
-      <div className={styles.sectionBlock}>
+      <div className={`${styles.sectionBlock} ${styles.workflowSection}`}>
         <div className={styles.eyebrowWrapper}>
           <span className={styles.eyebrowChip}>{t('eyebrow_workflow')}</span>
         </div>
         <h2 className={styles.sectionHeading}>{t('workflow_heading')}</h2>
 
-        <div className={styles.workflowGrid}>
-          {workflowSteps.map((step, idx) => (
-            <motion.div
-              key={step.num}
-              className={styles.stepCard}
-              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-              whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.06, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <span className={styles.stepBadge}>{step.num}</span>
-              <h4 className={styles.stepTitle}>{step.title}</h4>
-              <p className={styles.stepDesc}>{step.desc}</p>
-            </motion.div>
-          ))}
-        </div>
+        <WorkflowRail />
       </div>
 
       {/* 4. Built for the Field Band */}

@@ -32,6 +32,12 @@
   gap: 16px;
 }
 
+.statusDotWrapper {
+  display: flex;
+  align-items: center;
+  cursor: help;
+}
+
 /* Sticky Header Container (Header + Nav) */
 .headerContainer {
   position: sticky;
