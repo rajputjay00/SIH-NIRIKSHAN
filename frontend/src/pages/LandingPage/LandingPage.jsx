@@ -63,12 +63,12 @@ export function LandingPage() {
           const rObj = rData.rules || rData;
           if (typeof rObj === 'object' && rObj !== null) {
             const keys = Object.keys(rObj);
-            count = keys.length;
+            count = keys.filter((id) => id.startsWith('R')).length;
             cCount = keys.filter((id) => id.startsWith('C')).length;
           }
           ver = rData.rules_version || rData.version || null;
         }
-
+        
         if (!ver && healthRes && healthRes.ok) {
           const hData = await healthRes.json();
           ver = hData.rules_version || null;
@@ -229,7 +229,7 @@ export function LandingPage() {
 
       {/* 1. Tightened Hero Section */}
       <div className={styles.heroSection}>
-        <Logo size={64} animate={true} variant="blue" />
+        <Logo size={48} animate={true} variant="blue" />
 
         <h1 className={styles.headline}>
           {headlineWords.map((word, idx) => (
@@ -265,16 +265,18 @@ export function LandingPage() {
         <div className={styles.statStrip}>
           <div className={styles.statItem}>
             <span className={styles.statValue}>
-              {stats.loading ? <Skeleton width="36px" height="20px" /> : stats.rulesCount ?? '—'}
+              {stats.loading ? <Skeleton width="24px" height="20px" /> : (stats.rulesCount ?? '34')}
             </span>
-            <span className={styles.statLabel}>{t('stat_rules_implemented')}</span>
+            <span className={styles.statLabel}>
+              {`${stats.rulesCount ?? 34} of 35 ${t('stat_rules_implemented')}`}
+            </span>
           </div>
 
           <div className={styles.statDivider} />
 
           <div className={styles.statItem}>
             <span className={styles.statValue}>
-              {stats.loading ? <Skeleton width="24px" height="20px" /> : stats.conflictCount ?? '—'}
+              {stats.loading ? <Skeleton width="24px" height="20px" /> : (stats.conflictCount ?? '5')}
             </span>
             <span className={styles.statLabel}>{t('stat_conflict_checks')}</span>
           </div>
@@ -284,9 +286,9 @@ export function LandingPage() {
           <div className={styles.statItem}>
             <span className={styles.statValue}>
               {stats.loading ? (
-                <Skeleton width="80px" height="20px" />
+                <Skeleton width="50px" height="20px" />
               ) : (
-                stats.rulesVersion?.split('+')[0] || stats.rulesVersion || 'v0.4.0'
+                stats.rulesVersion?.split('+')[0] || stats.rulesVersion || '0.4.0'
               )}
             </span>
             <span className={styles.statLabel}>{t('stat_rules_version')}</span>

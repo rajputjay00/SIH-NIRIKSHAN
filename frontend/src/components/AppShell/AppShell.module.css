@@ -98,11 +98,12 @@
   left: 12px;
   color: var(--grey-500);
   pointer-events: none;
+  z-index: 1;
 }
 
 .searchInput {
   width: 100%;
-  padding: 7px 12px 7px 36px;
+  padding: 7px 12px 7px 38px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
   background-color: var(--white);

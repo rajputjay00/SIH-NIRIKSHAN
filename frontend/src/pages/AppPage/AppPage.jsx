@@ -516,7 +516,12 @@ export function AppPage() {
                 <input
                   type="text"
                   value={officerName}
-                  onChange={(e) => setOfficerName(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setOfficerName(val);
+                    localStorage.setItem('nirikshan_officer', val);
+                    window.dispatchEvent(new Event('storage'));
+                  }}
                   placeholder="Inspector Sharma"
                   className={styles.inputField}
                 />
@@ -527,7 +532,12 @@ export function AppPage() {
                 <input
                   type="text"
                   value={premises}
-                  onChange={(e) => setPremises(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPremises(val);
+                    localStorage.setItem('nirikshan_premises', val);
+                    window.dispatchEvent(new Event('storage'));
+                  }}
                   placeholder="Warehouse 4, New Delhi"
                   className={styles.inputField}
                 />
