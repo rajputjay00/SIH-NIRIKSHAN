@@ -22,6 +22,25 @@ import { BottomSheet } from '../../components/BottomSheet/BottomSheet';
 import sampleInspectResult from '../../dev/sample_inspect.json';
 import styles from './AppPage.module.css';
 
+// Maap (R19/R20/R22): the measurements live on the declarations, not on the finding,
+// so hand them to the card for the rules that are built on them.
+const MAAP_RULES = { R19: 'geometry', R20: 'geometry', R22: 'contrast' };
+function maapFor(findingOrId, merged) {
+  const ruleId = typeof findingOrId === 'string' ? findingOrId : findingOrId?.rule_id;
+  if (!MAAP_RULES[ruleId] || !merged) return undefined;
+  const nq = merged.net_quantity || {};
+  const mrp = merged.mrp || {};
+  if (ruleId === 'R22') {
+    const contrast = mrp.contrast || nq.contrast;
+    return contrast ? { contrast } : undefined;
+  }
+  const geometry = ruleId === 'R20'
+    ? (nq.geometry?.clear_space ? { clear_space: nq.geometry.clear_space } : null)
+    : (nq.geometry?.aspect || mrp.geometry?.aspect ? { aspect: nq.geometry?.aspect || mrp.geometry?.aspect } : null);
+  return geometry ? { geometry } : undefined;
+}
+
+
 export function AppPage() {
   const { t } = useT();
   const reducedMotion = useReducedMotion();
@@ -59,6 +78,7 @@ export function AppPage() {
   const [packageType, setPackageType] = useState('retail');
   const [category, setCategory] = useState('general');
   const [isImport, setIsImport] = useState(false);
+  const [geometryChecks, setGeometryChecks] = useState(false);
 
   const packageTypes = [
     { id: 'retail', label: t('pkg_retail') },
@@ -137,6 +157,7 @@ export function AppPage() {
       formData.append('package_type', packageType);
       formData.append('category', category);
       formData.append('is_import', isImport ? 'true' : 'false');
+      if (geometryChecks) formData.append('geometry_checks', 'true');
       if (sessionCode) formData.append('session', sessionCode);
 
       const res = await fetch('/api/inspect', {
@@ -151,7 +172,7 @@ export function AppPage() {
         // Single file scan fallback or mock fallback
         if (panels.length === 1) {
           const scaledFile = await downscaleImage(panels[0].file, 2400);
-          const data = await scanImage(scaledFile, { packageType, category, isImport, session: sessionCode });
+          const data = await scanImage(scaledFile, { packageType, category, isImport, geometryChecks, session: sessionCode });
           setScanResult(data);
         } else {
           setScanResult(sampleInspectResult);
@@ -349,6 +370,7 @@ export function AppPage() {
                 <RuleCard
                   key={f.rule_id}
                   finding={f}
+                    measurements={maapFor(f, scanResult?.merged)}
                   isConfirmed={Boolean(confirmedManualRules[f.rule_id])}
                   onConfirmManual={toggleManualConfirm}
                   onShowOnImage={(rid) => {
@@ -362,7 +384,7 @@ export function AppPage() {
                 <div style={{ marginTop: '20px' }}>
                   <h4>{t('not_applicable_header')} ({naFindings.length})</h4>
                   {naFindings.map((f) => (
-                    <RuleCard key={f.rule_id} finding={f} />
+                    <RuleCard key={f.rule_id} finding={f} measurements={maapFor(f, scanResult?.merged)} />
                   ))}
                 </div>
               )}
@@ -410,6 +432,7 @@ export function AppPage() {
                     <h4 style={{ marginBottom: '12px', color: 'var(--navy-900)' }}>Selected Rule Details</h4>
                     <RuleCard
                       finding={selectedFinding}
+                      measurements={maapFor(selectedFinding, scanResult?.merged)}
                       isConfirmed={Boolean(confirmedManualRules[selectedFinding.rule_id])}
                       onConfirmManual={toggleManualConfirm}
                     />
@@ -441,6 +464,7 @@ export function AppPage() {
                     {selectedFinding && (
                       <RuleCard
                         finding={selectedFinding}
+                      measurements={maapFor(selectedFinding, scanResult?.merged)}
                         isConfirmed={Boolean(confirmedManualRules[selectedFinding.rule_id])}
                         onConfirmManual={toggleManualConfirm}
                       />
@@ -571,7 +595,16 @@ export function AppPage() {
           >
             {t('imported_label')}
           </Chip>
+          <Chip
+            selected={geometryChecks}
+            onClick={() => setGeometryChecks(!geometryChecks)}
+          >
+            {t('geometry_mode_label')}
+          </Chip>
         </div>
+        {geometryChecks && (
+          <p className={styles.helperText}>{t('geometry_mode_hint')}</p>
+        )}
 
         <div className={styles.sectionHeading} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>2. 360° Surface Capture (Up to 4 Panels)</span>

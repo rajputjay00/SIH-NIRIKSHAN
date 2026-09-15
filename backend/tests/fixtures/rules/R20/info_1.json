@@ -1,0 +1,51 @@
+{
+  "lines": [
+    {
+      "text": "MRP ₹100.00 (Incl. of all taxes)",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          10,
+          10
+        ],
+        [
+          310,
+          10
+        ],
+        [
+          310,
+          40
+        ],
+        [
+          10,
+          40
+        ]
+      ]
+    },
+    {
+      "text": "Mfd by: Test Foods Pvt Ltd, Satna 485001",
+      "confidence": 0.9,
+      "bbox": [
+        [
+          10,
+          190
+        ],
+        [
+          410,
+          190
+        ],
+        [
+          410,
+          220
+        ],
+        [
+          10,
+          220
+        ]
+      ]
+    }
+  ],
+  "context": {
+    "geometry_checks": true
+  }
+}

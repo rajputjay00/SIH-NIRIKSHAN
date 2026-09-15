@@ -1,6 +1,7 @@
 import re
 from typing import Any, Dict, List, Optional, Tuple
 from nirikshan.schema import Declarations
+from nirikshan import tol as tol_module
 
 
 COUNT_WORDS = ["dozen", "score", "gross", "great gross", "doz"]
@@ -30,9 +31,11 @@ def eval_predicate(
     declarations: Declarations,
     quality: Optional[Dict[str, Any]] = None,
     conflicts: Optional[List[Any]] = None,
+    context: Optional[Any] = None,
 ) -> Tuple[bool, Optional[str], Any, Optional[List[List[float]]], List[Dict[str, Any]]]:
     """Evaluates a named predicate against Declarations.
     Returns (is_success, detail_message, extracted_val, evidence_bbox, evidence_refs).
+    ``context`` carries officer-entered inputs (weighing, lot) for the Tol predicates.
     """
     field_path = params.get("field", "")
     extracted_val = get_field_value(declarations, field_path) if field_path else None
@@ -337,6 +340,200 @@ def eval_predicate(
             return True, f"Count declaration found: '{m_sheet.group(0)}'", m_sheet.group(0), nq.bbox if nq else None, nq_refs
 
         return False, "Dimensions/count declaration required — verify", None, None, []
+
+    # ------------------------------------------------------------------
+    # Tol predicates — R31 (single-pack MPE) and R32 (lot inspection)
+    # ------------------------------------------------------------------
+    elif pred_name in ("net_quantity_within_mpe", "weighing_input_absent", "mpe_marginal"):
+        nq = declarations.net_quantity
+        nq_refs = [{"surface_id": nq.surface_id, "bbox": nq.bbox}] if nq and nq.surface_id is not None and nq.bbox else []
+        nq_bbox = nq.bbox if nq else None
+        weighing = getattr(context, "weighing", None) if context is not None else None
+        has_input = weighing is not None and (
+            weighing.net is not None or (weighing.gross is not None and weighing.tare is not None)
+        )
+
+        if pred_name == "weighing_input_absent":
+            if has_input:
+                return False, "Weighing input present", None, nq_bbox, nq_refs
+            return True, "No weighing input — enter gross and tare (or net) to check against the First Schedule MPE", None, nq_bbox, nq_refs
+
+        if not has_input:
+            return False, "No weighing input", None, nq_bbox, nq_refs
+
+        declared_val = weighing.declared_value if weighing.declared_value is not None else (nq.value if nq else None)
+        declared_unit = weighing.declared_unit or (nq.unit if nq else None)
+        if declared_val is None or not declared_unit:
+            return False, "Declared net quantity unknown — cannot compute MPE (enter declared value and unit)", None, nq_bbox, nq_refs
+
+        try:
+            res = tol_module.check_single_pack(
+                declared_value=float(declared_val),
+                unit=str(declared_unit),
+                gross=weighing.gross,
+                tare=weighing.tare,
+                net=weighing.net,
+                measured_unit=weighing.unit,
+                resolution=weighing.resolution,
+            )
+        except ValueError as exc:
+            return False, f"MPE check not possible: {exc}", None, nq_bbox, nq_refs
+
+        if pred_name == "mpe_marginal":
+            return bool(res["marginal"]), res["summary"], res["summary"], nq_bbox, nq_refs
+
+        return bool(res["within_mpe"]), res["summary"], res["summary"], nq_bbox, nq_refs
+
+    elif pred_name in ("lot_inspection_approved", "lot_input_absent", "lot_inspection_rejected", "lot_inspection_incomplete"):
+        nq = declarations.net_quantity
+        nq_refs = [{"surface_id": nq.surface_id, "bbox": nq.bbox}] if nq and nq.surface_id is not None and nq.bbox else []
+        nq_bbox = nq.bbox if nq else None
+        lot = getattr(context, "lot", None) if context is not None else None
+        has_lot = lot is not None and len(lot.samples or []) > 0
+
+        if pred_name == "lot_input_absent":
+            if has_lot:
+                return False, "Lot inspection input present", None, nq_bbox, nq_refs
+            return True, "Single-package scan — lot sampling per Rule 19 not performed (use Lot mode)", None, nq_bbox, nq_refs
+
+        if not has_lot:
+            return False, "No lot input", None, nq_bbox, nq_refs
+
+        declared_val = lot.declared_value if lot.declared_value is not None else (nq.value if nq else None)
+        declared_unit = lot.declared_unit or (nq.unit if nq else None)
+        if declared_val is None or not declared_unit:
+            return False, "Declared net quantity unknown — cannot run lot inspection", None, nq_bbox, nq_refs
+
+        try:
+            res = tol_module.lot_inspection(
+                lot_size=lot.lot_size,
+                declared_value=float(declared_val),
+                unit=str(declared_unit),
+                samples=[s.model_dump() for s in lot.samples],
+                tares=list(lot.tares or []),
+                measured_unit=lot.unit,
+            )
+        except ValueError as exc:
+            return False, f"Lot inspection not possible: {exc}", None, nq_bbox, nq_refs
+
+        if pred_name == "lot_inspection_rejected":
+            return res["status"] == "REJECTED", res["summary"], res["summary"], nq_bbox, nq_refs
+        if pred_name == "lot_inspection_incomplete":
+            detail = res["summary"] + ("; " + "; ".join(res["notes"]) if res["notes"] else "")
+            return res["status"] == "INCOMPLETE", detail, detail, nq_bbox, nq_refs
+
+        return res["status"] == "APPROVED", res["summary"], res["summary"], nq_bbox, nq_refs
+
+    # ------------------------------------------------------------------
+    # Maap predicates — R20 clear space, R19 aspect, R22 contrast
+    # ------------------------------------------------------------------
+    elif pred_name in ("clear_space_ok", "geometry_data_absent", "aspect_ratio_ok", "contrast_ok", "contrast_data_absent"):
+        from nirikshan.geometry import clear_space_summary
+        nq = declarations.net_quantity
+        mrp = declarations.mrp
+        nq_refs = [{"surface_id": nq.surface_id, "bbox": nq.bbox}] if nq and nq.surface_id is not None and nq.bbox else []
+        nq_bbox = nq.bbox if nq else None
+
+        if pred_name == "geometry_data_absent":
+            has = bool(nq and nq.geometry)
+            return (not has), ("Geometry data present" if has else "No net-quantity box to measure"), None, nq_bbox, nq_refs
+
+        if pred_name == "clear_space_ok":
+            cs = (nq.geometry or {}).get("clear_space") if nq else None
+            if not cs:
+                return False, "No geometry data", None, nq_bbox, nq_refs
+            summary = clear_space_summary(cs)
+            return bool(cs["all_ok"]), f"Clear space (Rule 8(1)) — {summary}", summary, nq_bbox, nq_refs
+
+        if pred_name == "aspect_ratio_ok":
+            checks = []
+            refs: List[Dict[str, Any]] = []
+            bbox_out = None
+            for label, f in (("net quantity", nq), ("MRP", mrp)):
+                asp = (f.geometry or {}).get("aspect") if f else None
+                if asp:
+                    checks.append((label, asp))
+                    if f.surface_id is not None and f.bbox:
+                        refs.append({"surface_id": f.surface_id, "bbox": f.bbox})
+                    bbox_out = bbox_out or f.bbox
+            if not checks:
+                return False, "No geometry data", None, nq_bbox, nq_refs
+            ok = all(a["ok"] for _, a in checks)
+            detail = "; ".join(f"{l}: width/height ≈ {a['ratio']} (min {a['min_ratio']}){'' if a['ok'] else ' ✗'}" for l, a in checks)
+            return ok, f"Rule 7(3) — {detail}", detail, bbox_out, refs
+
+        if pred_name == "contrast_data_absent":
+            has = any(f and f.contrast for f in (mrp, nq))
+            return (not has), ("Contrast measured" if has else "Contrast not measured (no image / box too small)"), None, nq_bbox, nq_refs
+
+        if pred_name == "contrast_ok":
+            checks = []
+            refs = []
+            bbox_out = None
+            for label, f in (("MRP", mrp), ("net quantity", nq)):
+                if f and f.contrast:
+                    checks.append((label, f.contrast))
+                    if f.surface_id is not None and f.bbox:
+                        refs.append({"surface_id": f.surface_id, "bbox": f.bbox})
+                    bbox_out = bbox_out or f.bbox
+            if not checks:
+                return False, "Contrast not measured", None, nq_bbox, nq_refs
+            ok = all(c.get("ok") for _, c in checks)
+            detail = "; ".join(f"{l}: contrast {c.get('ratio')}:1 (min {c.get('min_ratio', 3.0)}:1){'' if c.get('ok') else ' ✗'}" for l, c in checks)
+            return ok, f"Rule 9(1)(b) — {detail}", detail, bbox_out, refs
+
+    # ------------------------------------------------------------------
+    # R17 — dual MRP across scans (Rule 18(2A))
+    # ------------------------------------------------------------------
+    elif pred_name in ("no_dual_mrp", "dual_mrp_no_comparison"):
+        mrp = declarations.mrp
+        mrp_refs = [{"surface_id": mrp.surface_id, "bbox": mrp.bbox}] if mrp and mrp.surface_id is not None and mrp.bbox else []
+        mrp_bbox = mrp.bbox if mrp else None
+        dm = getattr(context, "dual_mrp", None) if context is not None else None
+        matches = (dm or {}).get("matches") or []
+        conflicts = (dm or {}).get("conflicts") or []
+        if pred_name == "dual_mrp_no_comparison":
+            none = not matches
+            return none, ("No earlier scan of the same commodity in this session" if none else f"{len(matches)} earlier scan(s) of the same commodity"), None, mrp_bbox, mrp_refs
+        if not matches:
+            return False, "No comparison available", None, mrp_bbox, mrp_refs
+        if conflicts:
+            detail = "; ".join(f"scan {c['scan_id']}: ₹{c['mrp']:.2f}" for c in conflicts)
+            return False, f"Different MRP for the same commodity ({dm.get('key')}): this pack ₹{dm.get('mrp'):.2f} vs {detail}", detail, mrp_bbox, mrp_refs
+        return True, f"Same MRP ₹{dm.get('mrp'):.2f} across {len(matches)} earlier scan(s) of {dm.get('key')}", f"₹{dm.get('mrp'):.2f}", mrp_bbox, mrp_refs
+
+    # ------------------------------------------------------------------
+    # R29/R30 — e-commerce listing mode (Rules 6(10), 31)
+    # ------------------------------------------------------------------
+    elif pred_name in ("listing_declarations_present", "listing_font_parity", "listing_font_not_measurable", "listing_font_marginal"):
+        from nirikshan.nigrani import listing_presence, font_parity
+        listing = getattr(context, "listing", None) if context is not None else None
+        is_import = bool(getattr(context, "is_import", False)) if context is not None else False
+        if is_import is False and declarations.importer is not None:
+            is_import = True
+        nq = declarations.net_quantity
+        mrp = declarations.mrp
+        refs = [{"surface_id": f.surface_id, "bbox": f.bbox} for f in (mrp, nq) if f and f.surface_id is not None and f.bbox]
+        bbox_out = (mrp.bbox if mrp and mrp.bbox else (nq.bbox if nq else None))
+
+        if pred_name == "listing_declarations_present":
+            pres = listing_presence(declarations, is_import)
+            if pres["missing"]:
+                missing = ", ".join(m["label"] for m in pres["missing"])
+                return False, f"Missing on the listing: {missing}", missing, bbox_out, refs
+            return True, f"All Rule 6(1) declarations present on the listing ({len(pres['present'])})", None, bbox_out, refs
+
+        mode = (listing or {}).get("mode", "html")
+        fp = font_parity(declarations) if mode in ("screenshot", "mixed") else None
+        if pred_name == "listing_font_not_measurable":
+            nm = fp is None
+            return nm, ("Font sizes not measurable from page text — upload a screenshot of the listing" if nm else "Font sizes measured from screenshot"), None, bbox_out, refs
+        if fp is None:
+            return False, "Font sizes not measurable", None, bbox_out, refs
+        detail = f"net quantity {fp['net_quantity_height_px']} px vs MRP {fp['mrp_height_px']} px (ratio {fp['ratio']})"
+        if pred_name == "listing_font_marginal":
+            return bool(fp["marginal"]), detail, detail, bbox_out, refs
+        return bool(fp["ok"]), f"Rule 31 — {detail}", detail, bbox_out, refs
 
     return False, f"Unknown predicate '{pred_name}'", None, None, []
 

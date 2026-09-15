@@ -19,6 +19,8 @@ class FieldModel(BaseModel):
     declared_elsewhere: Optional[str] = None
     surface_id: Optional[int] = None
     surface: Optional[str] = None
+    geometry: Optional[Dict[str, Any]] = None   # Maap: clear space / aspect estimates
+    contrast: Optional[Dict[str, Any]] = None   # Maap: luminance contrast in the box
 
 
 class NetQuantity(FieldModel):
@@ -108,6 +110,33 @@ class Declarations(BaseModel):
         return None
 
 
+class WeighingInput(BaseModel):
+    """Officer-entered measurement of one package (Tol, R31)."""
+    gross: Optional[float] = None
+    tare: Optional[float] = None
+    net: Optional[float] = None
+    unit: Optional[str] = None              # unit of the readings; defaults to the declared unit
+    resolution: Optional[float] = None      # scale readability, same unit as the readings
+    declared_value: Optional[float] = None  # override when OCR did not read the net quantity
+    declared_unit: Optional[str] = None
+
+
+class LotSample(BaseModel):
+    gross: Optional[float] = None
+    tare: Optional[float] = None
+    net: Optional[float] = None
+
+
+class LotInput(BaseModel):
+    """Lot inspection input (Tol, R32) — Rules 19–21, Fifth/Sixth Schedules."""
+    lot_size: int
+    samples: List[LotSample] = Field(default_factory=list)
+    tares: List[float] = Field(default_factory=list)
+    unit: Optional[str] = None
+    declared_value: Optional[float] = None
+    declared_unit: Optional[str] = None
+
+
 class ContextModel(BaseModel):
     package_type: str = "retail"
     category: str = "general"
@@ -115,6 +144,11 @@ class ContextModel(BaseModel):
     channel: str = "physical"
     net_quantity_override: Optional[Dict[str, Any]] = None
     reference_date: Optional[str] = None
+    weighing: Optional[WeighingInput] = None
+    lot: Optional[LotInput] = None
+    geometry_checks: bool = False                # enables R19/R20 (OCR-box geometry, NEEDS_REVIEW only)
+    dual_mrp: Optional[Dict[str, Any]] = None    # set by the pipeline from earlier scans in the session (R17)
+    listing: Optional[Dict[str, Any]] = None     # set by /api/listing/check (R29/R30): {"mode": "html"|"screenshot"|"mixed"}
 
 
 class ApplicabilityModel(BaseModel):

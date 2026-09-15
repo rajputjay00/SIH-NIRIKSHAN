@@ -12,8 +12,8 @@ RUN npm run build
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    fonts-dejavu-core fonts-noto-core libgl1 libglib2.0-0 libgomp1 \
-    libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2 \
+    fonts-dejavu-core fonts-noto-core fonts-noto-devanagari libgl1 libglib2.0-0 libgomp1 \
+    libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2 libgdk-pixbuf-2.0-0 libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 

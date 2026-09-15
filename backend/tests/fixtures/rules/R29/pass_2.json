@@ -1,0 +1,165 @@
+{
+  "lines": [
+    {
+      "text": "Fresh Wheat Atta 5 kg",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          10.0
+        ],
+        [
+          199.0,
+          10.0
+        ],
+        [
+          199.0,
+          34.0
+        ],
+        [
+          10.0,
+          34.0
+        ]
+      ]
+    },
+    {
+      "text": "MRP: ₹250.00 (inclusive of all taxes)",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          40.0
+        ],
+        [
+          343.0,
+          40.0
+        ],
+        [
+          343.0,
+          64.0
+        ],
+        [
+          10.0,
+          64.0
+        ]
+      ]
+    },
+    {
+      "text": "Net Quantity: 5 kg",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          70.0
+        ],
+        [
+          172.0,
+          70.0
+        ],
+        [
+          172.0,
+          94.0
+        ],
+        [
+          10.0,
+          94.0
+        ]
+      ]
+    },
+    {
+      "text": "Manufactured by: Test Foods Pvt Ltd, Industrial Area, Satna 485001",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          100.0
+        ],
+        [
+          604.0,
+          100.0
+        ],
+        [
+          604.0,
+          124.0
+        ],
+        [
+          10.0,
+          124.0
+        ]
+      ]
+    },
+    {
+      "text": "Consumer care: 1800-123-4567, care@testfoods.in",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          130.0
+        ],
+        [
+          433.0,
+          130.0
+        ],
+        [
+          433.0,
+          154.0
+        ],
+        [
+          10.0,
+          154.0
+        ]
+      ]
+    },
+    {
+      "text": "Common name: Wheat Atta",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          160.0
+        ],
+        [
+          217.0,
+          160.0
+        ],
+        [
+          217.0,
+          184.0
+        ],
+        [
+          10.0,
+          184.0
+        ]
+      ]
+    },
+    {
+      "text": "Country of Origin: India",
+      "confidence": 1.0,
+      "bbox": [
+        [
+          10.0,
+          190.0
+        ],
+        [
+          226.0,
+          190.0
+        ],
+        [
+          226.0,
+          214.0
+        ],
+        [
+          10.0,
+          214.0
+        ]
+      ]
+    }
+  ],
+  "context": {
+    "channel": "ecommerce",
+    "listing": {
+      "mode": "html"
+    },
+    "is_import": true
+  }
+}

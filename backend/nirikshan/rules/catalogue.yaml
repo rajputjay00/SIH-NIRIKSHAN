@@ -375,6 +375,149 @@
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
 
+- id: R17
+  key: LMPC.18.2A.DUAL_MRP
+  rule_ref: "Rule 18(2A)"
+  title_en: "No different MRPs for identical pre-packaged commodity"
+  title_hi: "समान पैकेज्ड वस्तु के लिए अलग-अलग एमआरपी नहीं"
+  severity: high
+  check:
+    all:
+      - no_dual_mrp: {}
+  on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - check:
+        all:
+          - dual_mrp_no_comparison: {}
+      verdict: INFO
+      message_en: "No earlier scan of the same commodity in this session to compare MRPs with — scan the same product from another outlet or batch to check Rule 18(2A)."
+      message_hi: "इस सत्र में उसी वस्तु का कोई पहले का स्कैन नहीं है जिससे MRP की तुलना हो सके — नियम 18(2A) जाँचने के लिए दूसरी दुकान या बैच का वही उत्पाद स्कैन करें।"
+  evidence: "declarations.mrp.bbox"
+  message_en: "A different MRP was recorded for the same commodity (same name and net quantity) in an earlier scan — verify whether the packs are identical (batch, date) before treating this as a Rule 18(2A) violation."
+  message_hi: "उसी वस्तु (समान नाम और शुद्ध मात्रा) के पहले के स्कैन में अलग MRP दर्ज थी — नियम 18(2A) का उल्लंघन मानने से पहले जाँचें कि पैक समान हैं (बैच, तिथि)।"
+  fix_hint_en: "Declare one MRP for identical packs across all outlets and channels; a revised MRP requires a fresh batch and date."
+  effective_from: "2011-04-01"
+  source: "LMPC Rules 2011, Rule 18(2A)"
+
+- id: R19
+  key: LMPC.7.3.WIDTH_HEIGHT_RATIO
+  rule_ref: "Rule 7(3)"
+  title_en: "Character width-to-height ratio requirement"
+  title_hi: "अक्षर की चौड़ाई और ऊंचाई का अनुपात नियम"
+  severity: low
+  check:
+    all:
+      - aspect_ratio_ok: {}
+  on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - check:
+        all:
+          - geometry_data_absent: {}
+      verdict: INFO
+      message_en: "Width/height of numerals not estimated — no net-quantity or MRP box available."
+      message_hi: "अंकों की चौड़ाई/ऊंचाई का अनुमान नहीं लगाया गया — शुद्ध मात्रा या MRP का बॉक्स उपलब्ध नहीं।"
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Estimated glyph width is below one-third of the height (condensed font) — confirm with a graduated scale; Rule 7(3) exempts numeral 1 and letters i, I, l."
+  message_hi: "अनुमानित अक्षर चौड़ाई ऊंचाई के एक-तिहाई से कम है (संकुचित फ़ॉन्ट) — स्केल से पुष्टि करें; नियम 7(3) अंक 1 और अक्षर i, I, l को छूट देता है।"
+  fix_hint_en: "Use a regular-width typeface for the net quantity and MRP; letter width must be at least one-third of the height."
+  effective_from: "2018-01-01"
+  source: "LMPC Rules 2011, Rule 7(3) (as substituted by G.S.R. 629(E), 2017)"
+
+- id: R20
+  key: LMPC.8.1.CLEAR_SPACE
+  rule_ref: "Rule 8(1)"
+  title_en: "Clear space around net quantity declaration"
+  title_hi: "शुद्ध मात्रा घोषणा के आसपास स्पष्ट स्थान"
+  severity: medium
+  check:
+    all:
+      - clear_space_ok: {}
+  on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - check:
+        all:
+          - geometry_data_absent: {}
+      verdict: INFO
+      message_en: "Clear space not measured — no net-quantity box available."
+      message_hi: "स्पष्ट स्थान नहीं मापा गया — शुद्ध मात्रा का बॉक्स उपलब्ध नहीं।"
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Other text sits closer to the net quantity than Rule 8(1) allows (≥ 1× numeral height above/below, ≥ 2× left/right) — confirm with a graduated scale."
+  message_hi: "अन्य पाठ शुद्ध मात्रा के इतना पास है जितना नियम 8(1) अनुमति नहीं देता (ऊपर/नीचे ≥ 1× अंक ऊंचाई, बाएँ/दाएँ ≥ 2×) — स्केल से पुष्टि करें।"
+  fix_hint_en: "Leave a clear space of at least the numeral height above and below, and twice the numeral height on either side of the net quantity."
+  effective_from: "2011-04-01"
+  source: "LMPC Rules 2011, Rule 8(1)"
+
+- id: R22
+  key: LMPC.9.1.b.CONTRAST
+  rule_ref: "Rule 9(1)(b)"
+  title_en: "Numeral and letter contrast against background"
+  title_hi: "पृष्ठभूमि के सापेक्ष अंकों और अक्षरों का कंट्रास्ट"
+  severity: medium
+  check:
+    all:
+      - contrast_ok: {}
+  on_fail: NEEDS_REVIEW
+  on_uncertain:
+    - check:
+        all:
+          - contrast_data_absent: {}
+      verdict: INFO
+      message_en: "Contrast not measured — image not available for this evaluation or the declaration box is too small."
+      message_hi: "कंट्रास्ट नहीं मापा गया — इस मूल्यांकन के लिए छवि उपलब्ध नहीं या घोषणा का बॉक्स बहुत छोटा है।"
+  evidence: "declarations.mrp.bbox"
+  message_en: "Low luminance contrast between the MRP / net-quantity numerals and their background — confirm legibility on the physical pack (moulded glass and plastic are excepted)."
+  message_hi: "MRP / शुद्ध मात्रा के अंकों और पृष्ठभूमि के बीच कम कंट्रास्ट — भौतिक पैक पर पठनीयता की पुष्टि करें (ढले हुए कांच और प्लास्टिक को छूट है)।"
+  fix_hint_en: "Print the MRP and net quantity in a colour that contrasts with the background (dark on light or light on dark)."
+  effective_from: "2011-04-01"
+  source: "LMPC Rules 2011, Rule 9(1)(b)"
+
+- id: R29
+  key: LMPC.6.10.ECOMMERCE_DECLARATIONS
+  rule_ref: "Rule 6(10)"
+  title_en: "E-commerce platform mandatory declarations"
+  title_hi: "ई-कॉमर्स प्लेटफ़ॉर्म पर अनिवार्य घोषणाएँ"
+  severity: high
+  check:
+    all:
+      - listing_declarations_present: {}
+  on_fail: FAIL
+  evidence: "declarations.mrp.bbox"
+  message_en: "The listing does not display all Rule 6(1) declarations required on an e-commerce platform (name/address, generic name, net quantity, MRP, consumer care; country of origin for imports)."
+  message_hi: "लिस्टिंग में ई-कॉमर्स प्लेटफ़ॉर्म पर आवश्यक सभी नियम 6(1) घोषणाएँ नहीं हैं (नाम/पता, सामान्य नाम, शुद्ध मात्रा, MRP, उपभोक्ता सेवा; आयात के लिए मूल देश)।"
+  fix_hint_en: "Add the missing declarations to the product page text or specification table, not only inside the product image."
+  effective_from: "2018-01-01"
+  source: "LMPC (Amendment) Rules 2017, Rule 6(10)"
+
+- id: R30
+  key: LMPC.31.FONT_PARITY
+  rule_ref: "Rule 31"
+  title_en: "E-commerce MRP vs Net Qty font parity in advertisements"
+  title_hi: "विज्ञापनों में MRP बनाम शुद्ध मात्रा फ़ॉन्ट समानता"
+  severity: medium
+  check:
+    all:
+      - listing_font_parity: {}
+  on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - listing_font_not_measurable: {}
+      verdict: NEEDS_REVIEW
+      message_en: "Font sizes cannot be measured from page text — upload a screenshot of the listing where the MRP is shown to check Rule 31."
+      message_hi: "पेज के पाठ से फ़ॉन्ट आकार नहीं मापा जा सकता — नियम 31 जाँचने के लिए लिस्टिंग का स्क्रीनशॉट अपलोड करें जहाँ MRP दिखती है।"
+    - check:
+        all:
+          - listing_font_marginal: {}
+      verdict: NEEDS_REVIEW
+      message_en: "Net quantity is rendered slightly smaller than the MRP (within measurement uncertainty) — confirm on the live page."
+      message_hi: "शुद्ध मात्रा MRP से थोड़ी छोटी दिख रही है (माप अनिश्चितता के भीतर) — लाइव पेज पर पुष्टि करें।"
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Where the listing quotes the MRP, the net quantity is shown in a smaller font — Rule 31 requires the same font size."
+  message_hi: "जहाँ लिस्टिंग MRP बताती है, वहाँ शुद्ध मात्रा छोटे फ़ॉन्ट में है — नियम 31 समान फ़ॉन्ट आकार अनिवार्य करता है।"
+  fix_hint_en: "Show the net quantity next to the MRP in the same font size wherever the price is advertised."
+  effective_from: "2011-04-01"
+  source: "LMPC Rules 2011, Rule 31"
+
 - id: R21
   key: LMPC.9.1.a.LEGIBILITY
   rule_ref: "Rule 9(1)(a)"
@@ -505,6 +648,75 @@
   fix_hint_en: "Verify that main outer package declares net contents and details for each component item."
   effective_from: "2011-03-01"
   source: "LMPC Rules 2011"
+
+- id: R31
+  key: LMPC.22.SCH1.NET_QUANTITY_MPE
+  rule_ref: "Rule 22, First Schedule"
+  title_en: "Net quantity deficiency within Maximum Permissible Error (MPE)"
+  title_hi: "शुद्ध मात्रा में कमी अधिकतम अनुमेय त्रुटि (MPE) के भीतर"
+  severity: high
+  check:
+    all:
+      - net_quantity_within_mpe: {}
+  on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - weighing_input_absent: {}
+      verdict: INFO
+      message_en: "Weigh the package and enter gross and tare (or net) to check the declared quantity against the First Schedule MPE."
+      message_hi: "पैकेज को तोलें और घोषित मात्रा को प्रथम अनुसूची MPE से जाँचने के लिए सकल और टेयर (या शुद्ध) भार दर्ज करें।"
+    - check:
+        all:
+          - mpe_marginal: {}
+      when_pass:
+        all:
+          - mpe_marginal: {}
+      verdict: NEEDS_REVIEW
+      message_en: "Deficiency is within the scale resolution of the MPE limit — confirm on a verified balance before recording a verdict."
+      message_hi: "कमी MPE सीमा के तराजू-रिज़ॉल्यूशन के भीतर है — निर्णय दर्ज करने से पहले सत्यापित तराजू पर पुष्टि करें।"
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Measured net content is short of the declared quantity by more than the maximum permissible error (First Schedule)."
+  message_hi: "मापी गई शुद्ध सामग्री घोषित मात्रा से अधिकतम अनुमेय त्रुटि (प्रथम अनुसूची) से अधिक कम है।"
+  fix_hint_en: "Adjust filling so that the net content is not below declared quantity minus MPE; a deficiency over 2×MPE is an aggravated offence."
+  effective_from: "2011-04-01"
+  source: "LMPC Rules 2011, Rule 22 read with the First Schedule"
+
+- id: R32
+  key: LMPC.19_21.SCH5_7.LOT_INSPECTION
+  rule_ref: "Rule 19–21, Schedules V–VII"
+  title_en: "Lot sampling inspection and statutory Form A/B testing"
+  title_hi: "लॉट नमूना निरीक्षण और वैधानिक फॉर्म A/B परीक्षण"
+  severity: high
+  check:
+    all:
+      - lot_inspection_approved: {}
+  on_fail: FAIL
+  on_uncertain:
+    - check:
+        all:
+          - lot_input_absent: {}
+      verdict: INFO
+      message_en: "Single-package scan — lot sampling per Rule 19 not performed. Use Lot mode to weigh the Fifth Schedule sample and generate Form A/B."
+      message_hi: "एकल पैकेज स्कैन — नियम 19 के अनुसार लॉट नमूना नहीं लिया गया। पाँचवीं अनुसूची का नमूना तोलने और फॉर्म A/B बनाने के लिए लॉट मोड का उपयोग करें।"
+    - check:
+        all:
+          - lot_inspection_rejected: {}
+      verdict: FAIL
+      message_en: "Lot rejected under Rule 19(6): corrected average below the declared quantity or too many packages beyond the permissible error."
+      message_hi: "नियम 19(6) के अंतर्गत लॉट अस्वीकृत: संशोधित औसत घोषित मात्रा से कम है या अनुमेय त्रुटि से अधिक पैकेज हैं।"
+    - check:
+        all:
+          - lot_inspection_incomplete: {}
+      verdict: NEEDS_REVIEW
+      message_en: "Lot inspection incomplete — weigh the full Fifth Schedule sample with a valid tare determination before recording a verdict."
+      message_hi: "लॉट निरीक्षण अधूरा — निर्णय दर्ज करने से पहले वैध टेयर निर्धारण के साथ पाँचवीं अनुसूची का पूरा नमूना तोलें।"
+  evidence: "declarations.net_quantity.bbox"
+  message_en: "Lot inspection incomplete — sample size or tare determination does not yet satisfy the Fifth and Sixth Schedules."
+  message_hi: "लॉट निरीक्षण अधूरा — नमूना आकार या टेयर निर्धारण अभी पाँचवीं और छठी अनुसूची को पूरा नहीं करता।"
+  fix_hint_en: "Weigh the full Fifth Schedule sample (32 or 80 packages) with a valid tare determination, then re-run the lot inspection."
+  effective_from: "2011-04-01"
+  source: "LMPC Rules 2011, Rules 19–21 read with the Fifth, Sixth and Seventh Schedules"
 
 - id: R33
   key: LMPC.6.4A.GTIN_BARCODE

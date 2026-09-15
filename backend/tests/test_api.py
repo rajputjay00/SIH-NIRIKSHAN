@@ -118,4 +118,5 @@ def test_get_rules_catalogue():
     data = response.json()
     assert "rules_version" in data
     assert "rules" in data
-    assert len(data["rules"]) == 31
+    from nirikshan.rules.engine import load_catalogue
+    assert len(data["rules"]) == len(load_catalogue())

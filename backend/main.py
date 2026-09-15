@@ -92,7 +92,12 @@ from nirikshan import EXTRACTOR_VERSION, extract
 from nirikshan.applicability import resolve
 from nirikshan.rules.engine import evaluate, load_catalogue
 from nirikshan.quality import assess_quality
-from nirikshan.schema import ContextModel, SurfaceResultModel
+from nirikshan.schema import ContextModel, SurfaceResultModel, WeighingInput, LotInput
+from nirikshan import tol
+from nirikshan.geometry import attach_contrast
+from nirikshan.nigrani import find_dual_mrp, fetch_listing_html, html_to_lines, lines_to_ocr, listing_presence, font_parity
+from nirikshan.report.form_ab import generate_form_pdf
+from pydantic import BaseModel, Field
 from nirikshan.merge import merge_declarations
 from nirikshan.conflicts import detect_conflicts
 
@@ -205,6 +210,11 @@ async def process_inspection(
 
         ext_start = time.perf_counter()
         decl_obj = extract(ocr_result.get("lines", []), w, h)
+        try:  # R22: contrast in the OCR coordinate space (pre-processed image)
+            proc_img, _, _ = ocr.preprocess(image)
+            attach_contrast(decl_obj, proc_img)
+        except Exception as exc:
+            logger.warning(f"contrast measurement skipped: {exc}")
         ext_ms = (time.perf_counter() - ext_start) * 1000.0
 
         total_preprocess += ocr_result.get("preprocess_ms", 0.0)
@@ -226,6 +236,13 @@ async def process_inspection(
     merged_declarations = merge_declarations(surface_results)
     conflicts = detect_conflicts(surface_results)
     merge_ms = (time.perf_counter() - merge_start) * 1000.0
+
+    # R17: compare with earlier scans in the same session
+    if session and context.dual_mrp is None:
+        try:
+            context.dual_mrp = find_dual_mrp(merged_declarations, session_store.get_results(session) or [])
+        except Exception as exc:
+            logger.warning(f"dual-MRP lookup skipped: {exc}")
 
     applicability_obj = resolve(context, merged_declarations)
 
@@ -277,6 +294,9 @@ async def inspect_images(
     net_quantity_value: Optional[float] = Form(None),
     net_quantity_unit: Optional[str] = Form(None),
     session: Optional[str] = Form(None),
+    weighing: Optional[str] = Form(None),
+    lot: Optional[str] = Form(None),
+    geometry_checks: Optional[bool] = Form(False),
 ):
     form = await request.form()
     surface_images: List[Tuple[bytes, str, str]] = []
@@ -317,6 +337,9 @@ async def inspect_images(
         is_import=is_import,
         channel=channel or "physical",
         net_quantity_override=net_qty_override,
+        weighing=_parse_json_field(weighing, WeighingInput, "weighing"),
+        lot=_parse_json_field(lot, LotInput, "lot"),
+        geometry_checks=bool(geometry_checks),
     )
 
     return await process_inspection(surface_images, context, session)
@@ -332,6 +355,9 @@ async def scan_image(
     net_quantity_value: Optional[float] = Form(None),
     net_quantity_unit: Optional[str] = Form(None),
     session: Optional[str] = Form(None),
+    weighing: Optional[str] = Form(None),
+    lot: Optional[str] = Form(None),
+    geometry_checks: Optional[bool] = Form(False),
 ):
     if file.content_type and file.content_type.lower() not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -350,6 +376,9 @@ async def scan_image(
         is_import=is_import,
         channel=channel or "physical",
         net_quantity_override=net_qty_override,
+        weighing=_parse_json_field(weighing, WeighingInput, "weighing"),
+        lot=_parse_json_field(lot, LotInput, "lot"),
+        geometry_checks=bool(geometry_checks),
     )
 
     inspect_res = await process_inspection([(contents, file.filename or "image.jpg", "front")], context, session)
@@ -373,6 +402,243 @@ async def scan_image(
     return res
 
 
+
+
+def _parse_json_field(raw: Optional[str], model, name: str):
+    """Parse an optional JSON-encoded multipart field into a pydantic model."""
+    if raw is None or str(raw).strip() == "":
+        return None
+    try:
+        return model.model_validate(json.loads(raw))
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid '{name}' JSON: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Tol — net quantity (R31) and lot inspection (R32), Rules 19–22 + Schedules
+# ---------------------------------------------------------------------------
+
+class WeighRequest(BaseModel):
+    declared_value: float
+    declared_unit: str
+    gross: Optional[float] = None
+    tare: Optional[float] = None
+    net: Optional[float] = None
+    unit: Optional[str] = None          # unit of the readings; defaults to declared_unit
+    resolution: Optional[float] = None  # scale readability in the reading unit
+
+
+class LotRequest(LotInput):
+    declared_value: float
+    declared_unit: str
+
+
+class LotFormRequest(LotRequest):
+    officer: Optional[str] = None
+    premises: Optional[str] = None
+    packer: Optional[str] = None
+    commodity: Optional[str] = None
+    lot_id: Optional[str] = None
+    instrument: Optional[str] = None
+    date: Optional[str] = None
+    remarks: Optional[str] = None
+    language: Optional[str] = "en"
+
+
+def _finding_from_tol(rule_id: str, verdict: str, extracted: str, message_en: str, message_hi: str) -> Dict[str, Any]:
+    rule = next((r for r in load_catalogue() if r["id"] == rule_id), {})
+    return {
+        "rule_id": rule_id,
+        "rule_ref": rule.get("rule_ref", ""),
+        "verdict": verdict,
+        "severity": rule.get("severity", "high"),
+        "extracted": extracted,
+        "expected": extracted,
+        "evidence_bbox": None,
+        "evidence_refs": [],
+        "message_en": message_en,
+        "message_hi": message_hi,
+        "fix_hint_en": rule.get("fix_hint_en") if verdict == "FAIL" else None,
+        "trail": [
+            {"step": "input", "detail": "Officer-entered measurement (Tol)"},
+            {"step": "predicate_check", "detail": extracted},
+            {"step": "verdict", "detail": f"Final verdict {verdict}: {message_en}"},
+        ],
+    }
+
+
+@router.get("/tol/mpe")
+def get_mpe(declared_value: float, unit: str):
+    """First Schedule maximum permissible error for a declared quantity."""
+    try:
+        return tol.mpe_for(declared_value, unit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/tol/weigh")
+def weigh_single_pack(req: WeighRequest):
+    """R31: compare one weighed package with its declared quantity."""
+    try:
+        res = tol.check_single_pack(
+            declared_value=req.declared_value, unit=req.declared_unit,
+            gross=req.gross, tare=req.tare, net=req.net,
+            measured_unit=req.unit, resolution=req.resolution,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    rule = next((r for r in load_catalogue() if r["id"] == "R31"), {})
+    if res["verdict"] == "PASS":
+        msg_en, msg_hi = f"Compliant: {rule.get('title_en', '')}", f"अनुपालन: {rule.get('title_hi', '')}"
+    elif res["verdict"] == "NEEDS_REVIEW":
+        msg_en = "Deficiency is within the scale resolution of the MPE limit — confirm on a verified balance before recording a verdict."
+        msg_hi = "कमी MPE सीमा के तराजू-रिज़ॉल्यूशन के भीतर है — निर्णय दर्ज करने से पहले सत्यापित तराजू पर पुष्टि करें।"
+    else:
+        msg_en, msg_hi = rule.get("message_en", ""), rule.get("message_hi", "")
+    res["finding"] = _finding_from_tol("R31", res["verdict"], res["summary"], msg_en, msg_hi)
+    res["rules_version"] = RULES_VERSION
+    return res
+
+
+@router.post("/tol/lot")
+def inspect_lot(req: LotRequest):
+    """R32: Rule 19–21 lot inspection (sample size, tare, corrected average, criteria)."""
+    try:
+        res = tol.lot_inspection(
+            lot_size=req.lot_size, declared_value=req.declared_value, unit=req.declared_unit,
+            samples=[s.model_dump() for s in req.samples], tares=list(req.tares or []),
+            measured_unit=req.unit,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    rule = next((r for r in load_catalogue() if r["id"] == "R32"), {})
+    verdict = {"APPROVED": "PASS", "REJECTED": "FAIL", "INCOMPLETE": "NEEDS_REVIEW"}[res["status"]]
+    if verdict == "PASS":
+        msg_en, msg_hi = f"Compliant: {rule.get('title_en', '')}", f"अनुपालन: {rule.get('title_hi', '')}"
+    elif verdict == "FAIL":
+        msg_en = "Lot rejected under Rule 19(6): corrected average below the declared quantity or too many packages beyond the permissible error."
+        msg_hi = "नियम 19(6) के अंतर्गत लॉट अस्वीकृत: संशोधित औसत घोषित मात्रा से कम है या अनुमेय त्रुटि से अधिक पैकेज हैं।"
+    else:
+        msg_en = "Lot inspection incomplete — weigh the full Fifth Schedule sample with a valid tare determination before recording a verdict."
+        msg_hi = "लॉट निरीक्षण अधूरा — निर्णय दर्ज करने से पहले वैध टेयर निर्धारण के साथ पाँचवीं अनुसूची का पूरा नमूना तोलें।"
+    res["finding"] = _finding_from_tol("R32", verdict, res["summary"], msg_en, msg_hi)
+    res["rules_version"] = RULES_VERSION
+    return res
+
+
+@router.post("/tol/lot/form")
+def lot_form_pdf(req: LotFormRequest):
+    """Seventh Schedule Form A (weight) / Form B (volume, length, number) as PDF."""
+    try:
+        res = tol.lot_inspection(
+            lot_size=req.lot_size, declared_value=req.declared_value, unit=req.declared_unit,
+            samples=[s.model_dump() for s in req.samples], tares=list(req.tares or []),
+            measured_unit=req.unit,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    meta = {
+        "officer": req.officer, "premises": req.premises, "packer": req.packer,
+        "commodity": req.commodity, "lot_id": req.lot_id, "instrument": req.instrument,
+        "date": req.date, "remarks": req.remarks,
+    }
+    try:
+        pdf_bytes = generate_form_pdf(res, meta=meta, rules_version=RULES_VERSION, language=req.language or "en")
+    except Exception as e:
+        logger.error(f"Failed to generate Form {res.get('form')} PDF: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Form generation error: {str(e)}")
+
+    filename = f"Nirikshan_Form_{res['form']}_{int(time.time())}.pdf"
+    return Response(content=pdf_bytes, media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{filename}"'})
+
+
+# ---------------------------------------------------------------------------
+# Jaal — e-commerce listing mode (R29 Rule 6(10), R30 Rule 31)
+# ---------------------------------------------------------------------------
+
+@router.post("/listing/check")
+async def check_listing(
+    request: Request,
+    url: Optional[str] = Form(None),
+    is_import: Optional[bool] = Form(None),
+    fetch: Optional[bool] = Form(True),
+):
+    """Check a marketplace listing: page text (fetched server-side from ``url``)
+    and/or listing screenshots uploaded as file_1..file_6."""
+    form = await request.form()
+    surface_results: List[SurfaceResultModel] = []
+    sources: List[str] = []
+    idx = 0
+
+    if url and fetch:
+        try:
+            html = await asyncio.to_thread(fetch_listing_html, url)
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Could not fetch listing: {exc}")
+        texts = html_to_lines(html)
+        if not texts:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No readable text on the listing page")
+        idx += 1
+        lines = lines_to_ocr(texts)
+        decl = extract(lines, 1600, 10 + 30 * len(lines))
+        surface_results.append(SurfaceResultModel(
+            id=idx, surface="listing_html", image_size={"width": 1600, "height": 10 + 30 * len(lines)}, scale=1.0,
+            ocr={"lines": lines, "source": "html", "url": url}, quality=None, declarations=decl,
+        ))
+        sources.append("html")
+
+    for i in range(1, 7):
+        file_obj = form.get(f"file_{i}") or form.get(f"image_{i}")
+        if not (file_obj and hasattr(file_obj, "read")):
+            continue
+        contents = await file_obj.read()
+        if not contents:
+            continue
+        if len(contents) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Screenshot exceeds 10 MB.")
+        try:
+            image = Image.open(io.BytesIO(contents)); image.verify(); image = Image.open(io.BytesIO(contents))
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Invalid screenshot image.")
+        idx += 1
+        w, h = image.size
+        ocr_result = ocr.extract_text(image)
+        decl = extract(ocr_result.get("lines", []), w, h)
+        surface_results.append(SurfaceResultModel(
+            id=idx, surface="screenshot", image_size={"width": w, "height": h}, scale=1.0,
+            ocr=ocr_result, quality=assess_quality(image), declarations=decl,
+        ))
+        sources.append("screenshot")
+
+    if not surface_results:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Provide a listing url and/or at least one screenshot (file_1).")
+
+    merged = merge_declarations(surface_results)
+    mode = "mixed" if len(set(sources)) > 1 else sources[0]
+    context = ContextModel(package_type="retail", category="general", is_import=is_import, channel="ecommerce",
+                           listing={"mode": mode, "url": url, "sources": sources})
+    applicability_obj = resolve(context, merged)
+    findings_list, summary_obj = evaluate(merged, applicability_obj, context=context)
+
+    presence = listing_presence(merged, bool(applicability_obj.is_import))
+    parity = font_parity(merged) if "screenshot" in sources else None
+    return {
+        "mode": mode,
+        "url": url,
+        "surfaces": [s.model_dump() for s in surface_results],
+        "merged": merged.model_dump(),
+        "applicability": applicability_obj.model_dump(),
+        "findings": [f.model_dump() for f in findings_list],
+        "summary": summary_obj.model_dump(),
+        "listing": {"presence": presence, "font_parity": parity},
+        "rules_version": RULES_VERSION,
+        "model_version": MODEL_VERSION,
+        "extractor_version": EXTRACTOR_VERSION,
+    }
 
 
 @router.post("/report")

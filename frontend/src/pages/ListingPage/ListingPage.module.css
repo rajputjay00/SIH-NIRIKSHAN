@@ -1,0 +1,148 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 0 32px;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--grey-500);
+}
+
+.form,
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--grey-700);
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+}
+
+.input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--navy-900);
+  background: transparent;
+}
+
+.uploadRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chipRow {
+  display: flex;
+  gap: 8px;
+}
+
+.hint {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--grey-500);
+  line-height: 1.4;
+}
+
+.error {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--fail-bg);
+  color: var(--fail);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.blockHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.listLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--grey-500);
+  margin-top: 4px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.itemOk { color: var(--pass); }
+.itemBad { color: var(--fail); }
+.itemInfo { color: var(--grey-500); }
+
+.parityRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--grey-50);
+  font-size: 0.8rem;
+  color: var(--grey-700);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.ok { color: var(--pass); }
+.warn { color: var(--review); }
+
+.findings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

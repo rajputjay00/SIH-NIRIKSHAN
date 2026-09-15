@@ -1,5 +1,6 @@
 import io
 import os
+import sys
 import base64
 import hashlib
 from datetime import datetime, timezone, timedelta
@@ -7,6 +8,16 @@ from typing import Any, Dict, Optional
 from PIL import Image
 from jinja2 import Template
 import qrcode
+
+if sys.platform == "win32":
+    for gtk_path in [r"C:\Users\rajpu\GTK3\runtime_bin", r"C:\Program Files\GTK3-Runtime Win64\bin"]:
+        if os.path.exists(gtk_path):
+            os.environ["PATH"] = gtk_path + ";" + os.environ.get("PATH", "")
+            if hasattr(os, "add_dll_directory"):
+                try:
+                    os.add_dll_directory(gtk_path)
+                except Exception:
+                    pass
 
 from nirikshan.report.overlay import overlay_image_to_base64
 from nirikshan.report.crops import generate_evidence_crops, generate_conflict_crops

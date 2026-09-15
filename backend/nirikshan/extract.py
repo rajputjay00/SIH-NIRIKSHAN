@@ -1257,7 +1257,7 @@ def extract(
                 except ValueError:
                     pass
 
-    return Declarations(
+    declarations_out = Declarations(
         manufacturer=extracted_dict.get("manufacturer"),
         packer=extracted_dict.get("packer"),
         importer=extracted_dict.get("importer"),
@@ -1277,4 +1277,10 @@ def extract(
         gtin=gtin_field,
         all_text="\n".join(l.text for l in lines),
     )
+    try:
+        from nirikshan.geometry import attach_geometry
+        attach_geometry(declarations_out, lines, image_w, image_h)
+    except Exception:  # measurements must never break extraction
+        pass
+    return declarations_out
 

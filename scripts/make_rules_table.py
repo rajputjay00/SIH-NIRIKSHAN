@@ -80,7 +80,9 @@ def generate_table():
     lines = [
         "# Nirikshan Legal Metrology Rules Catalogue",
         "",
-        f"Total Rules Encoded: **{len(all_rules)}** ({len(active_rules)} Implemented Engine Rules, {len(planned_rules)} Planned M3 Rules)",
+        f"Total LMPC Rules: **{len([r for r in all_rules if r['id'].startswith('R')])}** "
+        f"({len([r for r in active_rules if r['id'].startswith('R')])} Implemented, {len(planned_rules)} Planned M3) "
+        f"+ **{len([r for r in active_rules if r['id'].startswith('C')])}** cross-surface conflict checks (C01–C05)",
         "",
         "| ID | Rule Ref | Title (EN) | Severity | Status | Verdict Types |",
         "|---|---|---|---|---|---|"

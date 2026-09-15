@@ -6,6 +6,7 @@ import { Button } from '../../components/Button/Button';
 import { VerdictBanner } from '../../components/VerdictBanner/VerdictBanner';
 import { CountChip } from '../../components/CountChip/CountChip';
 import { RuleCard } from '../../components/RuleCard/RuleCard';
+import { TolPanel } from '../../components/TolPanel/TolPanel';
 import { EvidenceCanvas } from '../../components/EvidenceCanvas/EvidenceCanvas';
 import { DeclarationCard } from '../../components/DeclarationCard/DeclarationCard';
 import { EntityCard } from '../../components/EntityCard/EntityCard';
@@ -13,6 +14,25 @@ import { Tabs } from '../../components/Tabs/Tabs';
 import { scanImage } from '../../api';
 import { useT } from '../../i18n/useT';
 import styles from './ReviewPage.module.css';
+
+// Maap (R19/R20/R22): the measurements live on the declarations, not on the finding,
+// so hand them to the card for the rules that are built on them.
+const MAAP_RULES = { R19: 'geometry', R20: 'geometry', R22: 'contrast' };
+function maapFor(findingOrId, merged) {
+  const ruleId = typeof findingOrId === 'string' ? findingOrId : findingOrId?.rule_id;
+  if (!MAAP_RULES[ruleId] || !merged) return undefined;
+  const nq = merged.net_quantity || {};
+  const mrp = merged.mrp || {};
+  if (ruleId === 'R22') {
+    const contrast = mrp.contrast || nq.contrast;
+    return contrast ? { contrast } : undefined;
+  }
+  const geometry = ruleId === 'R20'
+    ? (nq.geometry?.clear_space ? { clear_space: nq.geometry.clear_space } : null)
+    : (nq.geometry?.aspect || mrp.geometry?.aspect ? { aspect: nq.geometry?.aspect || mrp.geometry?.aspect } : null);
+  return geometry ? { geometry } : undefined;
+}
+
 
 export function ReviewPage() {
   const { t } = useT();
@@ -126,6 +146,23 @@ export function ReviewPage() {
   const activeResult = activeScan?.result;
   const pairUrl = typeof window !== 'undefined' ? `${window.location.origin}/app?session=${sessionCode}` : '';
 
+  // Tol (R31 / R32): replace the placeholder finding with the officer-entered result
+  // and recompute the summary the same way the engine does.
+  const mergeTolFinding = (finding) => {
+    if (!finding || !activeScan) return;
+    setScans((prev) => prev.map((s) => {
+      if (s.id !== activeScan.id || !s.result) return s;
+      const findings = (s.result.findings || []).map((f) => (f.rule_id === finding.rule_id ? { ...f, ...finding } : f));
+      const counts = { PASS: 0, FAIL: 0, NEEDS_REVIEW: 0, MANUAL: 0, INFO: 0, 'N/A': 0 };
+      findings.forEach((f) => { counts[f.verdict] = (counts[f.verdict] || 0) + 1; });
+      let status = s.result.summary?.status;
+      if (counts.FAIL > 0) status = 'Non-compliant';
+      else if (counts.NEEDS_REVIEW > 0 || counts.MANUAL > 0) status = 'Officer review required';
+      else if (status === 'Non-compliant' || status === 'Officer review required') status = 'Compliant';
+      return { ...s, result: { ...s.result, findings, summary: { ...s.result.summary, status, counts } } };
+    }));
+  };
+
   const applicableFindings = activeResult?.findings?.filter((f) => f.verdict !== 'N/A') || [];
   const naFindings = activeResult?.findings?.filter((f) => f.verdict === 'N/A') || [];
 
@@ -232,10 +269,19 @@ export function ReviewPage() {
                 { id: 'findings', label: t('tab_findings') },
                 { id: 'evidence', label: t('tab_evidence') },
                 { id: 'declarations', label: t('tab_declarations') },
+                { id: 'tol', label: t('tab_tol') },
               ]}
               activeTab={activeTab}
               onChange={setActiveTab}
             />
+
+            {activeTab === 'tol' && (
+              <TolPanel
+                key={activeScan.id}
+                declaredField={activeResult.declarations?.net_quantity}
+                onFinding={mergeTolFinding}
+              />
+            )}
 
             {activeTab === 'findings' && (
               <div>
@@ -243,6 +289,7 @@ export function ReviewPage() {
                   <RuleCard
                     key={f.rule_id}
                     finding={f}
+                    measurements={maapFor(f, activeResult?.merged)}
                     onShowOnImage={(rid) => {
                       setSelectedRuleId(rid);
                       setActiveTab('evidence');
@@ -254,7 +301,7 @@ export function ReviewPage() {
                   <div style={{ marginTop: '16px' }}>
                     <h4>{t('not_applicable_header')} ({naFindings.length})</h4>
                     {naFindings.map((f) => (
-                      <RuleCard key={f.rule_id} finding={f} />
+                      <RuleCard key={f.rule_id} finding={f} measurements={maapFor(f, activeResult?.merged)} />
                     ))}
                   </div>
                 )}

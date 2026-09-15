@@ -67,6 +67,12 @@ export function AppShell() {
             {t('nav_review')}
           </NavLink>
           <NavLink
+            to="/listing"
+            className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`}
+          >
+            {t('nav_listing')}
+          </NavLink>
+          <NavLink
             to="/rules"
             className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`}
           >

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Nirikshan — Seventh Schedule Form {{ lot.form }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 14mm 14mm 18mm 14mm;
+            @bottom-left {
+                content: "Nirikshan · Form {{ lot.form }} · generated {{ generated_at }}";
+                font-size: 7.5pt; color: #6B7280;
+                font-family: 'Noto Sans', 'Noto Sans Devanagari', 'DejaVu Sans', sans-serif;
+            }
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 7.5pt; color: #6B7280;
+                font-family: 'Noto Sans', 'Noto Sans Devanagari', 'DejaVu Sans', sans-serif;
+            }
+        }
+        body { font-family: 'Noto Sans', 'Noto Sans Devanagari', 'DejaVu Sans', sans-serif; font-size: 9pt; line-height: 1.35; color: #1F2937; margin: 0; }
+        h1, h2, h3 { margin: 0; font-weight: 700; }
+        .header { border-bottom: 2px solid #2563EB; padding-bottom: 6px; margin-bottom: 10px; }
+        .header h1 { font-size: 14pt; color: #1E3A8A; }
+        .header .sub { font-size: 8.5pt; color: #374151; margin-top: 2px; }
+        .header .hi { font-size: 9pt; color: #1E3A8A; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9pt; }
+        .badge.APPROVED { background: #DCFCE7; color: #166534; }
+        .badge.REJECTED { background: #FEE2E2; color: #991B1B; }
+        .badge.INCOMPLETE { background: #FEF3C7; color: #92400E; }
+        table { border-collapse: collapse; width: 100%; }
+        .kv td { padding: 3px 6px; border: 1px solid #D1D5DB; vertical-align: top; }
+        .kv td.k { width: 32%; background: #F3F4F6; font-weight: 600; }
+        .grid { margin-top: 8px; }
+        .grid th { background: #1E3A8A; color: #fff; font-size: 8pt; padding: 3px 4px; border: 1px solid #1E3A8A; }
+        .grid td { font-size: 8pt; padding: 2px 4px; border: 1px solid #D1D5DB; text-align: right; }
+        .grid td.c { text-align: center; }
+        .grid tr.t1 td { background: #FEF3C7; }
+        .grid tr.t2 td { background: #FEE2E2; }
+        .section { margin-top: 10px; }
+        .section h2 { font-size: 10.5pt; color: #1E3A8A; margin-bottom: 4px; }
+        .criteria td.ok { color: #166534; font-weight: 700; }
+        .criteria td.bad { color: #991B1B; font-weight: 700; }
+        .note { font-size: 7.5pt; color: #6B7280; margin-top: 4px; }
+        .sign { margin-top: 22px; width: 100%; }
+        .sign td { width: 33%; padding-top: 30px; border-top: 1px solid #9CA3AF; font-size: 8pt; text-align: center; }
+        .sign-wrap td { border: none; padding: 0 10px; }
+        .two-col { width: 100%; }
+        .two-col td { vertical-align: top; width: 50%; padding: 0 4px 0 0; border: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Seventh Schedule — Form {{ lot.form }}: Data sheet for {{ 'net weight' if lot.form == 'A' else 'net volume / length / number' }}</h1>
+        <div class="hi">सातवीं अनुसूची — फॉर्म {{ lot.form }}: {{ 'शुद्ध भार' if lot.form == 'A' else 'शुद्ध आयतन / लंबाई / संख्या' }} की डेटा शीट</div>
+        <div class="sub">Legal Metrology (Packaged Commodities) Rules, 2011 — Rules 19–21 read with the Fifth and Sixth Schedules · Lot result:
+            <span class="badge {{ lot.status }}">{{ lot.status }}</span></div>
+    </div>
+
+    <table class="two-col"><tr>
+    <td>
+        <table class="kv">
+            <tr><td class="k">Name & address of manufacturer / packer</td><td>{{ meta.packer or '' }}</td></tr>
+            <tr><td class="k">Commodity</td><td>{{ meta.commodity or '' }}</td></tr>
+            <tr><td class="k">Declared net quantity</td><td>{{ lot.declared_value|g }} {{ lot.declared_unit }} ({{ lot.declared_base|g }} {{ lot.base_unit }})</td></tr>
+            <tr><td class="k">Maximum permissible error (First Schedule)</td><td>{{ lot.mpe_base|g }} {{ lot.base_unit }} ({{ lot.mpe_band }})</td></tr>
+            <tr><td class="k">Lot / batch identification</td><td>{{ meta.lot_id or '' }}</td></tr>
+            <tr><td class="k">Lot size · sample size</td><td>{{ lot.lot_size }} packages · {{ lot.sample_size_required }} required, {{ lot.sample_size_weighed }} weighed</td></tr>
+        </table>
+    </td>
+    <td>
+        <table class="kv">
+            <tr><td class="k">Place of inspection</td><td>{{ meta.premises or '' }}</td></tr>
+            <tr><td class="k">Date & time</td><td>{{ meta.date or generated_at }}</td></tr>
+            <tr><td class="k">Inspecting officer</td><td>{{ meta.officer or '' }}</td></tr>
+            <tr><td class="k">Balance / instrument</td><td>{{ meta.instrument or '' }}</td></tr>
+            <tr><td class="k">Tare determination (Sixth Schedule para 3)</td><td>{{ lot.tare.method }}{% if lot.tare.tare is not none %} — {{ lot.tare.tare|g }} {{ lot.base_unit }}{% endif %}<div class="note">{{ lot.tare.note }}</div></td></tr>
+            <tr><td class="k">Rules / engine version</td><td>{{ rules_version }}</td></tr>
+        </table>
+    </td>
+    </tr></table>
+
+    <div class="section">
+        <h2>Sample measurements ({{ lot.base_unit }})</h2>
+        <table class="grid">
+            <thead><tr>
+                <th>S.No</th><th>Gross</th><th>Tare</th><th>Net</th><th>Error (net − declared)</th><th>Below declared − MPE (T1)</th><th>Below declared − 2×MPE (T2)</th>
+            </tr></thead>
+            <tbody>
+            {% for r in lot.samples %}
+                <tr class="{% if r.t2 %}t2{% elif r.t1 %}t1{% endif %}">
+                    <td class="c">{{ r.sno }}</td>
+                    <td>{{ r.gross|g if r.gross is not none else '—' }}</td>
+                    <td>{{ r.tare|g if r.tare is not none else '—' }}</td>
+                    <td>{{ r.net|g if r.net is not none else '—' }}</td>
+                    <td>{{ ('%+.2f' % r.error) if r.error is not none else '—' }}</td>
+                    <td class="c">{{ 'YES' if r.t1 else '' }}</td>
+                    <td class="c">{{ 'YES' if r.t2 else '' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Statistics and approval criteria (Rule 19(6), Sixth Schedule)</h2>
+        <table class="kv criteria">
+            <tr><td class="k">Mean net content (x̄)</td><td>{{ lot.mean|g if lot.mean is not none else '—' }} {{ lot.base_unit }}</td></tr>
+            <tr><td class="k">Sample standard deviation (s)</td><td>{{ lot.sd|g if lot.sd is not none else '—' }} {{ lot.base_unit }}</td></tr>
+            <tr><td class="k">Sample correction factor (t / √n)</td><td>{{ lot.sample_correction_factor if lot.sample_correction_factor is not none else '—' }}</td></tr>
+            <tr><td class="k">Corrected average (x̄ + t·s/√n)</td>
+                <td class="{{ 'ok' if lot.corrected_average is not none and lot.corrected_average >= lot.criteria.corrected_average_min else 'bad' }}">
+                    {{ lot.corrected_average|g if lot.corrected_average is not none else '—' }} {{ lot.base_unit }} &nbsp; (must be ≥ {{ lot.criteria.corrected_average_min|g }} {{ lot.base_unit }})</td></tr>
+            <tr><td class="k">Packages below declared − MPE (T1)</td>
+                <td class="{{ 'ok' if lot.t1_count <= lot.criteria.allowed_t1 else 'bad' }}">{{ lot.t1_count }} &nbsp; (allowed {{ lot.criteria.allowed_t1 }} for a sample of {{ lot.sample_size_required }})</td></tr>
+            <tr><td class="k">Packages below declared − 2×MPE (T2)</td>
+                <td class="{{ 'ok' if lot.t2_count <= lot.criteria.allowed_t2 else 'bad' }}">{{ lot.t2_count }} &nbsp; (allowed {{ lot.criteria.allowed_t2 }})</td></tr>
+            <tr><td class="k">Result</td><td><span class="badge {{ lot.status }}">{{ lot.status }}</span>
+                {% for r in lot.reasons %}<div>{{ r }}</div>{% endfor %}
+                {% for n in lot.notes %}<div class="note">{{ n }}</div>{% endfor %}</td></tr>
+        </table>
+        <div class="note">Formula: {{ lot.criteria.formula }}. {{ lot.criteria.source }}. This data sheet is a review aid generated by Nirikshan; the officer's signed determination is authoritative.</div>
+    </div>
+
+    {% if meta.remarks %}
+    <div class="section"><h2>Remarks</h2><div>{{ meta.remarks }}</div></div>
+    {% endif %}
+
+    <table class="sign sign-wrap"><tr>
+        <td>Signature of Inspecting Officer<br>निरीक्षण अधिकारी के हस्ताक्षर</td>
+        <td>Signature of manufacturer / packer or representative<br>निर्माता / पैकर या प्रतिनिधि के हस्ताक्षर</td>
+        <td>Witness<br>गवाह</td>
+    </tr></table>
+</body>
+</html>

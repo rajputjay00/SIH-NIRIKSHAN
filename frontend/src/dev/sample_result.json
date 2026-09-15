@@ -240,7 +240,74 @@
       "count": null,
       "unit_value": null,
       "multipack": false,
-      "qualifier_words": []
+      "qualifier_words": [],
+      "geometry": {
+        "clear_space": {
+          "rule": "8(1)",
+          "numeral_height_px": 21.6,
+          "line_box_height_px": 30.0,
+          "gaps": {
+            "above": {
+              "gap_px": 5.0,
+              "ratio": 0.23,
+              "required": 1.0,
+              "ok": false,
+              "neighbour_line_id": 0
+            },
+            "below": {
+              "gap_px": 62.0,
+              "ratio": 2.87,
+              "required": 1.0,
+              "ok": true,
+              "neighbour_line_id": 4
+            },
+            "left": {
+              "gap_px": null,
+              "ratio": null,
+              "required": 2.0,
+              "ok": true,
+              "neighbour_line_id": null
+            },
+            "right": {
+              "gap_px": null,
+              "ratio": null,
+              "required": 2.0,
+              "ok": true,
+              "neighbour_line_id": null
+            }
+          },
+          "all_ok": false,
+          "worst_direction": "above",
+          "method": "OCR line boxes; numeral height = 0.72 x line-box height (estimate)"
+        },
+        "aspect": {
+          "rule": "7(3)",
+          "avg_glyph_width_px": 9.1,
+          "cap_height_px": 21.6,
+          "ratio": 0.421,
+          "min_ratio": 0.333,
+          "ok": true,
+          "chars_measured": 14,
+          "method": "line-box width / characters x 0.8, over 0.72 x line-box height (estimates)"
+        }
+      },
+      "contrast": {
+        "rule": "9(1)(b)",
+        "ratio": 11.4,
+        "min_ratio": 3.0,
+        "ok": true,
+        "text_rgb": [
+          38,
+          38,
+          38
+        ],
+        "background_rgb": [
+          252,
+          252,
+          252
+        ],
+        "method": "Otsu split of the OCR box; WCAG relative-luminance ratio of cluster means"
+      }
     },
     "mrp": {
       "value": 45.0,
@@ -271,7 +338,36 @@
       "declared_elsewhere": null,
       "currency": "INR",
       "incl_taxes_phrase": false,
-      "paise": 0
+      "paise": 0,
+      "contrast": {
+        "rule": "9(1)(b)",
+        "ratio": 1.6,
+        "min_ratio": 3.0,
+        "ok": false,
+        "text_rgb": [
+          206,
+          206,
+          206
+        ],
+        "background_rgb": [
+          255,
+          255,
+          255
+        ],
+        "method": "Otsu split of the OCR box; WCAG relative-luminance ratio of cluster means"
+      },
+      "geometry": {
+        "aspect": {
+          "rule": "7(3)",
+          "avg_glyph_width_px": 7.9,
+          "cap_height_px": 21.6,
+          "ratio": 0.366,
+          "min_ratio": 0.333,
+          "ok": true,
+          "chars_measured": 30,
+          "method": "line-box width / characters x 0.8, over 0.72 x line-box height (estimates)"
+        }
+      }
     },
     "unit_sale_price": null,
     "mfg_date": null,
@@ -370,7 +466,7 @@
         ]
       ],
       "message_en": "Compliant: Manufacturer / Packer / Importer Name & Address",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0928\u093f\u0930\u094d\u092e\u093e\u0924\u093e / \u092a\u0948\u0915\u0930 / \u0906\u092f\u093e\u0924\u0915\u0930\u094d\u0924\u093e \u0915\u093e \u0928\u093e\u092e \u0914\u0930 \u092a\u0924\u093e",
+      "message_hi": "अनुपालन: निर्माता / पैकर / आयातकर्ता का नाम और पता",
       "fix_hint_en": null
     },
     {
@@ -399,7 +495,7 @@
         ]
       ],
       "message_en": "The manufacturer/packer/importer address must contain a valid 6-digit PIN code.",
-      "message_hi": "\u0928\u093f\u0930\u094d\u092e\u093e\u0924\u093e/\u092a\u0948\u0915\u0930/\u0906\u092f\u093e\u0924\u0915\u0930\u094d\u0924\u093e \u0915\u0947 \u092a\u0924\u0947 \u092e\u0947\u0902 6 \u0905\u0902\u0915\u094b\u0902 \u0915\u093e \u0935\u0948\u0927 \u092a\u093f\u0928 \u0915\u094b\u0921 \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f\u0964",
+      "message_hi": "निर्माता/पैकर/आयातकर्ता के पते में 6 अंकों का वैध पिन कोड होना चाहिए।",
       "fix_hint_en": "Include the 6-digit PIN code at the end of the address line."
     },
     {
@@ -428,7 +524,7 @@
         ]
       ],
       "message_en": "Imported packages must clearly state the Country of Origin.",
-      "message_hi": "\u0906\u092f\u093e\u0924\u093f\u0924 \u092a\u0948\u0915\u0947\u091c\u094b\u0902 \u092a\u0930 \u092e\u0942\u0932 \u0926\u0947\u0936 \u0915\u0940 \u0938\u094d\u092a\u0937\u094d\u091f \u0918\u094b\u0937\u0923\u093e \u0939\u094b\u0928\u0940 \u091a\u093e\u0939\u093f\u090f\u0964",
+      "message_hi": "आयातित पैकेजों पर मूल देश की स्पष्ट घोषणा होनी चाहिए।",
       "fix_hint_en": "Add 'Country of Origin: [Country]' or 'Made in [Country]' on the PDP."
     },
     {
@@ -440,7 +536,7 @@
       "expected": "Field generic_name.value is missing or empty",
       "evidence_bbox": null,
       "message_en": "The common or generic name of the commodity should be declared.",
-      "message_hi": "\u0938\u093e\u092e\u0917\u094d\u0930\u0940 \u0915\u093e \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u092f\u093e \u091c\u0947\u0928\u0947\u0930\u093f\u0915 \u0928\u093e\u092e \u0918\u094b\u0937\u093f\u0924 \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f\u0964",
+      "message_hi": "सामग्री का सामान्य या जेनेरिक नाम घोषित होना चाहिए।",
       "fix_hint_en": "Declare generic name clearly (e.g. 'Whole Wheat Flour', 'Milk Chocolate')."
     },
     {
@@ -469,7 +565,7 @@
         ]
       ],
       "message_en": "Compliant: Net Quantity in Standard SI Units",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u092e\u093e\u0928\u0915 SI \u0907\u0915\u093e\u0907\u092f\u094b\u0902 \u092e\u0947\u0902 \u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e",
+      "message_hi": "अनुपालन: मानक SI इकाइयों में शुद्ध मात्रा",
       "fix_hint_en": null
     },
     {
@@ -498,7 +594,7 @@
         ]
       ],
       "message_en": "Compliant: Prohibition of Count Words (Dozen/Gross/Score)",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0917\u093f\u0928\u0924\u0940 \u0915\u0947 \u0936\u092c\u094d\u0926\u094b\u0902 \u0915\u093e \u0928\u093f\u0937\u0947\u0927 (\u0926\u0930\u094d\u091c\u0928/\u0917\u094d\u0930\u0949\u0938)",
+      "message_hi": "अनुपालन: गिनती के शब्दों का निषेध (दर्जन/ग्रॉस)",
       "fix_hint_en": null
     },
     {
@@ -527,7 +623,7 @@
         ]
       ],
       "message_en": "Non-standard unit abbreviations (e.g., gms, ltr, oz) are prohibited.",
-      "message_hi": "\u0905\u092e\u093e\u0928\u0915 \u0907\u0915\u093e\u0908 \u092a\u094d\u0930\u0924\u0940\u0915\u094b\u0902 (\u091c\u0948\u0938\u0947 gms, ltr, oz) \u0915\u093e \u092a\u094d\u0930\u092f\u094b\u0917 \u092a\u094d\u0930\u0924\u093f\u092c\u0902\u0927\u093f\u0924 \u0939\u0948\u0964",
+      "message_hi": "अमानक इकाई प्रतीकों (जैसे gms, ltr, oz) का प्रयोग प्रतिबंधित है।",
       "fix_hint_en": "Use standard SI symbols: 'g' for grams, 'kg' for kilograms, 'ml' for millilitres, 'L' for litres."
     },
     {
@@ -556,7 +652,7 @@
         ]
       ],
       "message_en": "Compliant: Prohibition of Qualifier Words in Net Quantity",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e \u092e\u0947\u0902 \u0935\u093f\u0936\u0947\u0937\u0923 \u0936\u092c\u094d\u0926\u094b\u0902 \u0915\u093e \u0928\u093f\u0937\u0947\u0927",
+      "message_hi": "अनुपालन: शुद्ध मात्रा में विशेषण शब्दों का निषेध",
       "fix_hint_en": null
     },
     {
@@ -568,7 +664,7 @@
       "expected": "Field mfg_date.month is missing or empty; Field mfg_date.year is missing or empty",
       "evidence_bbox": null,
       "message_en": "Month and year of manufacture, packing, or import must be declared.",
-      "message_hi": "\u0928\u093f\u0930\u094d\u092e\u093e\u0923, \u092a\u0948\u0915\u093f\u0902\u0917 \u092f\u093e \u0906\u092f\u093e\u0924 \u0915\u093e \u092e\u0939\u0940\u0928\u093e \u0914\u0930 \u0935\u0930\u094d\u0937 \u0918\u094b\u0937\u093f\u0924 \u0915\u093f\u092f\u093e \u091c\u093e\u0928\u093e \u091a\u093e\u0939\u093f\u090f\u0964",
+      "message_hi": "निर्माण, पैकिंग या आयात का महीना और वर्ष घोषित किया जाना चाहिए।",
       "fix_hint_en": "Declare date in format 'MM/YYYY' or 'Month YYYY' near the Mfd/Pkd label."
     },
     {
@@ -608,9 +704,9 @@
           157.0
         ]
       ],
-      "message_en": "MRP must be declared in Indian Rupees (\u20b9/Rs) and include the phrase 'Incl. of all taxes'.",
-      "message_hi": "MRP \u092d\u093e\u0930\u0924\u0940\u092f \u0930\u0941\u092a\u092f\u0947 (\u20b9/Rs) \u092e\u0947\u0902 \u0918\u094b\u0937\u093f\u0924 \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f \u0914\u0930 '\u0938\u092d\u0940 \u0915\u0930\u094b\u0902 \u0938\u0939\u093f\u0924' \u0932\u093f\u0916\u093e \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f\u0964",
-      "fix_hint_en": "Format MRP as 'MRP \u20b9 [Amount] (Incl. of all taxes)'."
+      "message_en": "MRP must be declared in Indian Rupees (₹/Rs) and include the phrase 'Incl. of all taxes'.",
+      "message_hi": "MRP भारतीय रुपये (₹/Rs) में घोषित होना चाहिए और 'सभी करों सहित' लिखा होना चाहिए।",
+      "fix_hint_en": "Format MRP as 'MRP ₹ [Amount] (Incl. of all taxes)'."
     },
     {
       "rule_id": "R14",
@@ -621,8 +717,8 @@
       "expected": "Field unit_sale_price.value is missing or empty; Unit sale price missing",
       "evidence_bbox": null,
       "message_en": "Unit Sale Price must be declared and match MRP divided by net quantity.",
-      "message_hi": "\u0907\u0915\u093e\u0908 \u092c\u093f\u0915\u094d\u0930\u0940 \u092e\u0942\u0932\u094d\u092f \u0918\u094b\u0937\u093f\u0924 \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f \u0914\u0930 MRP \u0915\u094b \u0936\u0941\u0926\u094d\u0927 \u092e\u093e\u0924\u094d\u0930\u093e \u0938\u0947 \u0935\u093f\u092d\u093e\u091c\u093f\u0924 \u0915\u0930\u0928\u0947 \u092a\u0930 \u092e\u0947\u0932 \u0916\u093e\u0928\u093e \u091a\u093e\u0939\u093f\u090f\u0964",
-      "fix_hint_en": "Declare Unit Sale Price as '\u20b9 X.XX per g/ml/kg/L'."
+      "message_hi": "इकाई बिक्री मूल्य घोषित होना चाहिए और MRP को शुद्ध मात्रा से विभाजित करने पर मेल खाना चाहिए।",
+      "fix_hint_en": "Declare Unit Sale Price as '₹ X.XX per g/ml/kg/L'."
     },
     {
       "rule_id": "R15",
@@ -650,7 +746,7 @@
         ]
       ],
       "message_en": "Consumer care details must include telephone/toll-free number AND email AND contact address/name.",
-      "message_hi": "\u0909\u092a\u092d\u094b\u0915\u094d\u0924\u093e \u0938\u0939\u093e\u092f\u0924\u093e \u092e\u0947\u0902 \u092b\u094b\u0928 \u0928\u0902\u092c\u0930, \u0908\u092e\u0947\u0932 \u0914\u0930 \u0938\u0902\u092a\u0930\u094d\u0915 \u0928\u093e\u092e/\u092a\u0924\u093e \u0936\u093e\u092e\u093f\u0932 \u0939\u094b\u0928\u093e \u0905\u0928\u093f\u0935\u093e\u0930\u094d\u092f \u0939\u0948\u0964",
+      "message_hi": "उपभोक्ता सहायता में फोन नंबर, ईमेल और संपर्क नाम/पता शामिल होना अनिवार्य है।",
       "fix_hint_en": "Provide telephone, email, and postal address of the person/office to be contacted."
     },
     {
@@ -679,7 +775,7 @@
         ]
       ],
       "message_en": "Declarations must be legible, prominent, and clearly visible. Retake photo with better lighting, focus, or less glare if unclear.",
-      "message_hi": "\u0918\u094b\u0937\u0923\u093e\u090f\u0902 \u0938\u0941\u092a\u093e\u0920\u094d\u092f, \u092a\u094d\u0930\u092e\u0941\u0916 \u0914\u0930 \u0938\u094d\u092a\u0937\u094d\u091f \u0930\u0942\u092a \u0938\u0947 \u0926\u093f\u0916\u093e\u0908 \u0926\u0947\u0928\u0947 \u0935\u093e\u0932\u0940 \u0939\u094b\u0928\u0940 \u091a\u093e\u0939\u093f\u090f\u0964 \u092f\u0926\u093f \u0938\u094d\u092a\u0937\u094d\u091f \u0928 \u0939\u094b \u0924\u094b \u092c\u0947\u0939\u0924\u0930 \u092a\u094d\u0930\u0915\u093e\u0936, \u092b\u094b\u0915\u0938 \u092f\u093e \u0915\u092e \u091a\u092e\u0915 \u0915\u0947 \u0938\u093e\u0925 \u092b\u094b\u091f\u094b \u092a\u0941\u0928\u0903 \u0932\u0947\u0902\u0964",
+      "message_hi": "घोषणाएं सुपाठ्य, प्रमुख और स्पष्ट रूप से दिखाई देने वाली होनी चाहिए। यदि स्पष्ट न हो तो बेहतर प्रकाश, फोकस या कम चमक के साथ फोटो पुनः लें।",
       "fix_hint_en": null
     },
     {
@@ -691,7 +787,7 @@
       "expected": "Compliant declaration",
       "evidence_bbox": null,
       "message_en": "Compliant: Declarations Script (Hindi or English)",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0918\u094b\u0937\u0923\u093e\u0913\u0902 \u0915\u0940 \u0932\u093f\u092a\u093f (\u0939\u093f\u0902\u0926\u0940 \u092f\u093e \u0905\u0902\u0917\u094d\u0930\u0947\u091c\u0940)",
+      "message_hi": "अनुपालन: घोषणाओं की लिपि (हिंदी या अंग्रेजी)",
       "fix_hint_en": null
     },
     {
@@ -720,7 +816,7 @@
         ]
       ],
       "message_en": "Compliant: Small Package Exemption (<=10g/ml)",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u091b\u094b\u091f\u0947 \u092a\u0948\u0915\u0947\u091c \u0915\u0940 \u091b\u0942\u091f (<=10g/ml)",
+      "message_hi": "अनुपालन: छोटे पैकेज की छूट (<=10g/ml)",
       "fix_hint_en": null
     },
     {
@@ -749,7 +845,7 @@
         ]
       ],
       "message_en": "Compliant: Bulk & Industrial Package Exclusion (>25kg/L)",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0925\u094b\u0915 \u0914\u0930 \u0914\u0926\u094d\u092f\u094b\u0917\u093f\u0915 \u092a\u0948\u0915\u0947\u091c \u091b\u0942\u091f (>25kg/L)",
+      "message_hi": "अनुपालन: थोक और औद्योगिक पैकेज छूट (>25kg/L)",
       "fix_hint_en": null
     },
     {
@@ -790,20 +886,561 @@
         ]
       ],
       "message_en": "Compliant: Food Category Alignment (FSS Act)",
-      "message_hi": "\u0905\u0928\u0941\u092a\u093e\u0932\u0928: \u0916\u093e\u0926\u094d\u092f \u0936\u094d\u0930\u0947\u0923\u0940 \u0938\u092e\u0928\u094d\u0935\u092f (FSS \u090f\u0915\u094d\u091f)",
+      "message_hi": "अनुपालन: खाद्य श्रेणी समन्वय (FSS एक्ट)",
       "fix_hint_en": null
+    },
+    {
+      "rule_id": "R20",
+      "rule_ref": "Rule 8(1)",
+      "verdict": "NEEDS_REVIEW",
+      "severity": "medium",
+      "extracted": "Clear space (Rule 8(1)) — above: 0.23x (need 1.0x); below: 2.87x (need 1.0x); left: clear; right: clear",
+      "expected": "Clear space (Rule 8(1)) — above: 0.23x (need 1.0x); below: 2.87x (need 1.0x); left: clear; right: clear",
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "evidence_refs": [
+        {
+          "surface_id": 1,
+          "bbox": [
+            [
+              27.0,
+              103.0
+            ],
+            [
+              113.0,
+              103.0
+            ],
+            [
+              113.0,
+              121.0
+            ],
+            [
+              27.0,
+              121.0
+            ]
+          ]
+        }
+      ],
+      "message_en": "Other text sits closer to the net quantity than Rule 8(1) allows — confirm with a graduated scale.",
+      "message_hi": "अन्य पाठ शुद्ध मात्रा के इतना पास है जितना नियम 8(1) अनुमति नहीं देता — स्केल से पुष्टि करें।",
+      "fix_hint_en": null,
+      "trail": [
+        {
+          "step": "measure",
+          "detail": "Estimated from OCR boxes"
+        },
+        {
+          "step": "predicate_check",
+          "detail": "Clear space (Rule 8(1)) — above: 0.23x (need 1.0x); below: 2.87x (need 1.0x); left: clear; right: clear"
+        },
+        {
+          "step": "verdict",
+          "detail": "Final verdict NEEDS_REVIEW"
+        }
+      ]
+    },
+    {
+      "rule_id": "R19",
+      "rule_ref": "Rule 7(3)",
+      "verdict": "PASS",
+      "severity": "low",
+      "extracted": "net quantity: width/height = 0.421 (min 0.333); MRP: width/height = 0.366 (min 0.333)",
+      "expected": "net quantity: width/height = 0.421 (min 0.333); MRP: width/height = 0.366 (min 0.333)",
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "evidence_refs": [
+        {
+          "surface_id": 1,
+          "bbox": [
+            [
+              27.0,
+              103.0
+            ],
+            [
+              113.0,
+              103.0
+            ],
+            [
+              113.0,
+              121.0
+            ],
+            [
+              27.0,
+              121.0
+            ]
+          ]
+        }
+      ],
+      "message_en": "Compliant: Character width-to-height ratio requirement",
+      "message_hi": "अनुपालन: अक्षर की चौड़ाई और ऊंचाई का अनुपात नियम",
+      "fix_hint_en": null,
+      "trail": [
+        {
+          "step": "measure",
+          "detail": "Estimated from OCR boxes"
+        },
+        {
+          "step": "predicate_check",
+          "detail": "net quantity: width/height = 0.421 (min 0.333); MRP: width/height = 0.366 (min 0.333)"
+        },
+        {
+          "step": "verdict",
+          "detail": "Final verdict PASS"
+        }
+      ]
+    },
+    {
+      "rule_id": "R22",
+      "rule_ref": "Rule 9(1)(b)",
+      "verdict": "NEEDS_REVIEW",
+      "severity": "medium",
+      "extracted": "MRP: contrast 1.6:1 (min 3.0:1); net quantity: contrast 11.4:1 (min 3.0:1)",
+      "expected": "MRP: contrast 1.6:1 (min 3.0:1); net quantity: contrast 11.4:1 (min 3.0:1)",
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "evidence_refs": [
+        {
+          "surface_id": 1,
+          "bbox": [
+            [
+              27.0,
+              103.0
+            ],
+            [
+              113.0,
+              103.0
+            ],
+            [
+              113.0,
+              121.0
+            ],
+            [
+              27.0,
+              121.0
+            ]
+          ]
+        }
+      ],
+      "message_en": "Low luminance contrast between the MRP numerals and their background — confirm legibility on the pack.",
+      "message_hi": "MRP के अंकों और पृष्ठभूमि के बीच कम कंट्रास्ट — पैक पर पठनीयता की पुष्टि करें।",
+      "fix_hint_en": null,
+      "trail": [
+        {
+          "step": "measure",
+          "detail": "Estimated from OCR boxes"
+        },
+        {
+          "step": "predicate_check",
+          "detail": "MRP: contrast 1.6:1 (min 3.0:1); net quantity: contrast 11.4:1 (min 3.0:1)"
+        },
+        {
+          "step": "verdict",
+          "detail": "Final verdict NEEDS_REVIEW"
+        }
+      ]
+    },
+    {
+      "rule_id": "R17",
+      "rule_ref": "Rule 18(2A)",
+      "verdict": "INFO",
+      "severity": "high",
+      "extracted": null,
+      "expected": null,
+      "evidence_bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "evidence_refs": [
+        {
+          "surface_id": 1,
+          "bbox": [
+            [
+              27.0,
+              103.0
+            ],
+            [
+              113.0,
+              103.0
+            ],
+            [
+              113.0,
+              121.0
+            ],
+            [
+              27.0,
+              121.0
+            ]
+          ]
+        }
+      ],
+      "message_en": "No earlier scan of the same commodity in this session to compare MRPs with.",
+      "message_hi": "इस सत्र में उसी वस्तु का कोई पहले का स्कैन नहीं है जिससे MRP की तुलना हो सके।",
+      "fix_hint_en": null,
+      "trail": [
+        {
+          "step": "measure",
+          "detail": "Estimated from OCR boxes"
+        },
+        {
+          "step": "predicate_check",
+          "detail": null
+        },
+        {
+          "step": "verdict",
+          "detail": "Final verdict INFO"
+        }
+      ]
     }
   ],
   "summary": {
     "status": "Non-compliant",
     "counts": {
-      "PASS": 8,
+      "PASS": 9,
       "FAIL": 7,
-      "NEEDS_REVIEW": 2,
-      "N/A": 2
+      "NEEDS_REVIEW": 4,
+      "N/A": 2,
+      "INFO": 1
     }
   },
   "rules_version": "0.1.0+f7c1af30ab8c",
   "model_version": "rapidocr_1.4.4",
-  "extractor_version": "0.1.0"
+  "extractor_version": "0.1.0",
+  "merged": {
+    "manufacturer": null,
+    "packer": null,
+    "importer": {
+      "value": "IMPORTED SNACK",
+      "raw": "IMPORTED SNACK",
+      "bbox": [
+        [
+          28.0,
+          29.0
+        ],
+        [
+          118.0,
+          29.0
+        ],
+        [
+          118.0,
+          46.0
+        ],
+        [
+          28.0,
+          46.0
+        ]
+      ],
+      "confidence": 0.9724,
+      "source_line_ids": [
+        0
+      ],
+      "source": "block_absorbed_stop_new_key",
+      "declared_elsewhere": null,
+      "name": "IMPORTED SNACK",
+      "address": null,
+      "pin": null,
+      "state": null,
+      "role": "importer"
+    },
+    "marketer": null,
+    "entities": [
+      {
+        "value": "IMPORTED SNACK",
+        "raw": "IMPORTED SNACK",
+        "bbox": [
+          [
+            28.0,
+            29.0
+          ],
+          [
+            118.0,
+            29.0
+          ],
+          [
+            118.0,
+            46.0
+          ],
+          [
+            28.0,
+            46.0
+          ]
+        ],
+        "confidence": 0.9724,
+        "source_line_ids": [
+          0
+        ],
+        "source": "block_absorbed_stop_new_key",
+        "declared_elsewhere": null,
+        "name": "IMPORTED SNACK",
+        "address": null,
+        "pin": null,
+        "state": null,
+        "role": "importer"
+      }
+    ],
+    "country_of_origin": null,
+    "generic_name": null,
+    "net_quantity": {
+      "value": 200.0,
+      "raw": "200 gms",
+      "bbox": [
+        [
+          27.0,
+          103.0
+        ],
+        [
+          113.0,
+          103.0
+        ],
+        [
+          113.0,
+          121.0
+        ],
+        [
+          27.0,
+          121.0
+        ]
+      ],
+      "confidence": 0.9789,
+      "source_line_ids": [
+        2
+      ],
+      "source": "same_line",
+      "declared_elsewhere": null,
+      "unit": "g",
+      "raw_unit": "gms",
+      "unit_nonstandard": true,
+      "count": null,
+      "unit_value": null,
+      "multipack": false,
+      "qualifier_words": [],
+      "geometry": {
+        "clear_space": {
+          "rule": "8(1)",
+          "numeral_height_px": 21.6,
+          "line_box_height_px": 30.0,
+          "gaps": {
+            "above": {
+              "gap_px": 5.0,
+              "ratio": 0.23,
+              "required": 1.0,
+              "ok": false,
+              "neighbour_line_id": 0
+            },
+            "below": {
+              "gap_px": 62.0,
+              "ratio": 2.87,
+              "required": 1.0,
+              "ok": true,
+              "neighbour_line_id": 4
+            },
+            "left": {
+              "gap_px": null,
+              "ratio": null,
+              "required": 2.0,
+              "ok": true,
+              "neighbour_line_id": null
+            },
+            "right": {
+              "gap_px": null,
+              "ratio": null,
+              "required": 2.0,
+              "ok": true,
+              "neighbour_line_id": null
+            }
+          },
+          "all_ok": false,
+          "worst_direction": "above",
+          "method": "OCR line boxes; numeral height = 0.72 x line-box height (estimate)"
+        },
+        "aspect": {
+          "rule": "7(3)",
+          "avg_glyph_width_px": 9.1,
+          "cap_height_px": 21.6,
+          "ratio": 0.421,
+          "min_ratio": 0.333,
+          "ok": true,
+          "chars_measured": 14,
+          "method": "line-box width / characters x 0.8, over 0.72 x line-box height (estimates)"
+        }
+      },
+      "contrast": {
+        "rule": "9(1)(b)",
+        "ratio": 11.4,
+        "min_ratio": 3.0,
+        "ok": true,
+        "text_rgb": [
+          38,
+          38,
+          38
+        ],
+        "background_rgb": [
+          252,
+          252,
+          252
+        ],
+        "method": "Otsu split of the OCR box; WCAG relative-luminance ratio of cluster means"
+      }
+    },
+    "mrp": {
+      "value": 45.0,
+      "raw": "Rs 45",
+      "bbox": [
+        [
+          28.0,
+          141.0
+        ],
+        [
+          80.0,
+          141.0
+        ],
+        [
+          80.0,
+          157.0
+        ],
+        [
+          28.0,
+          157.0
+        ]
+      ],
+      "confidence": 0.9449,
+      "source_line_ids": [
+        3
+      ],
+      "source": "same_line",
+      "declared_elsewhere": null,
+      "currency": "INR",
+      "incl_taxes_phrase": false,
+      "paise": 0,
+      "contrast": {
+        "rule": "9(1)(b)",
+        "ratio": 1.6,
+        "min_ratio": 3.0,
+        "ok": false,
+        "text_rgb": [
+          206,
+          206,
+          206
+        ],
+        "background_rgb": [
+          255,
+          255,
+          255
+        ],
+        "method": "Otsu split of the OCR box; WCAG relative-luminance ratio of cluster means"
+      },
+      "geometry": {
+        "aspect": {
+          "rule": "7(3)",
+          "avg_glyph_width_px": 7.9,
+          "cap_height_px": 21.6,
+          "ratio": 0.366,
+          "min_ratio": 0.333,
+          "ok": true,
+          "chars_measured": 30,
+          "method": "line-box width / characters x 0.8, over 0.72 x line-box height (estimates)"
+        }
+      }
+    },
+    "unit_sale_price": null,
+    "mfg_date": null,
+    "best_before": null,
+    "consumer_care": {
+      "value": "CONSUMERCARE PHONE: 1800-999-000 ADDRESS MUMBAI",
+      "raw": "CONSUMERCARE PHONE: 1800-999-000 ADDRESS MUMBAI",
+      "bbox": [
+        [
+          28.0,
+          178.0
+        ],
+        [
+          311.0,
+          178.0
+        ],
+        [
+          311.0,
+          193.0
+        ],
+        [
+          28.0,
+          193.0
+        ]
+      ],
+      "confidence": 0.9982,
+      "source_line_ids": [
+        4
+      ],
+      "source": "block_absorbed_stop_max_gap",
+      "declared_elsewhere": null,
+      "name": "ADDRESS MUMBAI",
+      "address": null,
+      "phone": "1800-999-000",
+      "email": null
+    },
+    "scripts_detected": [
+      "latin"
+    ],
+    "multi_unit_note": false
+  }
 }

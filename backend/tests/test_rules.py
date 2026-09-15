@@ -6,7 +6,7 @@ import pytest
 from nirikshan.extract import extract
 from nirikshan.applicability import resolve
 from nirikshan.rules.engine import evaluate
-from nirikshan.schema import ContextModel
+from nirikshan.schema import ContextModel, WeighingInput, LotInput
 
 
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures", "rules")
@@ -63,6 +63,23 @@ def test_rule_fixtures(fixture_path):
             ctx.net_quantity_override = {"value": float(nq_val), "unit": "g"}
         elif isinstance(nq_val, dict):
             ctx.net_quantity_override = nq_val
+    if "weighing" in context_dict:
+        ctx.weighing = WeighingInput.model_validate(context_dict["weighing"])
+    if "lot" in context_dict:
+        ctx.lot = LotInput.model_validate(context_dict["lot"])
+    if "channel" in context_dict:
+        ctx.channel = context_dict["channel"]
+    if "geometry_checks" in context_dict:
+        ctx.geometry_checks = bool(context_dict["geometry_checks"])
+    if "dual_mrp" in context_dict:
+        ctx.dual_mrp = context_dict["dual_mrp"]
+    if "listing" in context_dict:
+        ctx.listing = context_dict["listing"]
+    # fixtures may supply measured contrast (R22): it cannot come from OCR text alone
+    for fname, cdata in (context_dict.get("contrast") or {}).items():
+        field = getattr(declarations, fname, None)
+        if field is not None:
+            field.contrast = cdata
 
     applicability = resolve(ctx, declarations)
     findings, summary = evaluate(declarations, applicability, context=ctx)

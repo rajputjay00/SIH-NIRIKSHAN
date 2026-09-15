@@ -39,6 +39,7 @@ def eval_check_block(
     declarations: Declarations,
     quality: Optional[Dict[str, Any]] = None,
     conflicts: Optional[List[Any]] = None,
+    context: Optional[ContextModel] = None,
 ) -> Tuple[bool, List[str], Any, Any, List[Dict[str, Any]], List[Dict[str, str]]]:
     """Evaluates a check node containing 'all' or 'any'.
     Returns (is_success, details_list, last_extracted_val, last_bbox, evidence_refs, pred_trail_steps).
@@ -54,7 +55,7 @@ def eval_check_block(
 
         for pred_item in preds:
             if "any" in pred_item:
-                ok, d_list, v, b, refs, steps = eval_check_block(pred_item, declarations, quality, conflicts)
+                ok, d_list, v, b, refs, steps = eval_check_block(pred_item, declarations, quality, conflicts, context)
                 details.extend(d_list)
                 pred_trail_steps.extend(steps)
                 if not ok:
@@ -67,7 +68,7 @@ def eval_check_block(
             else:
                 pred_name = list(pred_item.keys())[0]
                 params = pred_item[pred_name]
-                ok, msg, val, bbox, refs = eval_predicate(pred_name, params, declarations, quality, conflicts)
+                ok, msg, val, bbox, refs = eval_predicate(pred_name, params, declarations, quality, conflicts, context)
                 details.append(msg)
                 pred_trail_steps.append({"step": "predicate_check", "detail": f"Predicate '{pred_name}' -> {ok} ({msg})"})
                 if not ok:
@@ -90,7 +91,7 @@ def eval_check_block(
 
         for pred_item in preds:
             if "all" in pred_item:
-                ok, d_list, v, b, refs, steps = eval_check_block(pred_item, declarations, quality, conflicts)
+                ok, d_list, v, b, refs, steps = eval_check_block(pred_item, declarations, quality, conflicts, context)
                 details.extend(d_list)
                 pred_trail_steps.extend(steps)
                 if ok:
@@ -103,7 +104,7 @@ def eval_check_block(
             else:
                 pred_name = list(pred_item.keys())[0]
                 params = pred_item[pred_name]
-                ok, msg, val, bbox, refs = eval_predicate(pred_name, params, declarations, quality, conflicts)
+                ok, msg, val, bbox, refs = eval_predicate(pred_name, params, declarations, quality, conflicts, context)
                 details.append(msg)
                 pred_trail_steps.append({"step": "predicate_check", "detail": f"Predicate '{pred_name}' -> {ok} ({msg})"})
                 if ok:
@@ -218,7 +219,7 @@ def evaluate(
         trail.append({"step": "effective_date", "detail": f"In force on {ref_date}"})
 
         # Evaluate rule check
-        check_ok, details, extracted_val, bbox, evidence_refs, pred_steps = eval_check_block(rule["check"], declarations, quality, conflicts)
+        check_ok, details, extracted_val, bbox, evidence_refs, pred_steps = eval_check_block(rule["check"], declarations, quality, conflicts, context)
         trail.extend(pred_steps)
 
         if check_ok:
@@ -231,7 +232,7 @@ def evaluate(
                 unc_list = rule["on_uncertain"] if isinstance(rule["on_uncertain"], list) else [rule["on_uncertain"]]
                 for unc in unc_list:
                     if "when_pass" in unc:
-                        u_ok, _, _, _, _, _ = eval_check_block(unc["when_pass"], declarations, quality, conflicts)
+                        u_ok, _, _, _, _, _ = eval_check_block(unc["when_pass"], declarations, quality, conflicts, context)
                         if u_ok:
                             verdict = unc.get("verdict", verdict)
                             msg_en_final = unc.get("message_en", msg_en_final)
@@ -240,7 +241,7 @@ def evaluate(
                             unc_triggered = True
                             break
                     elif "check" in unc:
-                        u_ok, _, _, _, _, _ = eval_check_block(unc["check"], declarations, quality, conflicts)
+                        u_ok, _, _, _, _, _ = eval_check_block(unc["check"], declarations, quality, conflicts, context)
                         if u_ok:
                             verdict = unc.get("verdict", verdict)
                             msg_en_final = unc.get("message_en", msg_en_final)
@@ -279,7 +280,7 @@ def evaluate(
                 unc_list = rule["on_uncertain"] if isinstance(rule["on_uncertain"], list) else [rule["on_uncertain"]]
                 for unc in unc_list:
                     if "check" in unc:
-                        u_ok, _, _, _, _, _ = eval_check_block(unc["check"], declarations, quality, conflicts)
+                        u_ok, _, _, _, _, _ = eval_check_block(unc["check"], declarations, quality, conflicts, context)
                         if u_ok:
                             verdict = unc.get("verdict", "NEEDS_REVIEW")
                             msg_en_final = unc.get("message_en", msg_en_final)

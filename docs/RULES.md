@@ -1,6 +1,6 @@
 # Nirikshan Legal Metrology Rules Catalogue
 
-Total Rules Encoded: **34** (26 Implemented Engine Rules, 8 Planned M3 Rules)
+Total LMPC Rules: **34** (34 Implemented, 0 Planned M3) + **5** cross-surface conflict checks (C01–C05)
 
 | ID | Rule Ref | Title (EN) | Severity | Status | Verdict Types |
 |---|---|---|---|---|---|
@@ -20,21 +20,26 @@ Total Rules Encoded: **34** (26 Implemented Engine Rules, 8 Planned M3 Rules)
 | **R14** | `Rule 6(11)` | Unit Sale Price (USP) Declaration | medium | `Implemented` | FAIL, NEEDS_REVIEW, PASS |
 | **R15** | `Rule 6(2)` | Consumer Care Cell Details | medium | `Implemented` | FAIL, PASS |
 | **R16** | `Rule 6(3)–(4)` | Consistent MRP Declaration (No Altered/Sticker MRP) | high | `Implemented` | FAIL, NEEDS_REVIEW, PASS |
-| **R17** | `Rule 18(2A)` | No different MRPs for identical pre-packaged commodity | high | `Planned` | FAIL, PASS |
-| **R19** | `Rule 7(3)` | Character width-to-height ratio requirement | low | `Planned` | FAIL, NEEDS_REVIEW, PASS |
-| **R20** | `Rule 8(1)` | Clear space around net quantity declaration | medium | `Planned` | FAIL, PASS |
+| **R17** | `Rule 18(2A)` | No different MRPs for identical pre-packaged commodity | high | `Implemented` | FAIL, INFO, PASS |
+| **R19** | `Rule 7(3)` | Character width-to-height ratio requirement | low | `Implemented` | FAIL, INFO, NEEDS_REVIEW, PASS |
+| **R20** | `Rule 8(1)` | Clear space around net quantity declaration | medium | `Implemented` | FAIL, INFO, PASS |
 | **R21** | `Rule 9(1)(a)` | Legibility & Prominence of Declarations | high | `Implemented` | FAIL, NEEDS_REVIEW, PASS |
-| **R22** | `Rule 9(1)(b)` | Numeral and letter contrast against background | medium | `Planned` | FAIL, NEEDS_REVIEW, PASS |
+| **R22** | `Rule 9(1)(b)` | Numeral and letter contrast against background | medium | `Implemented` | FAIL, INFO, NEEDS_REVIEW, PASS |
 | **R23** | `Rule 9(4)` | Declarations Script (Hindi or English) | high | `Implemented` | FAIL, PASS |
 | **R24** | `Rule 9(2)–(3)` | Declarations Readability Through Liquid / Outer Wrapper | medium | `Implemented` | FAIL, PASS |
 | **R25** | `Rule 26(a)` | Small Package Exemption (<=10g/ml) | low | `Implemented` | FAIL, PASS |
 | **R26** | `Rule 3` | Bulk & Industrial Package Exclusion (>25kg/L) | low | `Implemented` | FAIL, PASS |
 | **R27** | `Rule 24` | Wholesale Package Declarations | high | `Implemented` | FAIL, PASS |
 | **R28** | `Rule 6(5)` | Combination / Multi-piece Pack Component Declarations | medium | `Implemented` | FAIL, PASS |
-| **R29** | `Rule 6(10)` | E-commerce platform mandatory declarations | high | `Planned` | FAIL, PASS |
-| **R30** | `Rule 31` | E-commerce MRP vs Net Qty font parity in advertisements | medium | `Planned` | FAIL, NEEDS_REVIEW, PASS |
-| **R31** | `Rule 22, First Schedule` | Net quantity deficiency within Maximum Permissible Error (MPE) | high | `Planned` | FAIL, PASS |
-| **R32** | `Rule 19–21, Schedules V–VII` | Lot sampling inspection and statutory Form A/B testing | high | `Planned` | FAIL, PASS |
+| **R29** | `Rule 6(10)` | E-commerce platform mandatory declarations | high | `Implemented` | FAIL, PASS |
+| **R30** | `Rule 31` | E-commerce MRP vs Net Qty font parity in advertisements | medium | `Implemented` | FAIL, NEEDS_REVIEW, PASS |
+| **R31** | `Rule 22, First Schedule` | Net quantity deficiency within Maximum Permissible Error (MPE) | high | `Implemented` | FAIL, INFO, NEEDS_REVIEW, PASS |
+| **R32** | `Rule 19–21, Schedules V–VII` | Lot sampling inspection and statutory Form A/B testing | high | `Implemented` | FAIL, INFO, NEEDS_REVIEW, PASS |
 | **R33** | `Rule 6(4A)` | GTIN / Barcode Declaration | low | `Implemented` | FAIL, INFO, PASS |
 | **R34** | `Rules 14–17` | Dimensions / Sheet Count Declaration for Specific Categories | low | `Implemented` | FAIL, NEEDS_REVIEW, PASS |
 | **R35** | `Rule 7(5) / Rule 6(1)(a) Expl. III` | Food Category Alignment (FSS Act) | low | `Implemented` | FAIL, PASS |
+| **C01** | `Rule 18(2A) / Rule 6(3)` | Cross-Surface MRP Conflict | high | `Implemented` | FAIL, PASS |
+| **C02** | `Rule 6(1)(c)` | Cross-Surface Net Quantity Conflict | medium | `Implemented` | FAIL, PASS |
+| **C03** | `Rule 6(1)(d)` | Cross-Surface Date Conflict | medium | `Implemented` | FAIL, PASS |
+| **C04** | `Rule 6(1)(a)` | Cross-Surface Manufacturer Conflict | medium | `Implemented` | FAIL, PASS |
+| **C05** | `Rule 6(1)(aa)` | Cross-Surface Country of Origin Conflict | high | `Implemented` | FAIL, PASS |

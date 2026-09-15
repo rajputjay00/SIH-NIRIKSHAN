@@ -1,0 +1,84 @@
+{
+  "lines": [
+    {
+      "text": "MRP ₹100.00 (Incl. of all taxes)",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          10,
+          10
+        ],
+        [
+          310,
+          10
+        ],
+        [
+          310,
+          40
+        ],
+        [
+          10,
+          40
+        ]
+      ]
+    },
+    {
+      "text": "Net Qty: 500 g",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          10,
+          100
+        ],
+        [
+          170,
+          100
+        ],
+        [
+          170,
+          130
+        ],
+        [
+          10,
+          130
+        ]
+      ]
+    },
+    {
+      "text": "Mfd by: Test Foods Pvt Ltd, Satna 485001",
+      "confidence": 0.9,
+      "bbox": [
+        [
+          10,
+          190
+        ],
+        [
+          410,
+          190
+        ],
+        [
+          410,
+          220
+        ],
+        [
+          10,
+          220
+        ]
+      ]
+    }
+  ],
+  "context": {
+    "contrast": {
+      "mrp": {
+        "ratio": 3.0,
+        "min_ratio": 3.0,
+        "ok": true
+      },
+      "net_quantity": {
+        "ratio": 9.5,
+        "min_ratio": 3.0,
+        "ok": true
+      }
+    }
+  }
+}

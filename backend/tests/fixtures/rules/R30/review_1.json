@@ -1,0 +1,54 @@
+{
+  "lines": [
+    {
+      "text": "MRP ₹250.00 (inclusive of all taxes)",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          10,
+          10
+        ],
+        [
+          410,
+          10
+        ],
+        [
+          410,
+          50
+        ],
+        [
+          10,
+          50
+        ]
+      ]
+    },
+    {
+      "text": "Net Quantity: 5 kg",
+      "confidence": 0.95,
+      "bbox": [
+        [
+          10,
+          100
+        ],
+        [
+          250,
+          100
+        ],
+        [
+          250,
+          133
+        ],
+        [
+          10,
+          133
+        ]
+      ]
+    }
+  ],
+  "context": {
+    "channel": "ecommerce",
+    "listing": {
+      "mode": "screenshot"
+    }
+  }
+}

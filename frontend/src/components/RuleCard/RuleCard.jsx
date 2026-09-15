@@ -4,10 +4,12 @@ import { ChevronDown, ChevronUp, Eye, CheckSquare, Square, CheckCircle2 } from '
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useT } from '../../i18n/useT';
 import { Button } from '../Button/Button';
+import { MeasurementRows } from '../MeasurementRows/MeasurementRows';
 import styles from './RuleCard.module.css';
 
 export function RuleCard({
   finding,
+  measurements,
   onShowOnImage,
   isExpanded: defaultExpanded = false,
   isConfirmed = false,
@@ -114,6 +116,10 @@ export function RuleCard({
                 <span className={styles.detailLabel}>{t('expected_label')}:</span>
                 <span className={styles.detailValue}>{finding.expected}</span>
               </div>
+            )}
+
+            {measurements && (
+              <MeasurementRows geometry={measurements.geometry} contrast={measurements.contrast} />
             )}
 
             {fixHint && (

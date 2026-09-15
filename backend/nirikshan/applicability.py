@@ -4,8 +4,9 @@ from nirikshan.schema import ApplicabilityModel, ContextModel, Declarations
 
 ALL_RULE_IDS = [
     "R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09",
-    "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R21", "R23",
-    "R24", "R25", "R26", "R27", "R28", "R33", "R34", "R35",
+    "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R19", "R20",
+    "R21", "R22", "R23", "R24", "R25", "R26", "R27", "R28", "R29", "R30",
+    "R31", "R32", "R33", "R34", "R35",
     "C01", "C02", "C03", "C04", "C05"
 ]
 
@@ -61,6 +62,23 @@ def resolve(
     reasons: Dict[str, str] = {}
     applicable_rule_ids: List[str] = list(ALL_RULE_IDS)
     exempt_reason: Optional[str] = None
+
+    # 0. Listing mode (Rule 6(10) / Rule 31): only the platform-side rules apply
+    if channel in ("ecommerce", "e-commerce", "online"):
+        listing_rules = ["R29", "R30"]
+        reason_text = "Listing mode (Rule 6(10)): physical-pack rules are evaluated on the pack scan"
+        for rid in ALL_RULE_IDS:
+            if rid not in listing_rules:
+                reasons[rid] = reason_text
+        return ApplicabilityModel(
+            package_type=pkg_type,
+            category=cat,
+            is_import=is_import,
+            channel=channel,
+            exempt_reason=None,
+            applicable_rule_ids=listing_rules,
+            reasons=reasons,
+        )
 
     # 1. Category == drug (Rule 26(c))
     if cat == "drug":
@@ -201,6 +219,19 @@ def resolve(
         if "R28" in applicable_rule_ids:
             applicable_rule_ids.remove("R28")
             reasons["R28"] = "Rule 6(5): applies only to combination or multi-piece packages"
+
+    # R29/R30 apply only in listing mode
+    for rid in ("R29", "R30"):
+        if rid in applicable_rule_ids:
+            applicable_rule_ids.remove(rid)
+            reasons[rid] = "Rules 6(10)/31: apply only to e-commerce listings (listing mode)"
+
+    # R19/R20 OCR-box geometry — opt-in (scale card / geometry mode)
+    if not getattr(context, "geometry_checks", False):
+        for rid in ("R19", "R20"):
+            if rid in applicable_rule_ids:
+                applicable_rule_ids.remove(rid)
+                reasons[rid] = "Geometry checks off — enable geometry mode (scale card / measured edge) to estimate letter geometry"
 
     # R34 Textile / Sheets / Container dimensions declaration
     if cat not in ["textile", "sheets", "container"]:
