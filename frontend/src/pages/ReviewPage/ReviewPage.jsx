@@ -324,14 +324,50 @@ export function ReviewPage() {
                 <DeclarationCard label="Unit Sale Price" field={activeResult.declarations.unit_sale_price} />
                 <DeclarationCard label="Generic Name" field={activeResult.declarations.generic_name} />
                 <DeclarationCard label="Mfg Date" field={activeResult.declarations.mfg_date} />
-                <DeclarationCard label="Best Before" field={activeResult.declarations.best_before} />
               </div>
             )}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--grey-500)' }}>
-            <h3>Waiting for inspection scans...</h3>
-            <p>Scan a product label using your paired phone or upload an image on the left.</p>
+          <div className={styles.emptyStateContainer}>
+            <div className={styles.emptyStateHeader}>
+              <h3 className={styles.emptyStateTitle}>{t('review_waiting_title')}</h3>
+              <p className={styles.emptyStateSub}>{t('review_fetch_failed')}</p>
+            </div>
+
+            {/* 3-Step Pairing Explanation */}
+            <div className={styles.pairingStepsGrid}>
+              <div className={styles.stepBox}>
+                <span className={styles.stepTag}>{t('review_pairing_step1_title')}</span>
+                <span className={styles.stepText}>{t('review_pairing_step1_desc')}</span>
+              </div>
+              <div className={styles.stepBox}>
+                <span className={styles.stepTag}>{t('review_pairing_step2_title')}</span>
+                <span className={styles.stepText}>{t('review_pairing_step2_desc')}</span>
+              </div>
+              <div className={styles.stepBox}>
+                <span className={styles.stepTag}>{t('review_pairing_step3_title')}</span>
+                <span className={styles.stepText}>{t('review_pairing_step3_desc')}</span>
+              </div>
+            </div>
+
+            {/* Prominent Desktop Fallback Drop Zone */}
+            <div
+              className={styles.dropZonePrimary}
+              onClick={() => document.getElementById('review-upload-main').click()}
+            >
+              <Upload size={32} color="var(--blue-500)" />
+              <div>Or Drag &amp; Upload Inspection Photo Directly Here</div>
+              <span style={{ fontSize: '0.78rem', color: 'var(--grey-500)', fontWeight: 400 }}>
+                Supports PNG, JPEG, WEBP label images
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFallbackUpload}
+                id="review-upload-main"
+                style={{ display: 'none' }}
+              />
+            </div>
           </div>
         )}
       </div>

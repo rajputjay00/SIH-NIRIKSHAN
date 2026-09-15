@@ -205,13 +205,51 @@ export function DevComponents() {
         </div>
       </div>
 
-      {/* 13. Modals & Overlays */}
+      {/* 13. Modals & Interactive Triggers */}
       <div className={styles.section}>
         <div className={styles.sectionTitle}>13. Modals &amp; Interactive Triggers</div>
         <div className={styles.row}>
           <Button onClick={() => setShowSheet(true)}>Open Bottom Sheet</Button>
           <Button variant="secondary" onClick={() => setShowDrawer(true)}>Open Drawer</Button>
           <Button variant="ghost" onClick={() => setToastMsg('Sample notification error toast')}>Trigger Toast</Button>
+        </div>
+      </div>
+
+      {/* 14. Populated Empty State Panels */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>14. Populated Empty State Panels (App, Review, Listing)</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Card style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h4 style={{ margin: 0, color: 'var(--navy-900)' }}>14a. Inspection Page (/app) — Try a Sample Panel</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+              <div style={{ background: 'var(--grey-50)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--blue-200)' }}>
+                <strong>Multi-violation retail pack</strong>
+                <p style={{ fontSize: '0.78rem', margin: '4px 0 0', color: 'var(--grey-700)' }}>4 LMPC violations: missing manufacturer, PIN, MRP &amp; USP</p>
+              </div>
+              <div style={{ background: 'var(--grey-50)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--grey-200)' }}>
+                <strong>Small sachet (≤10g)</strong>
+                <p style={{ fontSize: '0.78rem', margin: '4px 0 0', color: 'var(--grey-700)' }}>Exempt under Rule 26(a) for small packages under 10g/10ml</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h4 style={{ margin: 0, color: 'var(--navy-900)' }}>14b. Review Desk (/review) — 3-Step Pairing Flow</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+              <div style={{ background: 'var(--grey-50)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--grey-200)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--blue-500)', fontFamily: 'var(--font-mono)' }}>01. PAIR DEVICE</span>
+                <p style={{ fontSize: '0.78rem', margin: '4px 0 0', color: 'var(--grey-700)' }}>Scan QR code on camera or enter session code</p>
+              </div>
+              <div style={{ background: 'var(--grey-50)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--grey-200)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--blue-500)', fontFamily: 'var(--font-mono)' }}>02. RUN SCAN</span>
+                <p style={{ fontSize: '0.78rem', margin: '4px 0 0', color: 'var(--grey-700)' }}>Capture 360° label photos and tap Run Scan</p>
+              </div>
+              <div style={{ background: 'var(--grey-50)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--grey-200)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--blue-500)', fontFamily: 'var(--font-mono)' }}>03. STREAM RESULTS</span>
+                <p style={{ fontSize: '0.78rem', margin: '4px 0 0', color: 'var(--grey-700)' }}>Findings and evidence overlays stream live via SSE</p>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
 

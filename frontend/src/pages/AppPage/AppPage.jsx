@@ -63,11 +63,66 @@ export function AppPage() {
 
   const surfaceSuggestions = ['front', 'back', 'crimp', 'side', 'bottom', 'other'];
 
+  const [availableSamples, setAvailableSamples] = useState([]);
+  const [rulesCatalogue, setRulesCatalogue] = useState([]);
+  const [rulesFetchError, setRulesFetchError] = useState(false);
+
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
+
+    const candidates = [
+      { id: 'four_violations', path: '/four_violations.png', name: 'four_violations.png', titleKey: 'try_sample_four_violations', descKey: 'try_sample_four_violations_desc' },
+      { id: 'compliant_1', path: '/compliant_1.png', name: 'compliant_1.png', titleKey: 'try_sample_compliant', descKey: 'try_sample_compliant_desc' },
+      { id: 'ten_gram_sachet', path: '/ten_gram_sachet.png', name: 'ten_gram_sachet.png', titleKey: 'try_sample_sachet', descKey: 'try_sample_sachet_desc' },
+    ];
+
+    Promise.all(candidates.map(async (cand) => {
+      try {
+        const res = await fetch(cand.path, { method: 'HEAD' });
+        return res.ok ? cand : null;
+      } catch {
+        return null;
+      }
+    })).then((results) => setAvailableSamples(results.filter(Boolean)));
+
+    const fetchRules = async () => {
+      try {
+        const res = await fetch('/api/rules');
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data.rules)
+            ? data.rules
+            : (Array.isArray(data) ? data : Object.values(data.rules || data || {}));
+          setRulesCatalogue(list.filter((r) => r && r.id));
+        } else {
+          setRulesFetchError(true);
+        }
+      } catch {
+        setRulesFetchError(true);
+      }
+    };
+    fetchRules();
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const handleLoadSample = async (samplePath, filename) => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch(samplePath);
+      if (!res.ok) throw new Error(`Sample ${filename} not found`);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: blob.type || 'image/png' });
+      const previewUrl = URL.createObjectURL(file);
+      setPanels([{ file, preview: previewUrl, surfaceTag: 'front' }]);
+    } catch (err) {
+      setErrorMsg(`Could not load sample: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Form Fields for Report
   const [officerName, setOfficerName] = useState(() => localStorage.getItem('nirikshan_officer') || '');
@@ -679,6 +734,74 @@ export function AppPage() {
           {t('run_scan_btn')}
         </Button>
       </div>
+
+      {/* 2. Try a Sample Row */}
+      {availableSamples.length > 0 && (
+        <div className={styles.sampleSection}>
+          <div className={styles.sectionHeading}>{t('try_sample_heading')}</div>
+          <p className={styles.helperText}>{t('try_sample_sub')}</p>
+          <div className={styles.sampleGrid}>
+            {availableSamples.map((s) => (
+              <div
+                key={s.id}
+                className={styles.sampleCard}
+                onClick={() => handleLoadSample(s.path, s.name)}
+              >
+                <div className={styles.sampleTitle}>{t(s.titleKey)}</div>
+                <div className={styles.sampleDesc}>{t(s.descKey)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. What Gets Checked Panel */}
+      <div className={styles.whatGetsCheckedCard}>
+        <div className={styles.sectionHeading}>{t('what_gets_checked_heading')}</div>
+        <p className={styles.helperText}>{t('what_gets_checked_note')}</p>
+        {rulesFetchError ? (
+          <div className={styles.mutedReason}>{t('app_rules_fetch_failed')}</div>
+        ) : (
+          <div className={styles.exampleRulesSection}>
+            <div className={styles.exampleRulesTitle}>{t('example_rules_heading')}</div>
+            <div className={styles.exampleRulesGrid}>
+              {(rulesCatalogue.length > 0
+                ? rulesCatalogue.slice(0, 4)
+                : [
+                    { id: 'R01', rule_ref: 'Rule 6(1)(a)', title_en: 'Manufacturer / Packer / Importer Name & Address', title_hi: 'निर्माता / पैकर / आयातकर्ता का नाम और पता' },
+                    { id: 'R02', rule_ref: 'Rule 10(1)', title_en: '6-Digit Postal Index Number (PIN)', title_hi: '6-अंकों का पिन कोड' },
+                    { id: 'R04', rule_ref: 'Rule 6(1)(e)', title_en: 'Maximum Retail Price (MRP) & Taxes', title_hi: 'अधिकतम खुदरा मूल्य (MRP) और कर' },
+                    { id: 'R07', rule_ref: 'Rule 6(1)(b)', title_en: 'Net Quantity Declaration & Standard Units', title_hi: 'शुद्ध मात्रा घोषणा और मानक इकाइयां' },
+                  ]
+              ).map((r) => (
+                <div key={r.id} className={styles.exampleRuleBox}>
+                  <div className={styles.exampleRuleHeader}>
+                    <span className={styles.exampleRuleRef}>{r.rule_ref || r.id}</span>
+                    <span className={styles.exampleRuleId}>{r.id}</span>
+                  </div>
+                  <div className={styles.exampleRuleName}>
+                    {lang === 'hi' && r.title_hi ? r.title_hi : (r.title_en || r.description || r.id)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Recent Scans in this session (omitted if empty) */}
+      {recentScans.length > 0 && (
+        <div className={styles.recentScansContainer}>
+          <span className={styles.recentTitle}>{t('recent_scans')}:</span>
+          <div className={styles.recentRow}>
+            {recentScans.map((s) => (
+              <span key={s.id} className={styles.recentTag}>
+                {s.filename} ({s.time})
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Toast message={errorMsg} onClose={() => setErrorMsg(null)} />
     </div>

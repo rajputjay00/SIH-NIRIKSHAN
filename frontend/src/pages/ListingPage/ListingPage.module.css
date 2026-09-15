@@ -146,3 +146,59 @@
   flex-direction: column;
   gap: 10px;
 }
+
+.emptyCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--white);
+  border: 1px solid var(--grey-100);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.emptyHead {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.emptySub {
+  font-size: 0.85rem;
+  color: var(--grey-700);
+  line-height: 1.4;
+}
+
+.declarationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.declItem {
+  background-color: var(--grey-50);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy-900);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fontNoteBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: var(--blue-700);
+  margin-top: 4px;
+}

@@ -157,6 +157,52 @@ export function ListingPage() {
           </div>
         </>
       )}
+
+      {!result && !busy && (
+        <div className={styles.emptyCard}>
+          <div className={styles.emptyHead}>{t('listing_scope_title')}</div>
+          <p className={styles.emptySub}>{t('listing_scope_desc')}</p>
+
+          <div className={styles.listLabel}>{t('listing_declarations_heading')}</div>
+          <div className={styles.declarationsGrid}>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Manufacturer / Packer / Importer</span>
+            </div>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Net Quantity &amp; Standard Units</span>
+            </div>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Maximum Retail Price (MRP)</span>
+            </div>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Unit Sale Price (USP)</span>
+            </div>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Country of Origin (Imports)</span>
+            </div>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Consumer Care Contact Details</span>
+            </div>
+            <div className={styles.declItem}>
+              <CheckCircle2 size={14} color="var(--blue-500)" />
+              <span>Mfg / Expiry / Best Before Date</span>
+            </div>
+          </div>
+
+          <div className={styles.fontNoteBox}>
+            <Info size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <span>{t('listing_font_note')}</span>
+          </div>
+
+          {error && <div className={styles.error}>{t('listing_error_reason')}: {error}</div>}
+        </div>
+      )}
     </div>
   );
 }
