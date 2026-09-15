@@ -34,7 +34,33 @@ export function DevComponents() {
     <div className={styles.devPage}>
       <h2>UI Component Gallery (/dev/components)</h2>
 
+      {/* 0. Government Console Shell Header & Brand Lockup */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>0. Government Console Shell Chrome</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--white)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--grey-100)' }}>
+          <div style={{ background: 'var(--navy-900)', color: 'var(--white)', padding: '6px 16px', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
+            <span>NIRIKSHAN · Legal Metrology Compliance &amp; Inspection System</span>
+            <span>EN | Backend Online</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <img src="/brand/mark-blue.svg" alt="Nirikshan Logo" height="32" />
+              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.1' }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy-900)' }}>NIRIKSHAN</span>
+                <span style={{ fontSize: '0.62rem', fontWeight: 600, color: 'var(--grey-500)', letterSpacing: '0.06em' }}>
+                  LEGAL METROLOGY COMPLIANCE<br />&amp; INSPECTION SYSTEM
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px', background: 'var(--grey-100)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--grey-300)' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Inspector J. Rajput</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 1. Logo */}
+
       <div className={styles.section}>
         <div className={styles.sectionTitle}>1. Logo</div>
         <div className={styles.row}>

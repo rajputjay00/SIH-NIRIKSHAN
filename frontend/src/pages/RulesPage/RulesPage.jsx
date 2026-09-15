@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, RotateCw } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import plannedRules from '../../data/planned_rules.json';
@@ -6,12 +7,20 @@ import styles from './RulesPage.module.css';
 
 export function RulesPage() {
   const { lang, setLang } = useT();
+  const [searchParams] = useSearchParams();
+  const urlQuery = searchParams.get('q') || '';
+
   const [allRules, setAllRules] = useState([]);
   const [rulesVersion, setRulesVersion] = useState('1.0.0');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(urlQuery);
   const [statusFilter, setStatusFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [flippedCards, setFlippedCards] = useState({});
+
+  useEffect(() => {
+    setSearch(urlQuery);
+  }, [urlQuery]);
+
 
   useEffect(() => {
     const fetchActiveRules = async () => {

@@ -7,7 +7,33 @@
   font-family: var(--font-sans);
 }
 
-.header {
+/* 1. Dark Navy Utility Strip */
+.utilityStrip {
+  background-color: var(--navy-900);
+  color: var(--white);
+  padding: 4px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  min-height: 28px;
+  z-index: 60;
+}
+
+.utilityTitle {
+  opacity: 0.9;
+}
+
+.utilityRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Sticky Header Container (Header + Nav) */
+.headerContainer {
   position: sticky;
   top: 0;
   z-index: 50;
@@ -15,39 +41,156 @@
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--glass-border);
-  padding: 12px 24px;
+  box-shadow: var(--shadow-card);
+}
+
+/* 2 & 3. Main Header Row */
+.headerMain {
+  padding: 8px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--grey-100);
 }
 
-.brandLink {
+.brandLockup {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
   color: var(--navy-900);
+}
+
+.brandTextGroup {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.wordmark {
+  font-size: 1.25rem;
   font-weight: 800;
-  font-size: 1.3rem;
+  color: var(--navy-900);
+  letter-spacing: 0.02em;
+}
+
+.sublabel {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--grey-500);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+/* Search Bar */
+.searchForm {
+  flex: 1;
+  max-width: 440px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--grey-500);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 7px 12px 7px 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-300);
+  background-color: var(--white);
+  color: var(--navy-900);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.searchInput:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+/* Header Right Actions */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.startCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: var(--blue-500);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.startCta:hover {
+  background-color: var(--blue-600);
+}
+
+.officerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--grey-100);
+  color: var(--navy-900);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid var(--grey-300);
+}
+
+.officerBadge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--grey-300);
+  color: var(--grey-700);
+  font-weight: 500;
+}
+
+/* 4. Second Nav Row */
+.headerNavRow {
+  padding: 4px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--white);
 }
 
 .nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 .navLink {
   text-decoration: none;
   color: var(--grey-700);
   font-weight: 600;
-  font-size: 0.92rem;
-  padding: 8px 14px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
+  font-size: 0.88rem;
+  padding: 6px 14px;
   border-radius: var(--radius-sm);
   transition: all var(--dur-fast) var(--ease-out);
+  position: relative;
 }
 
 .navLink:hover {
@@ -56,22 +199,26 @@
 }
 
 .activeNavLink {
-  color: var(--blue-700);
+  color: var(--navy-900);
   background-color: var(--blue-50);
+  font-weight: 700;
+  border-bottom: 2px solid var(--blue-500);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.navSubtext {
+  font-size: 0.78rem;
+  color: var(--grey-500);
+  font-weight: 500;
 }
 
+/* Main Content Area */
 .mainContent {
   flex: 1;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 20px 16px;
   position: relative;
 }
 
@@ -86,43 +233,123 @@
   pointer-events: none;
 }
 
+/* 5. Rebuilt Footer */
 .footer {
   border-top: 1px solid var(--grey-100);
   background-color: var(--white);
-  padding: 20px 24px;
+  padding: 32px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: var(--grey-500);
+  font-size: 0.85rem;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footerColTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footerLinkList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footerLink {
+  color: var(--grey-700);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.footerLink:hover {
+  color: var(--blue-600);
+}
+
+.legalText {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--grey-500);
+}
+
+.footerBottom {
+  border-top: 1px solid var(--grey-100);
+  padding-top: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  font-size: 0.82rem;
-  color: var(--grey-500);
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-.footerLeft {
+.footerBottomLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.footerRight {
+.psBadge {
+  font-weight: 700;
+  color: var(--navy-900);
+  font-size: 0.82rem;
+}
+
+.footerVersion {
   font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--grey-500);
 }
 
-@media (max-width: 640px) {
-  .header {
-    padding: 10px 14px;
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .utilityStrip {
+    padding: 4px 12px;
+    font-size: 0.7rem;
   }
-  .nav {
-    gap: 6px;
+  .headerMain {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 12px;
   }
-  .navLink {
-    padding: 4px 8px;
-    font-size: 0.82rem;
+  .searchForm {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
   }
-  .footer {
+  .headerNavRow {
+    padding: 4px 12px;
+    overflow-x: auto;
+  }
+  .navSubtext {
+    display: none;
+  }
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .footerBottom {
     flex-direction: column;
     align-items: flex-start;
   }
