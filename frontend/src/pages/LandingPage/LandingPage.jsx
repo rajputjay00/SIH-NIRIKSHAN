@@ -60,15 +60,15 @@ export function LandingPage() {
 
         if (rulesRes && rulesRes.ok) {
           const rData = await rulesRes.json();
-          const rObj = rData.rules || rData;
-          if (typeof rObj === 'object' && rObj !== null) {
-            const keys = Object.keys(rObj);
-            count = keys.filter((id) => id.startsWith('R')).length;
-            cCount = keys.filter((id) => id.startsWith('C')).length;
-          }
+          const rulesList = Array.isArray(rData.rules)
+            ? rData.rules
+            : (Array.isArray(rData) ? rData : Object.values(rData.rules || rData || {}));
+
+          count = rulesList.filter((r) => r && r.id && /^R/.test(r.id)).length;
+          cCount = rulesList.filter((r) => r && r.id && /^C/.test(r.id)).length;
           ver = rData.rules_version || rData.version || null;
         }
-        
+
         if (!ver && healthRes && healthRes.ok) {
           const hData = await healthRes.json();
           ver = hData.rules_version || null;
