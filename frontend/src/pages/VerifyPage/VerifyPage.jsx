@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useT } from '../../i18n/useT';
+import { getFullRuleRef } from '../../utils/ruleRefMap';
 import styles from './VerifyPage.module.css';
 
 export function VerifyPage() {
@@ -171,11 +172,16 @@ export function VerifyPage() {
                     : styles.verdictNa;
                   return (
                     <tr key={idx}>
-                      <td><strong>{f.rule_id}</strong></td>
+                      <td><strong>{getFullRuleRef(f)}</strong></td>
                       <td>
-                        <span className={`${styles.verdictChip} ${fClass}`}>
-                          {f.verdict}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span className={`${styles.verdictChip} ${fClass}`}>
+                            {f.verdict}
+                          </span>
+                          <span style={{ fontSize: '0.88rem', color: 'var(--grey-700)', fontWeight: 500 }}>
+                            · {t(`verdict_desc_${(f.verdict || 'N/A').replace(/[\/ ]/g, '_')}`) || t('verdict_desc_NA')}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   );

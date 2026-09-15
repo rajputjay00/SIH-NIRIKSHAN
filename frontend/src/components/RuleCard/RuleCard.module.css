@@ -33,24 +33,37 @@
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.75rem;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
 }
 
 .ruleRef {
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--grey-700);
   font-weight: 600;
   white-space: nowrap;
 }
 
+.verdictBadgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .verdictBadge {
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.verdictPlainLine {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--navy-900);
 }
 
 .badgePASS { background-color: var(--pass-bg); color: var(--pass); }
@@ -75,7 +88,9 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   user-select: none;
-  font-size: 0.88rem;
+  font-size: 1rem;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .confirmedText {
@@ -88,12 +103,20 @@
   font-weight: 500;
 }
 
+.verdictExplanation {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--grey-700);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
 .message {
   margin-top: 8px;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: var(--navy-900);
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .detailsBody {
@@ -103,32 +126,37 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .detailItem {
   display: flex;
   gap: 8px;
+  font-size: 1rem;
 }
 
 .detailLabel {
   font-weight: 600;
   color: var(--grey-500);
-  min-width: 80px;
+  min-width: 90px;
+  font-size: 0.88rem;
 }
 
 .detailValue {
   color: var(--navy-900);
   word-break: break-word;
+  font-size: 1.05rem;
 }
 
 .fixHint {
   background-color: var(--review-bg);
   color: var(--review);
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
   margin-top: 4px;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .actions {
@@ -142,11 +170,15 @@
   color: var(--blue-500);
   border: 1px solid var(--blue-200);
   border-radius: var(--radius-sm);
-  padding: 3px 10px;
-  font-size: 0.78rem;
+  padding: 6px 14px;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-out);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .whyBtn:hover {
@@ -157,9 +189,9 @@
   background-color: #F3E8FF;
   color: #7E22CE;
   border: 1px solid #E9D5FF;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
 }
 

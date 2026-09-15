@@ -165,7 +165,7 @@ export function TolPanel({ declaredField, onFinding }) {
             <Stat label={t('tol_measured_net')} value={`${fmt(single.net_base)} ${single.base_unit}`} />
             <Stat label={t('tol_error')} value={`${single.error_base > 0 ? '+' : ''}${fmt(single.error_base)} ${single.base_unit}`} tone={single.within_mpe ? 'pass' : 'fail'} />
             <Stat label={t('tol_mpe')} value={`${fmt(single.mpe_base)} ${single.base_unit} (${single.mpe_band})`} />
-            {single.exceeds_2x_mpe && <Stat label={t('tol_aggravated')} value=">2×MPE" tone="fail" />}
+            {single.exceeds_2x_mpe && <Stat label={t('tol_aggravated')} value=">2× maximum permissible error (MPE)" tone="fail" />}
           </div>
           <RuleCard finding={single.finding} />
         </div>

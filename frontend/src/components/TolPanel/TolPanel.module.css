@@ -13,15 +13,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 16px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
   background: var(--white);
   color: var(--grey-700);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-out);
+  box-sizing: border-box;
 }
 
 .modeActive {
@@ -54,7 +56,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--grey-700);
 }
@@ -67,11 +69,12 @@
 .input,
 .select,
 .textarea {
-  padding: 8px 10px;
+  padding: 8px 12px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
   font-family: var(--font-mono);
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--navy-900);
   background: var(--white);
   width: 100%;
@@ -91,8 +94,9 @@
 }
 
 .hint {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--grey-500);
+  line-height: 1.5;
 }
 
 .actions {
@@ -124,7 +128,7 @@
 }
 
 .statLabel {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--grey-500);
@@ -134,7 +138,7 @@
 .statValue {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: var(--navy-900);
   margin-top: 2px;
 }
@@ -147,14 +151,16 @@
 .tone_review .statValue { color: var(--review); }
 
 .reason {
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   color: var(--fail);
   font-weight: 600;
+  line-height: 1.5;
 }
 
 .note {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--grey-500);
+  line-height: 1.5;
 }
 
 .error {
@@ -162,12 +168,13 @@
   border-radius: var(--radius-sm);
   background: var(--fail-bg);
   color: var(--fail);
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 600;
+  line-height: 1.5;
 }
 
 .footnote {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--grey-500);
-  line-height: 1.4;
+  line-height: 1.5;
 }

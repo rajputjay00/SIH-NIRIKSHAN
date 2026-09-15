@@ -15,8 +15,9 @@
 
 .subtitle {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--grey-500);
+  line-height: 1.5;
 }
 
 .form,
@@ -30,7 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--grey-700);
 }
@@ -39,10 +40,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 8px 12px;
+  min-height: 44px;
   border: 1px solid var(--grey-300);
   border-radius: var(--radius-sm);
   background: var(--white);
+  box-sizing: border-box;
 }
 
 .input {
@@ -50,7 +53,7 @@
   outline: none;
   flex: 1;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--navy-900);
   background: transparent;
 }
@@ -67,10 +70,10 @@
 }
 
 .hint {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 400;
   color: var(--grey-500);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .error {
@@ -78,21 +81,22 @@
   border-radius: var(--radius-sm);
   background: var(--fail-bg);
   color: var(--fail);
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-weight: 600;
+  line-height: 1.5;
 }
 
 .blockHead {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--navy-900);
 }
 
 .listLabel {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -113,8 +117,8 @@
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  font-size: 0.8rem;
-  line-height: 1.35;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .itemOk { color: var(--pass); }
@@ -126,10 +130,10 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--grey-50);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: var(--grey-700);
 }
 
@@ -159,15 +163,15 @@
 }
 
 .emptyHead {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--navy-900);
 }
 
 .emptySub {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--grey-700);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .declarationsGrid {
@@ -182,7 +186,7 @@
   border: 1px solid var(--grey-200);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--navy-900);
   display: flex;
@@ -198,7 +202,8 @@
   border: 1px solid var(--blue-200);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--blue-700);
+  line-height: 1.5;
   margin-top: 4px;
 }

@@ -41,19 +41,23 @@
   flex: 1;
   min-width: 220px;
   padding: 10px 14px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   outline: none;
+  box-sizing: border-box;
 }
 
 .selectInput {
   padding: 10px 14px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   outline: none;
   background: white;
+  box-sizing: border-box;
 }
 
 .cardsGrid {
@@ -64,7 +68,7 @@
 
 .flipCard {
   perspective: 1000px;
-  height: 250px;
+  height: 280px;
   cursor: pointer;
 }
 
@@ -95,6 +99,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .cardFrontMain {
@@ -116,26 +121,26 @@
 }
 
 .ruleRef {
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--blue-500);
   background-color: var(--blue-50);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
 }
 
 .ruleTitle {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--navy-900);
   margin-top: 6px;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .requirementText {
-  font-size: 0.82rem;
+  font-size: 1rem;
   color: var(--grey-700);
-  line-height: 1.4;
+  line-height: 1.5;
   margin-top: 6px;
   margin-bottom: 0;
   display: -webkit-box;
@@ -145,10 +150,10 @@
 }
 
 .statusChip {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 12px;
 }
 
@@ -174,12 +179,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
 }
 
 .severityTag {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--grey-700);
+  font-weight: 600;
 }
 
 .high {
@@ -196,7 +202,7 @@
 
 .sourceTag {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--grey-500);
 }
 
@@ -209,8 +215,9 @@
 }
 
 .detailSection {
-  font-size: 0.82rem;
+  font-size: 1rem;
   color: var(--grey-700);
+  line-height: 1.5;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -222,7 +229,7 @@
 }
 
 .flipHint {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--grey-500);
   text-align: right;
 }

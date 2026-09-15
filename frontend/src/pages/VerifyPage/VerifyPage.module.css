@@ -111,7 +111,7 @@
 
 .metaLabel {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--grey-500);
   text-transform: uppercase;
@@ -120,7 +120,7 @@
 
 .metaValue {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--navy-900);
   word-break: break-all;
@@ -128,7 +128,7 @@
 
 .monoValue {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 0.75rem;
 }
 
 .countsRow {
@@ -144,7 +144,7 @@
   padding: 8px 14px;
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
@@ -156,7 +156,7 @@
 
 .sectionTitle {
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--navy-900);
   margin: 0;
@@ -166,7 +166,7 @@
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 1rem;
 }
 
 .findingsTable th {
@@ -188,7 +188,7 @@
   display: inline-block;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 0.82rem;
   font-weight: 700;
 }
 

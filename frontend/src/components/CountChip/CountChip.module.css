@@ -1,12 +1,15 @@
 .countChip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 8px 14px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
+  box-sizing: border-box;
 }
 
 .fail {
@@ -32,9 +35,9 @@
 .countBadge {
   background-color: currentColor;
   color: white;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .fail .countBadge { background-color: var(--fail); }

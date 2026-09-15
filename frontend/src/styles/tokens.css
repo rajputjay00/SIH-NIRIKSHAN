@@ -35,6 +35,17 @@
   --font-devanagari: "Noto Sans Devanagari", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
+  /* type scale for 50+ inspection officer legibility */
+  --font-size-mono-cite: 0.75rem; /* Mono source citations ONLY (allowed below 0.8rem) */
+  --font-size-xs: 0.8rem;         /* Small labels minimum threshold */
+  --font-size-sm: 0.9rem;         /* Secondary labels & controls */
+  --font-size-base: 1rem;         /* Body text minimum */
+  --font-size-finding: 1.05rem;   /* Finding messages & declaration values */
+  --font-size-lg: 1.25rem;        /* Subheadings / Card titles */
+  --font-size-xl: 1.5rem;         /* Section headings */
+  --font-size-2xl: 2rem;          /* Hero headlines */
+  --line-height-body: 1.5;        /* Body text line height */
+
   /* motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 160ms; --dur-base: 280ms; --dur-slow: 600ms;

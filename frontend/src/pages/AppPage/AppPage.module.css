@@ -130,6 +130,139 @@
   gap: 12px;
   font-size: 0.85rem;
 }
+.appPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+}
+
+.shutterOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  z-index: 300;
+  pointer-events: none;
+}
+
+.pairedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--pass-bg);
+  color: var(--pass);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  border: 1px solid var(--pass);
+}
+
+.uploadCard {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.chipScrollRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.thumbnailsRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.thumbWrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid var(--blue-500);
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(214, 69, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.fileDropArea {
+  border: 2px dashed var(--blue-200);
+  background-color: var(--blue-50);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.fileDropArea:hover {
+  border-color: var(--blue-500);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.dropLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--navy-900);
+}
+
+.dropHint {
+  font-size: 0.82rem;
+  color: var(--grey-500);
+  line-height: 1.5;
+}
+
+.recentScansContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
 
 .recentTitle {
   font-weight: 600;
@@ -147,8 +280,11 @@
   border: 1px solid var(--grey-300);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--navy-900);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .scanSection {
@@ -184,9 +320,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 16px;
+  line-height: 1.5;
 }
 
 .declGrid {
@@ -213,18 +350,20 @@
 }
 
 .formGroup label {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--grey-700);
 }
 
 .inputField {
   padding: 10px 12px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   outline: none;
+  box-sizing: border-box;
 }
 
 .inputField:focus {
@@ -248,9 +387,10 @@
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 0.72rem;
-  padding: 2px 4px;
+  font-size: 0.8rem;
+  padding: 4px 6px;
   outline: none;
+  min-height: 44px;
 }
 
 .progress360Row {
@@ -261,7 +401,7 @@
   padding: 8px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--blue-200);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--blue-700);
 }
@@ -289,7 +429,7 @@
   justify-content: space-between;
   font-weight: 700;
   color: var(--fail);
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .conflictSurfacesGrid {
@@ -309,7 +449,7 @@
 }
 
 .surfaceLabel {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--grey-500);
   text-transform: uppercase;
@@ -318,7 +458,7 @@
 .surfaceVal {
   font-weight: 700;
   color: var(--navy-900);
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .splitViewContainer {
@@ -336,7 +476,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--navy-900);
 }
@@ -356,7 +496,7 @@
 }
 
 .splitCropLabel {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--navy-900);
   padding: 4px;
@@ -372,10 +512,11 @@
   border: 1px solid var(--review);
   padding: 12px 16px;
   border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 16px;
   grid-column: 1 / -1;
+  line-height: 1.5;
 }
 
 .evidenceLayout {
@@ -424,9 +565,9 @@
 
 .helperText {
   margin: 4px 0 0;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   color: var(--grey-700);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .sampleSection {
@@ -457,6 +598,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-height: 44px;
 }
 
 .sampleCard:hover {
@@ -465,15 +607,15 @@
 }
 
 .sampleTitle {
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--navy-900);
 }
 
 .sampleDesc {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--grey-700);
-  line-height: 1.35;
+  line-height: 1.5;
 }
 
 .uploadCard {
@@ -511,7 +653,7 @@
 }
 
 .exampleRulesTitle {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--grey-500);
   text-transform: uppercase;
@@ -541,27 +683,28 @@
 }
 
 .exampleRuleRef {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--blue-500);
 }
 
 .exampleRuleId {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--grey-500);
 }
 
 .exampleRuleName {
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--navy-900);
-  line-height: 1.3;
+  line-height: 1.5;
 }
 
 .mutedReason {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--grey-500);
   font-style: italic;
+  line-height: 1.5;
   padding: 4px 0;
 }

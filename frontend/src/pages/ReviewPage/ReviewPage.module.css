@@ -49,12 +49,15 @@
 .codeInput {
   flex: 1;
   padding: 8px 12px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-300);
   font-family: var(--font-mono);
   font-weight: 700;
+  font-size: 1rem;
   text-transform: uppercase;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .scansList {
@@ -69,11 +72,13 @@
   align-items: center;
   gap: 12px;
   padding: 10px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--grey-200);
   background-color: var(--grey-50);
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-out);
+  box-sizing: border-box;
 }
 
 .scanItem:hover, .selectedItem {
@@ -93,12 +98,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
 }
 
 .scanName {
   font-weight: 600;
   color: var(--navy-900);
+  font-size: 1rem;
 }
 
 .dropZone {
@@ -108,7 +114,12 @@
   text-align: center;
   cursor: pointer;
   color: var(--grey-500);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .emptyStateContainer {
@@ -124,14 +135,15 @@
 }
 
 .emptyStateTitle {
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--navy-900);
 }
 
 .emptyStateSub {
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--grey-700);
+  line-height: 1.5;
 }
 
 .pairingStepsGrid {
@@ -158,9 +170,9 @@
 }
 
 .stepText {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--grey-700);
-  line-height: 1.35;
+  line-height: 1.5;
 }
 
 .dropZonePrimary {
@@ -168,16 +180,18 @@
   background-color: var(--blue-50);
   border-radius: var(--radius-lg);
   padding: 24px 20px;
+  min-height: 44px;
   text-align: center;
   cursor: pointer;
   color: var(--blue-700);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   transition: all var(--dur-fast) var(--ease-out);
+  box-sizing: border-box;
 }
 
 .dropZonePrimary:hover {

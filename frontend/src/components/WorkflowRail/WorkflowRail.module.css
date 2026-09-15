@@ -40,17 +40,17 @@
 }
 
 .stageLabel {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--navy-900);
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .stageDesc {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--grey-500);
-  line-height: 1.35;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -150,12 +150,12 @@
 }
 
 .compactRail .stageLabel {
-  font-size: 0.8rem;
+  font-size: 0.88rem;
 }
 
 .compactRail .stageDesc {
-  font-size: 0.72rem;
-  line-height: 1.25;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 /* Responsive vertical stack on narrow screens */

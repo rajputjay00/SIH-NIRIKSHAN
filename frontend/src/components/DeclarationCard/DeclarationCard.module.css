@@ -16,7 +16,7 @@
 }
 
 .fieldTitle {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--grey-500);
   text-transform: uppercase;
@@ -25,9 +25,9 @@
 .crimpChip {
   background-color: var(--review-bg);
   color: var(--review);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
 }
 

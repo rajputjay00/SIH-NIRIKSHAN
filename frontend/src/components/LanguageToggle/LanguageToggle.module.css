@@ -2,17 +2,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 10px;
+  padding: 8px 14px;
+  min-height: 44px;
   background-color: var(--blue-50);
   color: var(--navy-900);
   border: 1px solid var(--blue-200);
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
   outline: none;
   transition: all var(--dur-fast) var(--ease-out);
+  box-sizing: border-box;
 }
 
 .toggleBtn:hover {

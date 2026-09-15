@@ -5,6 +5,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useT } from '../../i18n/useT';
 import { Button } from '../Button/Button';
 import { MeasurementRows } from '../MeasurementRows/MeasurementRows';
+import { getFullRuleRef } from '../../utils/ruleRefMap';
 import styles from './RuleCard.module.css';
 
 export function RuleCard({
@@ -42,6 +43,9 @@ export function RuleCard({
     }
   };
 
+  const verdictKey = isManual ? (isConfirmed ? 'CONFIRMED' : 'MANUAL') : verdict;
+  const verdictExplanationText = t(`verdict_desc_${verdictKey.replace(/[\/ ]/g, '_')}`) || t('verdict_desc_NA');
+
   return (
     <motion.div
       className={`${styles.ruleCard} ${isManual ? styles.manualCard : ''} ${className}`}
@@ -53,11 +57,16 @@ export function RuleCard({
       <div className={styles.headerRow} onClick={() => setExpanded(!expanded)}>
         <div className={styles.ruleMeta}>
           <span className={styles.rulePill}>
-            {finding.rule_ref && finding.rule_ref !== finding.rule_id ? `${finding.rule_ref} · ${finding.rule_id}` : finding.rule_id}
+            {getFullRuleRef(finding)}
           </span>
-          <span className={`${styles.verdictBadge} ${badgeClass}`}>
-            {isManual ? (isConfirmed ? 'CONFIRMED' : 'MANUAL') : verdict}
-          </span>
+          <div className={styles.verdictBadgeGroup}>
+            <span className={`${styles.verdictBadge} ${badgeClass}`}>
+              {isManual ? (isConfirmed ? 'CONFIRMED' : 'MANUAL') : verdict}
+            </span>
+            <span className={styles.verdictPlainLine}>
+              · {verdictExplanationText}
+            </span>
+          </div>
           {isFromCrimp && (
             <span className={styles.crimpChip}>{t('resolved_from_crimp')}</span>
           )}
@@ -81,7 +90,7 @@ export function RuleCard({
       </div>
 
       <div className={styles.verdictExplanation}>
-        {t(`verdict_desc_${verdict.replace(/[\/ ]/g, '_')}`) || t('verdict_desc_NA')}
+        {verdictExplanationText}
       </div>
 
       <div className={styles.message}>{message}</div>

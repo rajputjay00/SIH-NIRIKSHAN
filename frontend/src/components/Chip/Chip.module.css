@@ -1,10 +1,12 @@
 .chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 8px 16px;
+  min-height: 44px;
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 500;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -14,6 +16,7 @@
   transition: all var(--dur-fast) var(--ease-out);
   user-select: none;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .chip:hover {
