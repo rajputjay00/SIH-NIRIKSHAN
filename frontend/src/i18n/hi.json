@@ -134,5 +134,19 @@
   "listing_font_parity": "शुद्ध मात्रा बनाम MRP फ़ॉन्ट आकार",
   "listing_mode_label": "स्रोत",
   "listing_empty": "लिस्टिंग URL दर्ज करें या स्क्रीनशॉट अपलोड करें।",
-  "nav_listing": "लिस्टिंग"
+  "nav_listing": "लिस्टिंग",
+  "verify_title": "रिपोर्ट सत्यापन",
+  "verify_subtitle": "हैश-चेन्ड ऑडिट लेजर सत्यापन",
+  "verify_not_found": "इस हैश के लिए कोई रिपोर्ट नहीं मिली।",
+  "verify_chain_intact": "ऑडिट शृंखला सत्यापित",
+  "verify_chain_broken": "ऑडिट शृंखला अमान्य",
+  "verify_generated_at": "जनरेट होने का समय",
+  "verify_officer": "निरीक्षक",
+  "verify_premises": "परिसर",
+  "verify_rules_version": "नियम संस्करण",
+  "verify_model_version": "मॉडल संस्करण",
+  "verify_image_hash": "इमेज SHA256",
+  "verify_findings_header": "नियम निर्णय",
+  "verify_loading": "रिपोर्ट का सत्यापन किया जा रहा है..."
 }
+

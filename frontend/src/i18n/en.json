@@ -134,5 +134,19 @@
   "listing_font_parity": "Net quantity vs MRP font size",
   "listing_mode_label": "Source",
   "listing_empty": "Enter a listing URL or upload a screenshot.",
-  "nav_listing": "Listing"
+  "nav_listing": "Listing",
+  "verify_title": "Report Verification",
+  "verify_subtitle": "Hash-Chained Audit Ledger Verification",
+  "verify_not_found": "No report found for this hash.",
+  "verify_chain_intact": "Audit Chain Verified",
+  "verify_chain_broken": "Audit Chain Invalid",
+  "verify_generated_at": "Generated At",
+  "verify_officer": "Inspector",
+  "verify_premises": "Premises",
+  "verify_rules_version": "Rules Version",
+  "verify_model_version": "Model Version",
+  "verify_image_hash": "Image SHA256",
+  "verify_findings_header": "Rule Verdicts",
+  "verify_loading": "Verifying report..."
 }
+

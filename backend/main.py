@@ -102,6 +102,8 @@ from nirikshan.merge import merge_declarations
 from nirikshan.conflicts import detect_conflicts
 
 from nirikshan.version import RULES_VERSION
+from nirikshan import audit
+
 
 origins = [origin.strip() for origin in allowed_origins_raw.split(",") if origin.strip()]
 
@@ -689,6 +691,36 @@ async def create_report(
         )
 
     filename = f"Nirikshan_Report_{int(time.time())}.pdf"
+
+    try:
+        import hashlib
+        from datetime import datetime, timezone, timedelta
+        ist_tz = timezone(timedelta(hours=5, minutes=30))
+        timestamp_ist = datetime.now(ist_tz).strftime("%Y-%m-%d %H:%M:%S IST")
+        image_sha256 = hashlib.sha256(contents).hexdigest()
+        summary = result_data.get("summary", {})
+        findings = result_data.get("findings", [])
+        safe_findings = [
+            {"rule_id": f.get("rule_id"), "verdict": f.get("verdict")}
+            for f in findings
+            if isinstance(f, dict) and "rule_id" in f and "verdict" in f
+        ]
+        safe_payload = {
+            "image_sha256": image_sha256,
+            "rules_version": result_data.get("rules_version", RULES_VERSION),
+            "model_version": result_data.get("model_version", MODEL_VERSION),
+            "status": summary.get("status", "UNKNOWN"),
+            "counts": summary.get("counts", {}),
+            "findings": safe_findings,
+            "premises": premises,
+            "officer_name": officer_name,
+            "generated_at": timestamp_ist,
+        }
+        actor = officer_name.strip() if officer_name and officer_name.strip() else "unknown"
+        audit.append(actor=actor, action="report_generated", payload=safe_payload)
+    except Exception as audit_err:
+        logger.error(f"Failed to record report generation in audit ledger: {audit_err}", exc_info=True)
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
@@ -696,7 +728,35 @@ async def create_report(
     )
 
 
+@router.get("/audit/verify")
+def verify_audit_ledger():
+    ok, first_broken_id = audit.verify_chain()
+    entries_count = audit.get_entry_count()
+    return {
+        "ok": ok,
+        "entries": entries_count,
+        "first_broken_id": first_broken_id,
+    }
+
+
+@router.get("/verify/{image_sha256}")
+def verify_report_by_hash(image_sha256: str):
+    entry = audit.get_by_image_hash(image_sha256)
+    if not entry:
+        raise HTTPException(
+            status_code=404,
+            detail="no report found for this hash",
+        )
+    ok, _ = audit.verify_chain()
+    payload = entry["payload"] if isinstance(entry, dict) and "payload" in entry else entry
+    return {
+        **payload,
+        "chain_verified": ok,
+    }
+
+
 # Catch-all for unknown /api/* paths to return JSON 404 (not HTML)
+
 @router.get("/{api_path:path}")
 async def api_404_fallback(api_path: str):
 

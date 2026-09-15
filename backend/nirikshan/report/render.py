@@ -106,9 +106,14 @@ def generate_report_pdf(
     extractor_ver = result_data.get("extractor_version", "0.1.0")
     git_sha = os.getenv("GIT_SHA", "dev")
 
-    # QR Code content: NIRIKSHAN|<sha256>|<rules_version>|<timestamp>
-    qr_payload = f"NIRIKSHAN|{image_sha256}|{rules_ver}|{timestamp_ist}"
+    base_url = os.getenv("NIRIKSHAN_PUBLIC_BASE_URL", "").strip()
+    if base_url:
+        qr_payload = f"{base_url.rstrip('/')}/verify/{image_sha256}"
+    else:
+        # Fallback QR Code content: NIRIKSHAN|<sha256>|<rules_version>|<timestamp>
+        qr_payload = f"NIRIKSHAN|{image_sha256}|{rules_ver}|{timestamp_ist}"
     qr_b64 = generate_qr_code_b64(qr_payload)
+
 
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template_str = f.read()

@@ -1,0 +1,229 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--grey-100);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid var(--grey-100);
+  padding-bottom: 16px;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin: 0;
+}
+
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--grey-500);
+  margin: 0;
+}
+
+.verdictBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.verdictPass {
+  color: var(--pass);
+  background-color: var(--pass-bg);
+}
+
+.verdictFail {
+  color: var(--fail);
+  background-color: var(--fail-bg);
+}
+
+.verdictReview {
+  color: var(--review);
+  background-color: var(--review-bg);
+}
+
+.verdictNa {
+  color: var(--na);
+  background-color: var(--na-bg);
+}
+
+.chainBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chainVerified {
+  color: var(--pass);
+  background: var(--pass-bg);
+  border: 1px solid var(--pass);
+}
+
+.chainUnverified {
+  color: var(--fail);
+  background: var(--fail-bg);
+  border: 1px solid var(--fail);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  background: var(--grey-50);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--grey-100);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metaLabel {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metaValue {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy-900);
+  word-break: break-all;
+}
+
+.monoValue {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.countsRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.countPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.findingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin: 0;
+}
+
+.findingsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+.findingsTable th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--grey-50);
+  color: var(--grey-500);
+  font-weight: 600;
+  border-bottom: 1px solid var(--grey-300);
+}
+
+.findingsTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--grey-100);
+  color: var(--navy-900);
+}
+
+.verdictChip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.errorCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--grey-100);
+  padding: 48px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.errorTitle {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--fail);
+}
+
+.errorText {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--grey-500);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 250px;
+  font-family: var(--font-sans);
+  color: var(--blue-500);
+  font-weight: 600;
+}
