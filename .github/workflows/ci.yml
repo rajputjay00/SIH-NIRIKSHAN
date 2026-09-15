@@ -19,7 +19,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            fonts-dejavu-core fonts-noto fonts-noto-core fonts-noto-extra fonts-deva-extra \
+            fonts-dejavu-core fonts-noto fonts-noto-core fonts-noto-extra fonts-deva fonts-deva-extra fonts-lohit-deva fonts-samyak-deva \
             libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2
       - name: Install Dependencies
         run: |
